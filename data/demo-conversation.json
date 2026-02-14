@@ -1,0 +1,30 @@
+{
+  "description": "Cached Greylock-style 4-turn demo with at least 2 real tool calls. Use as backup if live demo fails.",
+  "messages": [
+    {
+      "role": "user",
+      "content": "I want to eat healthier but I don't know where to start."
+    },
+    {
+      "role": "assistant",
+      "content": "I'd love to help! To give you ideas that actually fit your life, can you tell me:\n1. Any dietary restrictions or preferences? (e.g. vegetarian, no dairy)\n2. Roughly how much you'd like to spend on groceries per week?\n3. How comfortable you are in the kitchen — beginner, okay, or confident?\nAnd if there's anything you've been feeling (like low energy), mention that too; it can shape what we focus on."
+    },
+    {
+      "role": "user",
+      "content": "Vegetarian. $80/week. Beginner. I've been really tired lately."
+    },
+    {
+      "role": "assistant",
+      "content": "[After calling search_recipes and get_nutrition] With vegetarian, $80/week, and beginner-friendly in mind — and since you've been tired, I'm focusing on iron-rich options — here are three ideas:\n\n1. **Lentil dal** — ~280 cal/serving, 14g protein, good iron (~4mg). Red lentils, onion, garlic, cumin, turmeric, coconut milk. One pot, about 30 min.\n2. **Chickpea curry** — ~320 cal, 12g protein, iron. Similar vibe, no blender needed.\n3. **Black bean tacos** — ~380 cal, 14g protein, quick (about 20 min). Black beans, tortillas, avocado, lime, cumin.\n\nAll are dairy-free and doable for a beginner. Want me to find where you can buy the ingredients near you, or plan your whole week like this?"
+    },
+    {
+      "role": "user",
+      "content": "The dal sounds great. Where can I buy the ingredients, and plan my whole week?"
+    },
+    {
+      "role": "assistant",
+      "content": "[After calling find_stores and generate_meal_plan] Here’s the scoop:\n\n**Where to buy (e.g. 94305):**\n- Trader Joe’s — ~1.2 mi, red lentils, coconut milk, cumin — est. ~$12\n- Safeway — ~0.8 mi, same items — est. ~$14\n- Whole Foods — ~2.1 mi — est. ~$18\n\nRed lentils are cheapest at Trader Joe’s.\n\n**Your week:** I’ve generated a 7-day plan — breakfast, lunch, dinner — all veg, beginner-friendly, within your budget. Grocery list: 23 items, **$73 total**. I can sync this to Google Calendar with a Sunday meal-prep reminder if you’d like."
+    }
+  ],
+  "tool_calls_expected": ["search_recipes", "get_nutrition", "find_stores", "generate_meal_plan"]
+}
