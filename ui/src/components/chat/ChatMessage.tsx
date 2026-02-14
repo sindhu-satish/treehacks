@@ -32,7 +32,7 @@ export function ChatMessage({ message, showTimestamp = true }: ChatMessageProps)
         className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 shadow-sm",
           isUser
-            ? "bg-charcoal text-white"
+            ? "bg-foreground text-background"
             : "gradient-coral text-white"
         )}
       >
@@ -50,8 +50,8 @@ export function ChatMessage({ message, showTimestamp = true }: ChatMessageProps)
           className={cn(
             "px-4 py-2.5 rounded-2xl shadow-sm",
             isUser
-              ? "bg-coral text-white rounded-br-sm"
-              : "bg-white text-charcoal rounded-bl-sm border border-border/50"
+              ? "bg-primary text-white rounded-br-sm"
+              : "bg-white text-foreground rounded-bl-sm border border-border/50"
           )}
         >
           <div className="whitespace-pre-wrap text-[15px] leading-relaxed">

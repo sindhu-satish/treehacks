@@ -93,11 +93,11 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
         {!generatedRecipe ? (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-2xl font-bold text-charcoal">
+              <h2 className="font-display text-2xl font-bold text-foreground">
                 {isGenerating ? "Generating Recipe..." : "Extract Recipe"}
               </h2>
               {!isGenerating && (
-                <button onClick={onClose} className="text-muted-foreground hover:text-charcoal text-2xl">
+                <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">
                   ×
                 </button>
               )}
@@ -108,15 +108,15 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
                 <div className="text-6xl mb-6 animate-bounce">🍳</div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-lime rounded-full animate-pulse" />
+                    <span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
                     <span className="text-muted-foreground">Analyzing photo...</span>
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-coral rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
                     <span className="text-muted-foreground">Identifying ingredients...</span>
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-sunny rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
+                    <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
                     <span className="text-muted-foreground">Creating recipe steps...</span>
                   </div>
                 </div>
@@ -131,20 +131,20 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
                   onClick={() => setHasPhoto(true)}
                   className={`border-2 border-dashed rounded-2xl p-6 text-center mb-4 cursor-pointer transition-all ${
                     hasPhoto
-                      ? "border-lime bg-lime/10"
-                      : "border-lime/30 hover:border-lime hover:bg-lime/5"
+                      ? "border-accent bg-accent/10"
+                      : "border-accent/30 hover:border-accent hover:bg-accent/5"
                   }`}
                 >
                   {hasPhoto ? (
                     <>
                       <div className="text-5xl mb-2">✓</div>
-                      <p className="font-bold text-lime">Photo uploaded!</p>
+                      <p className="font-bold text-accent">Photo uploaded!</p>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setHasPhoto(false);
                         }}
-                        className="text-xs text-muted-foreground hover:text-coral mt-2"
+                        className="text-xs text-muted-foreground hover:text-primary mt-2"
                       >
                         Remove photo
                       </button>
@@ -152,7 +152,7 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
                   ) : (
                     <>
                       <div className="text-5xl mb-3 animate-float">📸</div>
-                      <p className="font-bold text-charcoal mb-1">Upload a photo of a dish</p>
+                      <p className="font-bold text-foreground mb-1">Upload a photo of a dish</p>
                       <p className="text-sm text-muted-foreground">We&apos;ll create a recipe you can make at home!</p>
                     </>
                   )}
@@ -160,36 +160,36 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
 
                 {/* Where did you have it? */}
                 <div className="mb-4">
-                  <label className="font-bold text-charcoal mb-2 block">Where did you have this?</label>
+                  <label className="font-bold text-foreground mb-2 block">Where did you have this?</label>
                   <input
                     type="text"
                     value={restaurantName}
                     onChange={(e) => setRestaurantName(e.target.value)}
                     placeholder="Restaurant name (optional)"
-                    className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-lime transition-colors"
+                    className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
 
                 {/* Dish name if known */}
                 <div className="mb-4">
-                  <label className="font-bold text-charcoal mb-2 block">Dish name (if you know it)</label>
+                  <label className="font-bold text-foreground mb-2 block">Dish name (if you know it)</label>
                   <input
                     type="text"
                     value={dishName}
                     onChange={(e) => setDishName(e.target.value)}
                     placeholder="E.g., Pad Thai, Caesar Salad..."
-                    className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-lime transition-colors"
+                    className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
 
                 {/* Notes */}
                 <div className="mb-6">
-                  <label className="font-bold text-charcoal mb-2 block">Any notes about the dish?</label>
+                  <label className="font-bold text-foreground mb-2 block">Any notes about the dish?</label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="E.g., It was creamy, had lots of garlic, tasted smoky..."
-                    className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-lime transition-colors"
+                    className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
 
@@ -202,7 +202,7 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
                 </Button>
 
                 {!hasPhoto && (
-                  <p className="text-xs text-center text-coral mt-3">
+                  <p className="text-xs text-center text-primary mt-3">
                     Please upload a photo to generate a recipe
                   </p>
                 )}
@@ -213,17 +213,17 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
           <>
             {/* Generated Recipe View */}
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-2xl font-bold text-charcoal">Recipe Generated!</h2>
-              <button onClick={onClose} className="text-muted-foreground hover:text-charcoal text-2xl">
+              <h2 className="font-display text-2xl font-bold text-foreground">Recipe Generated!</h2>
+              <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">
                 ×
               </button>
             </div>
 
-            <div className="mb-4 p-4 bg-lime/10 rounded-2xl border-2 border-lime/30">
+            <div className="mb-4 p-4 bg-accent/10 rounded-2xl border-2 border-accent/30">
               <div className="text-center mb-2">
                 <span className="text-4xl">🎉</span>
               </div>
-              <h3 className="font-display text-xl font-bold text-charcoal text-center mb-2">
+              <h3 className="font-display text-xl font-bold text-foreground text-center mb-2">
                 {generatedRecipe.name}
               </h3>
               <p className="text-sm text-muted-foreground text-center">
@@ -236,33 +236,33 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
               <div className="text-center p-2 bg-muted/30 rounded-lg">
                 <div className="text-lg">⏱️</div>
                 <div className="text-xs text-muted-foreground">Prep</div>
-                <div className="font-bold text-charcoal">{generatedRecipe.prepTime}m</div>
+                <div className="font-bold text-foreground">{generatedRecipe.prepTime}m</div>
               </div>
               <div className="text-center p-2 bg-muted/30 rounded-lg">
                 <div className="text-lg">🍳</div>
                 <div className="text-xs text-muted-foreground">Cook</div>
-                <div className="font-bold text-charcoal">{generatedRecipe.cookTime}m</div>
+                <div className="font-bold text-foreground">{generatedRecipe.cookTime}m</div>
               </div>
               <div className="text-center p-2 bg-muted/30 rounded-lg">
                 <div className="text-lg">👥</div>
                 <div className="text-xs text-muted-foreground">Serves</div>
-                <div className="font-bold text-charcoal">{generatedRecipe.servings}</div>
+                <div className="font-bold text-foreground">{generatedRecipe.servings}</div>
               </div>
               <div className="text-center p-2 bg-muted/30 rounded-lg">
                 <div className="text-lg">🔥</div>
                 <div className="text-xs text-muted-foreground">Cal</div>
-                <div className="font-bold text-coral">{generatedRecipe.calories}</div>
+                <div className="font-bold text-primary">{generatedRecipe.calories}</div>
               </div>
             </div>
 
             {/* Ingredients preview */}
             <div className="mb-4">
-              <h4 className="font-bold text-charcoal mb-2">Ingredients ({generatedRecipe.ingredients.length})</h4>
+              <h4 className="font-bold text-foreground mb-2">Ingredients ({generatedRecipe.ingredients.length})</h4>
               <div className="bg-muted/20 rounded-xl p-3 max-h-32 overflow-y-auto">
                 <ul className="text-sm space-y-1">
                   {generatedRecipe.ingredients.map((ing, i) => (
                     <li key={i} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-lime rounded-full" />
+                      <span className="w-1.5 h-1.5 bg-accent rounded-full" />
                       {ing}
                     </li>
                   ))}
@@ -272,12 +272,12 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
 
             {/* Instructions preview */}
             <div className="mb-6">
-              <h4 className="font-bold text-charcoal mb-2">Instructions ({generatedRecipe.instructions.length} steps)</h4>
+              <h4 className="font-bold text-foreground mb-2">Instructions ({generatedRecipe.instructions.length} steps)</h4>
               <div className="bg-muted/20 rounded-xl p-3 max-h-32 overflow-y-auto">
                 <ol className="text-sm space-y-2">
                   {generatedRecipe.instructions.map((step, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="font-bold text-coral shrink-0">{i + 1}.</span>
+                      <span className="font-bold text-primary shrink-0">{i + 1}.</span>
                       <span>{step}</span>
                     </li>
                   ))}
@@ -317,22 +317,22 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-2xl font-bold text-charcoal">Log a Meal</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-charcoal text-2xl">
+          <h2 className="font-display text-2xl font-bold text-foreground">Log a Meal</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">
             ×
           </button>
         </div>
 
         {/* Step 1: Was this on your meal plan? */}
         <div className="mb-5">
-          <label className="font-bold text-charcoal mb-3 block text-lg">Was this on your meal plan?</label>
+          <label className="font-bold text-foreground mb-3 block text-lg">Was this on your meal plan?</label>
           <div className="flex gap-3">
             <button
               onClick={() => setMealPlanStatus("planned")}
               className={`flex-1 px-4 py-4 rounded-xl text-sm font-bold transition-all ${
                 mealPlanStatus === "planned"
-                  ? "bg-lime text-white shadow-playful-lime scale-105"
-                  : "bg-lime/10 text-charcoal hover:bg-lime/20 border-2 border-lime/30"
+                  ? "bg-accent text-white shadow-playful-lime scale-105"
+                  : "bg-accent/10 text-foreground hover:bg-accent/20 border-2 border-accent/30"
               }`}
             >
               <span className="text-2xl block mb-1">✓</span>
@@ -342,8 +342,8 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
               onClick={() => setMealPlanStatus("unplanned")}
               className={`flex-1 px-4 py-4 rounded-xl text-sm font-bold transition-all ${
                 mealPlanStatus === "unplanned"
-                  ? "bg-sunny text-charcoal shadow-playful-sunny scale-105"
-                  : "bg-sunny/10 text-charcoal hover:bg-sunny/20 border-2 border-sunny/30"
+                  ? "bg-amber-400 text-foreground shadow-playful-sunny scale-105"
+                  : "bg-amber-400/10 text-foreground hover:bg-amber-400/20 border-2 border-sunny/30"
               }`}
             >
               <span className="text-2xl block mb-1">🍽️</span>
@@ -354,7 +354,7 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
 
         {/* Step 2: Meal Type */}
         <div className="mb-5">
-          <label className="font-bold text-charcoal mb-2 block">Meal type</label>
+          <label className="font-bold text-foreground mb-2 block">Meal type</label>
           <div className="flex flex-wrap gap-2">
             {[
               { type: "Breakfast", icon: "🌅" },
@@ -367,8 +367,8 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
                 onClick={() => setMealType(type)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   mealType === type
-                    ? "bg-coral text-white"
-                    : "bg-coral/10 text-coral hover:bg-coral/20"
+                    ? "bg-primary text-white"
+                    : "bg-primary/10 text-primary hover:bg-primary/20"
                 }`}
               >
                 {icon} {type}
@@ -380,7 +380,7 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
         {/* Step 3: Photo Upload - Required for unplanned, optional for planned */}
         <div className="mb-5">
           <div className="flex items-center justify-between mb-2">
-            <label className="font-bold text-charcoal">
+            <label className="font-bold text-foreground">
               Photo of your meal
               {mealPlanStatus === "planned" && (
                 <span className="text-muted-foreground font-normal text-sm ml-2">(optional)</span>
@@ -389,7 +389,7 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
             {mealPlanStatus === "planned" && hasPhoto && (
               <button
                 onClick={() => setHasPhoto(false)}
-                className="text-xs text-muted-foreground hover:text-coral"
+                className="text-xs text-muted-foreground hover:text-primary"
               >
                 Remove
               </button>
@@ -401,12 +401,12 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
               onClick={() => setHasPhoto(true)}
               className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-colors ${
                 mealPlanStatus === "unplanned"
-                  ? "border-coral/50 hover:border-coral bg-coral/5"
-                  : "border-border hover:border-coral/30"
+                  ? "border-primary/50 hover:border-primary bg-primary/5"
+                  : "border-border hover:border-primary/30"
               }`}
             >
               <div className="text-4xl mb-2">📷</div>
-              <p className="font-bold text-charcoal mb-1">Tap to upload a photo</p>
+              <p className="font-bold text-foreground mb-1">Tap to upload a photo</p>
               <p className="text-xs text-muted-foreground">
                 {mealPlanStatus === "unplanned"
                   ? "Required for nutrition analysis"
@@ -414,22 +414,22 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
               </p>
             </div>
           ) : (
-            <div className="bg-lime/10 border-2 border-lime rounded-2xl p-4 text-center">
+            <div className="bg-accent/10 border-2 border-accent rounded-2xl p-4 text-center">
               <div className="text-4xl mb-2">✓</div>
-              <p className="font-bold text-lime">Photo uploaded!</p>
+              <p className="font-bold text-accent">Photo uploaded!</p>
             </div>
           )}
         </div>
 
         {/* If planned meal - show which recipe */}
         {mealPlanStatus === "planned" && (
-          <div className="mb-5 p-4 bg-lime/5 rounded-xl border-2 border-lime/20">
-            <label className="font-bold text-charcoal mb-2 block text-sm">Select your planned meal</label>
+          <div className="mb-5 p-4 bg-accent/5 rounded-xl border-2 border-accent/20">
+            <label className="font-bold text-foreground mb-2 block text-sm">Select your planned meal</label>
             <div className="space-y-2">
               {["Creamy Lentil Dal", "Chickpea Tikka Masala", "Black Bean Tacos"].map((meal) => (
                 <button
                   key={meal}
-                  className="w-full p-3 rounded-lg text-left text-sm font-medium bg-white hover:bg-lime/10 border-2 border-transparent hover:border-lime/30 transition-all"
+                  className="w-full p-3 rounded-lg text-left text-sm font-medium bg-white hover:bg-accent/10 border-2 border-transparent hover:border-accent/30 transition-all"
                 >
                   {meal}
                 </button>
@@ -442,18 +442,18 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
         {mealPlanStatus === "unplanned" && (
           <>
             <div className="mb-4">
-              <label className="font-bold text-charcoal mb-2 block">Where did you eat?</label>
+              <label className="font-bold text-foreground mb-2 block">Where did you eat?</label>
               <input
                 type="text"
                 placeholder="Restaurant name or 'home-cooked'..."
-                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-coral transition-colors"
+                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-primary transition-colors"
               />
             </div>
             <div className="mb-4">
-              <label className="font-bold text-charcoal mb-2 block">What did you eat?</label>
+              <label className="font-bold text-foreground mb-2 block">What did you eat?</label>
               <textarea
                 placeholder="E.g., Chicken salad with avocado, grilled salmon..."
-                className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-coral transition-colors"
+                className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-primary transition-colors"
               />
             </div>
           </>
@@ -461,12 +461,12 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
 
         {/* Portion Size */}
         <div className="mb-6">
-          <label className="font-bold text-charcoal mb-2 block">Portion size</label>
+          <label className="font-bold text-foreground mb-2 block">Portion size</label>
           <div className="flex gap-2">
             {["Small", "Regular", "Large", "XL"].map((size) => (
               <button
                 key={size}
-                className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-muted/50 text-charcoal hover:bg-coral/20 transition-colors"
+                className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-muted/50 text-foreground hover:bg-primary/20 transition-colors"
               >
                 {size}
               </button>
@@ -482,7 +482,7 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
         </Button>
 
         {mealPlanStatus === "unplanned" && !hasPhoto && (
-          <p className="text-xs text-center text-coral mt-2">
+          <p className="text-xs text-center text-primary mt-2">
             Photo required for unplanned meals to estimate nutrition
           </p>
         )}
@@ -536,10 +536,10 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-background relative overflow-hidden">
         {/* Warm background elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-sage/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute top-1/4 right-0 w-96 h-96 bg-terracotta/10 rounded-full blur-3xl translate-x-1/2" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-gold/15 rounded-full blur-3xl translate-y-1/2" />
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-sage-light/30 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-1/4 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-x-1/2" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-amber-400/15 rounded-full blur-3xl translate-y-1/2" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-accent-light/30 rounded-full blur-3xl" />
 
         <div className="relative min-h-screen flex flex-col">
           {/* Header */}
@@ -553,12 +553,12 @@ export default function Home() {
               <MahmLogo size="xl" showText={false} />
             </div>
 
-            <h1 className="font-display text-5xl md:text-7xl font-bold text-forest mb-6">
+            <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6">
               Like having a{" "}
-              <span className="text-terracotta">mom</span>
+              <span className="text-primary">mom</span>
               <br />
               who&apos;s also a{" "}
-              <span className="text-sage">nutritionist</span>
+              <span className="text-accent">nutritionist</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mb-10">
@@ -568,13 +568,13 @@ export default function Home() {
 
             {/* Feature Pills */}
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <div className="px-6 py-3 bg-terracotta/15 rounded-full font-semibold text-terracotta shadow-warm">
+              <div className="px-6 py-3 bg-primary/15 rounded-full font-semibold text-primary shadow-warm">
                 Personalized nutrition
               </div>
-              <div className="px-6 py-3 bg-sage/15 rounded-full font-semibold text-forest shadow-warm">
+              <div className="px-6 py-3 bg-accent/15 rounded-full font-semibold text-foreground shadow-warm">
                 Real local prices
               </div>
-              <div className="px-6 py-3 bg-gold/20 rounded-full font-semibold text-forest shadow-warm">
+              <div className="px-6 py-3 bg-amber-400/20 rounded-full font-semibold text-foreground shadow-warm">
                 Weekly meal plans
               </div>
             </div>
@@ -594,7 +594,7 @@ export default function Home() {
                   localStorage.setItem("mahm_onboarded", "true");
                   setIsOnboarded(true);
                 }}
-                className="border-2 border-terracotta text-terracotta font-display font-bold text-xl px-10 py-7 rounded-xl hover:bg-terracotta/10"
+                className="border-2 border-primary text-primary font-display font-bold text-xl px-10 py-7 rounded-xl hover:bg-primary/10"
               >
                 Try Demo
               </Button>
@@ -602,29 +602,29 @@ export default function Home() {
           </main>
 
           {/* Features Section */}
-          <section className="px-4 py-16 bg-warmwhite/50">
+          <section className="px-4 py-16 bg-background/50">
             <div className="max-w-5xl mx-auto">
-              <h2 className="font-display text-3xl font-bold text-forest text-center mb-12">
+              <h2 className="font-display text-3xl font-bold text-foreground text-center mb-12">
                 Everything you need to eat well
               </h2>
               <div className="grid md:grid-cols-3 gap-8">
-                <Card className="p-6 border border-terracotta/20 shadow-warm text-center card-hover">
+                <Card className="p-6 border border-primary/20 shadow-warm text-center card-hover">
                   <div className="text-5xl mb-4">💬</div>
-                  <h3 className="font-display font-bold text-xl text-forest mb-2">Chat with Mahm</h3>
+                  <h3 className="font-display font-bold text-xl text-foreground mb-2">Chat with Mahm</h3>
                   <p className="text-muted-foreground">
                     Get personalized meal recommendations based on your preferences, goals, and what&apos;s in your fridge.
                   </p>
                 </Card>
-                <Card className="p-6 border border-sage/30 shadow-warm text-center card-hover">
+                <Card className="p-6 border border-accent/30 shadow-warm text-center card-hover">
                   <div className="text-5xl mb-4">🛒</div>
-                  <h3 className="font-display font-bold text-xl text-forest mb-2">Smart Marketplace</h3>
+                  <h3 className="font-display font-bold text-xl text-foreground mb-2">Smart Marketplace</h3>
                   <p className="text-muted-foreground">
                     Compare prices across local stores and find the best deals for your grocery list.
                   </p>
                 </Card>
-                <Card className="p-6 border border-gold/30 shadow-warm text-center card-hover">
+                <Card className="p-6 border border-amber-400/30 shadow-warm text-center card-hover">
                   <div className="text-5xl mb-4">📅</div>
-                  <h3 className="font-display font-bold text-xl text-forest mb-2">Meal Calendar</h3>
+                  <h3 className="font-display font-bold text-xl text-foreground mb-2">Meal Calendar</h3>
                   <p className="text-muted-foreground">
                     Plan your whole week with auto-generated grocery lists and nutrition tracking.
                   </p>
@@ -636,7 +636,7 @@ export default function Home() {
           {/* Footer */}
           <footer className="py-6 text-center border-t border-border/50">
             <p className="text-muted-foreground">
-              Made with <span className="text-terracotta">♥</span> at TreeHacks 2026
+              Made with <span className="text-primary">♥</span> at TreeHacks 2026
             </p>
           </footer>
         </div>
@@ -751,9 +751,9 @@ export default function Home() {
       {/* Hero Header */}
       <header className="gradient-hero border-b border-border/50 relative overflow-hidden">
         {/* Decorative blobs */}
-        <div className="absolute top-0 left-0 w-32 h-32 bg-coral/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute top-0 right-0 w-40 h-40 bg-lime/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-1/4 w-24 h-24 bg-sunny/20 rounded-full blur-2xl translate-y-1/2" />
+        <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-40 h-40 bg-accent/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-1/4 w-24 h-24 bg-amber-400/20 rounded-full blur-2xl translate-y-1/2" />
 
         <div className="max-w-6xl mx-auto px-4 py-4 relative">
           <div className="flex items-center justify-between">
@@ -765,7 +765,7 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowMealLog(true)}
-                className="text-muted-foreground hover:text-coral hover:bg-coral/10 font-semibold"
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 font-semibold"
               >
                 <span className="mr-1">📸</span>
                 <span className="hidden sm:inline">Log Meal</span>
@@ -774,7 +774,7 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push("/saved")}
-                className="text-muted-foreground hover:text-coral hover:bg-coral/10 font-semibold"
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 font-semibold"
               >
                 <span className="hidden sm:inline">My Recipes</span>
                 <span className="sm:hidden text-lg">♥</span>
@@ -783,7 +783,7 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push("/profile")}
-                className="text-muted-foreground hover:text-coral hover:bg-coral/10 font-semibold"
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 font-semibold"
               >
                 <span className="hidden sm:inline">Profile</span>
                 <span className="sm:hidden text-lg">⚙</span>
@@ -804,23 +804,23 @@ export default function Home() {
                 <MahmLogo size="xl" showText={false} />
               </div>
               <div className="pt-24">
-                <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-forest mb-4">
+                <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
                   Like having a{" "}
-                  <span className="text-terracotta squiggly">mom</span> who&apos;s also a{" "}
-                  <span className="text-sage">nutritionist</span>
+                  <span className="text-primary squiggly">mom</span> who&apos;s also a{" "}
+                  <span className="text-accent">nutritionist</span>
                 </h2>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
                   Tell Mahm your dietary needs, budget, and cravings. She&apos;ll recommend meals,
                   find the cheapest local ingredients, and plan your whole week.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3 mt-8">
-                  <span className="px-5 py-2.5 bg-terracotta/15 rounded-full text-sm font-semibold text-terracotta shadow-warm">
+                  <span className="px-5 py-2.5 bg-primary/15 rounded-full text-sm font-semibold text-primary shadow-warm">
                     Personalized nutrition
                   </span>
-                  <span className="px-5 py-2.5 bg-sage/15 rounded-full text-sm font-semibold text-forest shadow-warm">
+                  <span className="px-5 py-2.5 bg-accent/15 rounded-full text-sm font-semibold text-foreground shadow-warm">
                     Real local prices
                   </span>
-                  <span className="px-5 py-2.5 bg-gold/20 rounded-full text-sm font-semibold text-forest shadow-warm">
+                  <span className="px-5 py-2.5 bg-amber-400/20 rounded-full text-sm font-semibold text-foreground shadow-warm">
                     Weekly meal plans
                   </span>
                 </div>
@@ -837,25 +837,25 @@ export default function Home() {
             <TabsList className="bg-transparent h-auto p-0 gap-2 md:gap-6">
               <TabsTrigger
                 value="chat"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-3 data-[state=active]:border-coral rounded-none px-2 pb-3 pt-4 font-display font-bold text-base md:text-lg transition-all hover:text-coral"
+                className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-3 data-[state=active]:border-primary rounded-none px-2 pb-3 pt-4 font-display font-bold text-base md:text-lg transition-all hover:text-primary"
               >
                 Chat with Mahm
               </TabsTrigger>
               <TabsTrigger
                 value="marketplace"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-3 data-[state=active]:border-coral rounded-none px-2 pb-3 pt-4 font-display font-bold text-base md:text-lg transition-all hover:text-coral"
+                className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-3 data-[state=active]:border-primary rounded-none px-2 pb-3 pt-4 font-display font-bold text-base md:text-lg transition-all hover:text-primary"
               >
                 Marketplace
               </TabsTrigger>
               <TabsTrigger
                 value="calendar"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-3 data-[state=active]:border-coral rounded-none px-2 pb-3 pt-4 font-display font-bold text-base md:text-lg transition-all hover:text-coral"
+                className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-3 data-[state=active]:border-primary rounded-none px-2 pb-3 pt-4 font-display font-bold text-base md:text-lg transition-all hover:text-primary"
               >
                 Meal Calendar
               </TabsTrigger>
               <TabsTrigger
                 value="photos"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-3 data-[state=active]:border-coral rounded-none px-2 pb-3 pt-4 font-display font-bold text-base md:text-lg transition-all hover:text-coral"
+                className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-3 data-[state=active]:border-primary rounded-none px-2 pb-3 pt-4 font-display font-bold text-base md:text-lg transition-all hover:text-primary"
               >
                 Photo Log
               </TabsTrigger>
@@ -890,13 +890,13 @@ export default function Home() {
               {showRecipes && (
                 <div className="hidden lg:block w-80 shrink-0 overflow-y-auto">
                   <div className="sticky top-0 bg-background pb-2">
-                    <h3 className="font-display font-bold text-charcoal mb-3 flex items-center justify-between">
+                    <h3 className="font-display font-bold text-foreground mb-3 flex items-center justify-between">
                       <span>Recommended for you</span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => router.push("/saved")}
-                        className="text-coral text-xs font-bold"
+                        className="text-primary text-xs font-bold"
                       >
                         View all
                       </Button>
@@ -933,20 +933,20 @@ export default function Home() {
           <TabsContent value="marketplace" className="flex-1 p-4 mt-0 overflow-auto">
             <div className="max-w-4xl mx-auto">
               <div className="mb-6">
-                <h2 className="font-display text-3xl font-bold text-charcoal mb-2">Smart Marketplace</h2>
+                <h2 className="font-display text-3xl font-bold text-foreground mb-2">Smart Marketplace</h2>
                 <p className="text-muted-foreground">
                   Find the best prices for your ingredients at stores near you
                 </p>
               </div>
 
               {/* Location Input */}
-              <div className="flex items-center gap-3 mb-6 p-4 bg-white rounded-2xl border-2 border-coral/20 shadow-playful">
+              <div className="flex items-center gap-3 mb-6 p-4 bg-white rounded-2xl border-2 border-primary/20 shadow-playful">
                 <span className="text-2xl animate-bounce-subtle">📍</span>
                 <input
                   type="text"
                   placeholder="Enter your zip code"
                   defaultValue="94305"
-                  className="flex-1 bg-transparent focus:outline-none text-charcoal font-medium text-lg"
+                  className="flex-1 bg-transparent focus:outline-none text-foreground font-medium text-lg"
                 />
                 <Button
                   onClick={handleFindStores}
@@ -971,14 +971,14 @@ export default function Home() {
 
               {/* Loading state */}
               {findingStores && (
-                <div className="mb-6 p-6 bg-white rounded-2xl border-2 border-lime/30 text-center">
+                <div className="mb-6 p-6 bg-white rounded-2xl border-2 border-accent/30 text-center">
                   <div className="text-4xl mb-4 animate-bounce">🏪</div>
                   <div className="space-y-2">
-                    <p className="font-bold text-charcoal">Finding stores near you...</p>
+                    <p className="font-bold text-foreground">Finding stores near you...</p>
                     <div className="flex justify-center gap-1">
-                      <span className="w-2 h-2 bg-coral rounded-full animate-pulse" />
-                      <span className="w-2 h-2 bg-lime rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
-                      <span className="w-2 h-2 bg-sunny rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
+                      <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      <span className="w-2 h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+                      <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
                     </div>
                     <p className="text-sm text-muted-foreground">Checking prices at Trader Joe&apos;s, Safeway, Whole Foods...</p>
                   </div>
@@ -987,9 +987,9 @@ export default function Home() {
 
               {/* Stores found message */}
               {storesFound && !findingStores && (
-                <div className="mb-4 p-3 bg-lime/10 rounded-xl border border-lime/30 flex items-center gap-2">
+                <div className="mb-4 p-3 bg-accent/10 rounded-xl border border-accent/30 flex items-center gap-2">
                   <span className="text-lg">✓</span>
-                  <span className="text-sm font-medium text-charcoal">Found 3 stores near 94305 with competitive prices!</span>
+                  <span className="text-sm font-medium text-foreground">Found 3 stores near 94305 with competitive prices!</span>
                 </div>
               )}
 
@@ -1005,13 +1005,13 @@ export default function Home() {
             <div className="max-w-6xl mx-auto space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="font-display text-3xl font-bold text-charcoal mb-2">Your Meal Plan</h2>
+                  <h2 className="font-display text-3xl font-bold text-foreground mb-2">Your Meal Plan</h2>
                   <p className="text-muted-foreground">
                     Personalized weekly meals optimized for your goals
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Button variant="outline" className="border-2 border-coral text-coral hover:bg-coral/10 font-bold">
+                  <Button variant="outline" className="border-2 border-primary text-primary hover:bg-primary/10 font-bold">
                     Sync to Calendar
                   </Button>
                   <Button className="gradient-coral text-white font-bold shadow-playful hover:scale-105 transition-transform">
@@ -1026,16 +1026,16 @@ export default function Home() {
                 <GroceryList items={groceryListItems} totalCost={73} />
 
                 {/* Nutrition Summary */}
-                <div className="bg-white rounded-2xl border-2 border-lime/30 p-4 shadow-playful-lime">
+                <div className="bg-white rounded-2xl border-2 border-accent/30 p-4 shadow-playful-lime">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-display font-bold text-charcoal flex items-center gap-2">
+                    <h3 className="font-display font-bold text-foreground flex items-center gap-2">
                       <span className="text-xl">🥗</span> Weekly Nutrition Summary
                     </h3>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowNutritionDashboard(true)}
-                      className="border-2 border-lime text-lime hover:bg-lime hover:text-white font-bold text-xs"
+                      className="border-2 border-accent text-accent hover:bg-accent hover:text-white font-bold text-xs"
                     >
                       View Full Dashboard
                     </Button>
@@ -1043,38 +1043,38 @@ export default function Home() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Avg. daily calories</span>
-                      <span className="font-bold text-coral text-lg">1,395 cal</span>
+                      <span className="font-bold text-primary text-lg">1,395 cal</span>
                     </div>
-                    <div className="w-full bg-coral/10 rounded-full h-3">
+                    <div className="w-full bg-primary/10 rounded-full h-3">
                       <div className="gradient-coral h-3 rounded-full" style={{ width: "70%" }} />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Avg. daily protein</span>
-                      <span className="font-bold text-lime text-lg">52g</span>
+                      <span className="font-bold text-accent text-lg">52g</span>
                     </div>
-                    <div className="w-full bg-lime/10 rounded-full h-3">
+                    <div className="w-full bg-accent/10 rounded-full h-3">
                       <div className="gradient-lime h-3 rounded-full" style={{ width: "85%" }} />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Avg. daily fiber</span>
-                      <span className="font-bold text-sunny text-lg">30g</span>
+                      <span className="font-bold text-amber-500 text-lg">30g</span>
                     </div>
-                    <div className="w-full bg-sunny/20 rounded-full h-3">
+                    <div className="w-full bg-amber-400/20 rounded-full h-3">
                       <div className="gradient-sunny h-3 rounded-full" style={{ width: "100%" }} />
                     </div>
 
                     <div className="pt-4 border-t-2 border-border/50">
-                      <div className="flex items-center gap-2 text-sm font-medium text-lime">
+                      <div className="flex items-center gap-2 text-sm font-medium text-accent">
                         <span className="text-lg">✓</span>
                         <span>On track for your weight loss goal</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-lime mt-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-accent mt-2">
                         <span className="text-lg">✓</span>
                         <span>High fiber for sustained energy</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-lime mt-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-accent mt-2">
                         <span className="text-lg">✓</span>
                         <span>Under budget at $73/week</span>
                       </div>
@@ -1089,7 +1089,7 @@ export default function Home() {
           <TabsContent value="photos" className="flex-1 p-4 mt-0 overflow-auto">
             <div className="max-w-4xl mx-auto space-y-6">
               <div className="mb-6">
-                <h2 className="font-display text-3xl font-bold text-charcoal mb-2">Photo Log</h2>
+                <h2 className="font-display text-3xl font-bold text-foreground mb-2">Photo Log</h2>
                 <p className="text-muted-foreground">
                   Upload photos of your meals - we&apos;ll track the nutrition automatically!
                 </p>
@@ -1098,12 +1098,12 @@ export default function Home() {
               {/* Upload Options */}
               <div className="grid md:grid-cols-2 gap-4">
                 {/* Log a Meal */}
-                <Card className="p-6 border-2 border-coral/30 hover:border-coral transition-colors cursor-pointer group" onClick={() => setShowMealLog(true)}>
+                <Card className="p-6 border-2 border-primary/30 hover:border-primary transition-colors cursor-pointer group" onClick={() => setShowMealLog(true)}>
                   <div className="text-center">
                     <div className="w-20 h-20 mx-auto mb-4 rounded-full gradient-coral flex items-center justify-center text-4xl shadow-playful group-hover:scale-110 transition-transform">
                       📸
                     </div>
-                    <h3 className="font-display font-bold text-xl text-charcoal mb-2">Log a Meal</h3>
+                    <h3 className="font-display font-bold text-xl text-foreground mb-2">Log a Meal</h3>
                     <p className="text-muted-foreground text-sm">
                       Snap a photo of what you ate - whether home-cooked or eating out. We&apos;ll estimate the nutrition!
                     </p>
@@ -1111,12 +1111,12 @@ export default function Home() {
                 </Card>
 
                 {/* Generate Recipe from Photo */}
-                <Card className="p-6 border-2 border-lime/30 hover:border-lime transition-colors cursor-pointer group" onClick={() => setShowRecipeFromPhoto(true)}>
+                <Card className="p-6 border-2 border-accent/30 hover:border-accent transition-colors cursor-pointer group" onClick={() => setShowRecipeFromPhoto(true)}>
                   <div className="text-center">
                     <div className="w-20 h-20 mx-auto mb-4 rounded-full gradient-lime flex items-center justify-center text-4xl shadow-playful-lime group-hover:scale-110 transition-transform">
                       🍳
                     </div>
-                    <h3 className="font-display font-bold text-xl text-charcoal mb-2">Recipe from Photo</h3>
+                    <h3 className="font-display font-bold text-xl text-foreground mb-2">Recipe from Photo</h3>
                     <p className="text-muted-foreground text-sm">
                       Loved a dish at a restaurant? Upload a photo and we&apos;ll generate a recipe so you can make it at home!
                     </p>
@@ -1126,7 +1126,7 @@ export default function Home() {
 
               {/* Recent Photos */}
               <div className="mt-8">
-                <h3 className="font-display font-bold text-xl text-charcoal mb-4">Recent Meal Photos</h3>
+                <h3 className="font-display font-bold text-xl text-foreground mb-4">Recent Meal Photos</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {/* Placeholder photos */}
                   {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -1142,7 +1142,7 @@ export default function Home() {
                         </div>
                         <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <div className="bg-white/90 rounded-lg p-2 text-center">
-                            <div className="text-xs font-bold text-coral">~450 cal</div>
+                            <div className="text-xs font-bold text-primary">~450 cal</div>
                             <div className="text-xs text-muted-foreground">tap to view</div>
                           </div>
                         </div>
@@ -1177,12 +1177,12 @@ export default function Home() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-xl font-bold text-charcoal flex items-center gap-2">
+              <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
                 <span>📊</span> Nutrition Dashboard
               </h2>
               <button
                 onClick={() => setShowNutritionDashboard(false)}
-                className="text-muted-foreground hover:text-charcoal text-2xl"
+                className="text-muted-foreground hover:text-foreground text-2xl"
               >
                 ×
               </button>
@@ -1221,10 +1221,10 @@ export default function Home() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-4 px-4 text-center bg-warmwhite/50">
+      <footer className="border-t border-border/50 py-4 px-4 text-center bg-background/50">
         <p className="text-sm text-muted-foreground">
-          Made with <span className="text-terracotta">♥</span> at TreeHacks 2026 |{" "}
-          <span className="font-display font-bold text-forest">Mahm</span>{" "}
+          Made with <span className="text-primary">♥</span> at TreeHacks 2026 |{" "}
+          <span className="font-display font-bold text-foreground">Mahm</span>{" "}
           — Make something your Mahm would be proud of
         </p>
       </footer>

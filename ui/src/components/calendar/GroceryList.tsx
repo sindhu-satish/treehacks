@@ -104,10 +104,10 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
   }, 0);
 
   return (
-    <Card className="p-4 border-2 border-coral/20 shadow-playful">
+    <Card className="p-4 border-2 border-primary/20 shadow-playful">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-display font-bold text-charcoal flex items-center gap-2 text-lg">
+          <h3 className="font-display font-bold text-foreground flex items-center gap-2 text-lg">
             <span>🛍️</span> Weekly Grocery List
           </h3>
           <p className="text-xs text-muted-foreground">
@@ -115,10 +115,10 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
           </p>
         </div>
         <div className="text-right">
-          <Badge className="bg-coral text-white font-bold">
+          <Badge className="bg-primary text-white font-bold">
             {activeItems.length} items
           </Badge>
-          <div className="text-lg font-bold text-coral mt-1">
+          <div className="text-lg font-bold text-primary mt-1">
             ~${activeTotal.toFixed(0)}
           </div>
         </div>
@@ -126,20 +126,20 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
 
       {/* Stats Bar */}
       <div className="flex gap-2 mb-4">
-        <div className="flex-1 p-2 bg-lime/10 rounded-lg text-center">
-          <div className="font-bold text-lime text-lg">{inCartItems.length}</div>
+        <div className="flex-1 p-2 bg-accent/10 rounded-lg text-center">
+          <div className="font-bold text-accent text-lg">{inCartItems.length}</div>
           <div className="text-xs text-muted-foreground">In Cart</div>
         </div>
-        <div className="flex-1 p-2 bg-sunny/20 rounded-lg text-center">
-          <div className="font-bold text-charcoal text-lg">{haveItems.length}</div>
+        <div className="flex-1 p-2 bg-amber-400/20 rounded-lg text-center">
+          <div className="font-bold text-foreground text-lg">{haveItems.length}</div>
           <div className="text-xs text-muted-foreground">Already Have</div>
         </div>
-        <div className="flex-1 p-2 bg-purple/10 rounded-lg text-center">
-          <div className="font-bold text-purple text-lg">{partialHaveItems.length}</div>
+        <div className="flex-1 p-2 bg-violet-500/10 rounded-lg text-center">
+          <div className="font-bold text-violet-500 text-lg">{partialHaveItems.length}</div>
           <div className="text-xs text-muted-foreground">Partial</div>
         </div>
-        <div className="flex-1 p-2 bg-coral/10 rounded-lg text-center">
-          <div className="font-bold text-coral text-lg">{activeItems.length - inCartItems.length}</div>
+        <div className="flex-1 p-2 bg-primary/10 rounded-lg text-center">
+          <div className="font-bold text-primary text-lg">{activeItems.length - inCartItems.length}</div>
           <div className="text-xs text-muted-foreground">To Buy</div>
         </div>
       </div>
@@ -150,8 +150,8 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
           onClick={() => setMarkHaveMode(!markHaveMode)}
           className={`w-full p-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
             markHaveMode
-              ? "bg-lime text-white"
-              : "bg-lime/10 text-lime border-2 border-lime/30 hover:bg-lime/20"
+              ? "bg-accent text-white"
+              : "bg-accent/10 text-accent border-2 border-accent/30 hover:bg-accent/20"
           }`}
         >
           <span>{markHaveMode ? "✓ Marking Items" : "🏠 Mark What You Have"}</span>
@@ -182,7 +182,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
             <div key={category}>
               <div className="flex items-center gap-2 mb-2 sticky top-0 bg-white py-1 z-10">
                 <span className="text-lg">{categoryIcons[category] || "📦"}</span>
-                <span className="text-sm font-bold text-charcoal capitalize">
+                <span className="text-sm font-bold text-foreground capitalize">
                   {category}
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -201,13 +201,13 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                       key={idx}
                       className={`rounded-xl transition-all ${
                         isHave && haveQty === 100
-                          ? "bg-lime/10 border-2 border-lime/30"
+                          ? "bg-accent/10 border-2 border-accent/30"
                           : isPartial
-                          ? "bg-purple/10 border-2 border-purple/30"
+                          ? "bg-violet-500/10 border-2 border-violet-500/30"
                           : item.inCart
-                          ? "bg-sunny/10 border-2 border-sunny/30"
+                          ? "bg-amber-400/10 border-2 border-amber-400/30"
                           : markHaveMode
-                          ? "bg-muted/30 border-2 border-dashed border-lime/30 cursor-pointer hover:bg-lime/10"
+                          ? "bg-muted/30 border-2 border-dashed border-accent/30 cursor-pointer hover:bg-accent/10"
                           : "bg-muted/30 border-2 border-transparent"
                       }`}
                       onClick={() => {
@@ -234,13 +234,13 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                               </span>
                               <span className="text-muted-foreground">({item.amount})</span>
                               {item.inCart && (
-                                <Badge className="bg-sunny/30 text-charcoal border-0 text-xs">In Cart</Badge>
+                                <Badge className="bg-amber-400/30 text-foreground border-0 text-xs">In Cart</Badge>
                               )}
                               {isHave && haveQty === 100 && (
-                                <Badge className="bg-lime/30 text-lime border-0 text-xs">Have All</Badge>
+                                <Badge className="bg-accent/30 text-accent border-0 text-xs">Have All</Badge>
                               )}
                               {isPartial && (
-                                <Badge className="bg-purple/30 text-purple border-0 text-xs">Have {haveQty}%</Badge>
+                                <Badge className="bg-violet-500/30 text-violet-500 border-0 text-xs">Have {haveQty}%</Badge>
                               )}
                             </div>
                             {item.recipeNames && item.recipeNames.length > 0 && (
@@ -254,7 +254,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                           <div className="text-right shrink-0">
                             {item.selectedPrice ? (
                               <div>
-                                <div className="font-bold text-lime">${(item.selectedPrice * (100 - haveQty) / 100).toFixed(2)}</div>
+                                <div className="font-bold text-accent">${(item.selectedPrice * (100 - haveQty) / 100).toFixed(2)}</div>
                                 <div className="text-xs text-muted-foreground">{item.selectedStoreName}</div>
                               </div>
                             ) : item.estimatedPrice ? (
@@ -269,7 +269,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                                 e.stopPropagation();
                                 setEditingItem(isEditing ? null : item.name);
                               }}
-                              className="w-6 h-6 rounded-full bg-purple/20 text-purple hover:bg-purple/30 flex items-center justify-center text-xs"
+                              className="w-6 h-6 rounded-full bg-violet-500/20 text-violet-500 hover:bg-violet-500/30 flex items-center justify-center text-xs"
                             >
                               {isEditing ? "×" : "⚙"}
                             </button>
@@ -280,7 +280,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                                 e.stopPropagation();
                                 onAddToCart(item);
                               }}
-                              className="w-6 h-6 rounded-full bg-coral/10 text-coral hover:bg-coral hover:text-white transition-colors flex items-center justify-center text-sm"
+                              className="w-6 h-6 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors flex items-center justify-center text-sm"
                             >
                               +
                             </button>
@@ -293,7 +293,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                         <div className="px-3 pb-3 pt-1 border-t border-border/30 mt-1">
                           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                             <span>How much do you have?</span>
-                            <span className="font-bold text-charcoal">{haveQty}%</span>
+                            <span className="font-bold text-foreground">{haveQty}%</span>
                           </div>
                           <input
                             type="range"
@@ -303,7 +303,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                             value={haveQty}
                             onChange={(e) => updateQuantity(item.name, parseInt(e.target.value))}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full h-2 rounded-full appearance-none bg-muted/50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple [&::-webkit-slider-thumb]:cursor-pointer"
+                            className="w-full h-2 rounded-full appearance-none bg-muted/50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-violet-500 [&::-webkit-slider-thumb]:cursor-pointer"
                           />
                           <div className="flex justify-between text-xs text-muted-foreground mt-1">
                             <span>None</span>
@@ -318,7 +318,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                                 toggleChecked(item.name);
                                 setEditingItem(null);
                               }}
-                              className="flex-1 py-1.5 text-xs font-bold bg-coral/10 text-coral rounded-lg hover:bg-coral/20"
+                              className="flex-1 py-1.5 text-xs font-bold bg-primary/10 text-primary rounded-lg hover:bg-primary/20"
                             >
                               Need All
                             </button>
@@ -327,7 +327,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                                 e.stopPropagation();
                                 updateQuantity(item.name, 50);
                               }}
-                              className="flex-1 py-1.5 text-xs font-bold bg-purple/10 text-purple rounded-lg hover:bg-purple/20"
+                              className="flex-1 py-1.5 text-xs font-bold bg-violet-500/10 text-violet-500 rounded-lg hover:bg-violet-500/20"
                             >
                               Half
                             </button>
@@ -337,7 +337,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
                                 updateQuantity(item.name, 100);
                                 setEditingItem(null);
                               }}
-                              className="flex-1 py-1.5 text-xs font-bold bg-lime/10 text-lime rounded-lg hover:bg-lime/20"
+                              className="flex-1 py-1.5 text-xs font-bold bg-accent/10 text-accent rounded-lg hover:bg-accent/20"
                             >
                               Have All
                             </button>
@@ -379,7 +379,7 @@ export function GroceryList({ items, totalCost, onToggleHave, onUpdateHaveQuanti
 
       {/* Sync notice */}
       {inCartItems.length > 0 && (
-        <div className="mt-3 p-2 bg-sunny/10 rounded-lg text-xs text-center text-muted-foreground">
+        <div className="mt-3 p-2 bg-amber-400/10 rounded-lg text-xs text-center text-muted-foreground">
           <span className="text-sunny font-bold">{inCartItems.length} items</span> synced from your Marketplace cart
         </div>
       )}

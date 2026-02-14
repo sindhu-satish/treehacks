@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Public_Sans, Fraunces, Geist_Mono } from "next/font/google";
+import { Public_Sans, Lilita_One, Geist_Mono } from "next/font/google";
 import { MahmProvider } from "@/contexts/MahmContext";
 import "./globals.css";
 
@@ -9,10 +9,10 @@ const publicSans = Public_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const lilitaOne = Lilita_One({
+  variable: "--font-lilita",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "400",
 });
 
 const geistMono = Geist_Mono({
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${publicSans.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${publicSans.variable} ${lilitaOne.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <MahmProvider>
           {children}

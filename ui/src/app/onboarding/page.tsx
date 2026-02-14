@@ -115,11 +115,11 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Fun background elements */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-coral/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute top-1/4 right-0 w-96 h-96 bg-lime/20 rounded-full blur-3xl translate-x-1/2" />
-      <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-sunny/20 rounded-full blur-3xl translate-y-1/2" />
-      <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-pink/20 rounded-full blur-3xl" />
+      {/* Warm background elements */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute top-1/4 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-x-1/2" />
+      <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-secondary/30 rounded-full blur-3xl translate-y-1/2" />
+      <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-accent/15 rounded-full blur-3xl" />
 
       <div className="relative max-w-2xl mx-auto px-4 py-8">
         {/* Progress Bar */}
@@ -133,7 +133,7 @@ export default function OnboardingPage() {
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-all ${
                     currentStep >= step.id
-                      ? "gradient-coral text-white shadow-playful"
+                      ? "bg-primary text-primary-foreground shadow-warm"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -142,7 +142,7 @@ export default function OnboardingPage() {
                 {idx < steps.length - 1 && (
                   <div
                     className={`flex-1 h-1 mx-2 rounded-full transition-all ${
-                      currentStep > step.id ? "bg-coral" : "bg-muted"
+                      currentStep > step.id ? "bg-primary" : "bg-muted"
                     }`}
                   />
                 )}
@@ -157,15 +157,15 @@ export default function OnboardingPage() {
         </div>
 
         {/* Step Content */}
-        <Card className="p-8 border-2 border-coral/20 shadow-playful">
+        <Card className="p-8 border border-primary/20 shadow-warm">
           {/* Step 1: Welcome */}
           {currentStep === 1 && (
             <div className="text-center">
               <div className="mb-6">
                 <MahmLogo size="xl" />
               </div>
-              <h1 className="font-display text-4xl font-bold text-charcoal mb-4">
-                Welcome to <span className="text-coral">Mahm</span>!
+              <h1 className="font-display text-4xl font-bold text-foreground mb-4">
+                Welcome to <span className="text-primary">Mahm</span>!
               </h1>
               <p className="text-lg text-muted-foreground mb-8">
                 Your AI-powered nutritionist, meal planner, and grocery guru.
@@ -173,31 +173,31 @@ export default function OnboardingPage() {
               </p>
 
               <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="p-4 bg-coral/10 rounded-2xl">
+                <div className="p-4 bg-primary/10 rounded-2xl">
                   <div className="text-3xl mb-2">🍳</div>
-                  <div className="font-display font-bold text-charcoal">Personalized Meals</div>
+                  <div className="font-display font-bold text-foreground">Personalized Meals</div>
                   <div className="text-xs text-muted-foreground">Based on your preferences</div>
                 </div>
-                <div className="p-4 bg-lime/10 rounded-2xl">
+                <div className="p-4 bg-accent/10 rounded-2xl">
                   <div className="text-3xl mb-2">💰</div>
-                  <div className="font-display font-bold text-charcoal">Best Prices</div>
+                  <div className="font-display font-bold text-foreground">Best Prices</div>
                   <div className="text-xs text-muted-foreground">Local store comparison</div>
                 </div>
-                <div className="p-4 bg-sunny/20 rounded-2xl">
+                <div className="p-4 bg-secondary rounded-2xl">
                   <div className="text-3xl mb-2">📅</div>
-                  <div className="font-display font-bold text-charcoal">Weekly Plans</div>
+                  <div className="font-display font-bold text-foreground">Weekly Plans</div>
                   <div className="text-xs text-muted-foreground">Auto grocery lists</div>
                 </div>
               </div>
 
               <div className="mb-6">
-                <label className="font-display font-bold text-charcoal mb-2 block">What should we call you?</label>
+                <label className="font-display font-bold text-foreground mb-2 block">What should we call you?</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Your name..."
-                  className="w-full p-4 border-2 border-coral/30 rounded-2xl text-center font-display text-xl focus:outline-none focus:border-coral"
+                  className="w-full p-4 border-2 border-primary/30 rounded-2xl text-center font-display text-xl focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
@@ -208,7 +208,7 @@ export default function OnboardingPage() {
             <div>
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4 animate-bounce-subtle">🥗</div>
-                <h2 className="font-display text-3xl font-bold text-charcoal mb-2">
+                <h2 className="font-display text-3xl font-bold text-foreground mb-2">
                   Any dietary preferences?
                 </h2>
                 <p className="text-muted-foreground">
@@ -223,7 +223,7 @@ export default function OnboardingPage() {
                     onClick={() => toggleSelection("dietary", option.id)}
                     className={`p-4 rounded-2xl text-left transition-all ${
                       formData.dietary.includes(option.id)
-                        ? "bg-coral text-white shadow-playful scale-105"
+                        ? "bg-primary text-primary-foreground shadow-warm scale-105"
                         : "bg-muted/50 hover:bg-muted"
                     }`}
                   >
@@ -240,7 +240,7 @@ export default function OnboardingPage() {
             <div>
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4 animate-wiggle">⚠️</div>
-                <h2 className="font-display text-3xl font-bold text-charcoal mb-2">
+                <h2 className="font-display text-3xl font-bold text-foreground mb-2">
                   Any food allergies?
                 </h2>
                 <p className="text-muted-foreground">
@@ -266,14 +266,14 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label className="font-bold text-charcoal mb-2 block">
+                <label className="font-bold text-foreground mb-2 block">
                   Any foods you just don&apos;t like?
                 </label>
                 <textarea
                   value={formData.dislikes}
                   onChange={(e) => setFormData({ ...formData, dislikes: e.target.value })}
                   placeholder="e.g., cilantro, olives, mushrooms..."
-                  className="w-full p-4 border-2 border-border rounded-2xl resize-none h-20 focus:outline-none focus:border-coral"
+                  className="w-full p-4 border-2 border-border rounded-2xl resize-none h-20 focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
@@ -284,7 +284,7 @@ export default function OnboardingPage() {
             <div>
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4 animate-sparkle">🎯</div>
-                <h2 className="font-display text-3xl font-bold text-charcoal mb-2">
+                <h2 className="font-display text-3xl font-bold text-foreground mb-2">
                   What are your goals?
                 </h2>
                 <p className="text-muted-foreground">
@@ -299,9 +299,9 @@ export default function OnboardingPage() {
                     onClick={() => toggleSelection("goals", option.id)}
                     className={`p-4 rounded-2xl text-left transition-all ${
                       formData.goals.includes(option.id)
-                        ? `bg-${option.color} text-white shadow-playful scale-105`
+                        ? "bg-primary text-primary-foreground shadow-warm scale-105"
                         : "bg-muted/50 hover:bg-muted"
-                    } ${formData.goals.includes(option.id) ? "gradient-coral" : ""}`}
+                    }`}
                   >
                     <span className="text-2xl mr-2">{option.icon}</span>
                     <span className="font-bold">{option.label}</span>
@@ -310,7 +310,7 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label className="font-bold text-charcoal mb-2 block">
+                <label className="font-bold text-foreground mb-2 block">
                   Cooking skill level
                 </label>
                 <div className="flex gap-2">
@@ -324,7 +324,7 @@ export default function OnboardingPage() {
                       onClick={() => setFormData({ ...formData, skillLevel: level.id })}
                       className={`flex-1 p-3 rounded-xl text-center transition-all ${
                         formData.skillLevel === level.id
-                          ? "bg-lime text-white"
+                          ? "bg-accent text-accent-foreground"
                           : "bg-muted/50 hover:bg-muted"
                       }`}
                     >
@@ -342,7 +342,7 @@ export default function OnboardingPage() {
             <div>
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4 animate-float">💰</div>
-                <h2 className="font-display text-3xl font-bold text-charcoal mb-2">
+                <h2 className="font-display text-3xl font-bold text-foreground mb-2">
                   Budget & Time
                 </h2>
                 <p className="text-muted-foreground">
@@ -352,11 +352,11 @@ export default function OnboardingPage() {
 
               <div className="space-y-6">
                 <div>
-                  <label className="font-bold text-charcoal mb-3 block">
+                  <label className="font-bold text-foreground mb-3 block">
                     Weekly grocery budget
                   </label>
                   <div className="flex items-center gap-4">
-                    <span className="text-4xl font-display font-bold text-coral">${formData.budget}</span>
+                    <span className="text-4xl font-display font-bold text-primary">${formData.budget}</span>
                     <input
                       type="range"
                       min="30"
@@ -364,7 +364,7 @@ export default function OnboardingPage() {
                       step="10"
                       value={formData.budget}
                       onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })}
-                      className="flex-1 h-3 rounded-full appearance-none bg-coral/20 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-coral [&::-webkit-slider-thumb]:cursor-pointer"
+                      className="flex-1 h-3 rounded-full appearance-none bg-primary/20 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer"
                     />
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
@@ -374,7 +374,7 @@ export default function OnboardingPage() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-charcoal mb-3 block">
+                  <label className="font-bold text-foreground mb-3 block">
                     Time for cooking (weeknights)
                   </label>
                   <div className="flex gap-2">
@@ -384,7 +384,7 @@ export default function OnboardingPage() {
                         onClick={() => setFormData({ ...formData, cookingTime: time })}
                         className={`flex-1 py-3 rounded-xl font-bold transition-all ${
                           formData.cookingTime === time
-                            ? "gradient-sunny text-charcoal shadow-playful-sunny"
+                            ? "bg-secondary text-secondary-foreground shadow-warm"
                             : "bg-muted/50 hover:bg-muted"
                         }`}
                       >
@@ -395,7 +395,7 @@ export default function OnboardingPage() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-charcoal mb-3 block">
+                  <label className="font-bold text-foreground mb-3 block">
                     Household size
                   </label>
                   <div className="flex gap-2">
@@ -405,7 +405,7 @@ export default function OnboardingPage() {
                         onClick={() => setFormData({ ...formData, householdSize: size })}
                         className={`w-14 h-14 rounded-xl font-bold text-xl transition-all ${
                           formData.householdSize === size
-                            ? "gradient-lime text-white shadow-playful-lime"
+                            ? "bg-accent text-accent-foreground shadow-warm"
                             : "bg-muted/50 hover:bg-muted"
                         }`}
                       >
@@ -423,7 +423,7 @@ export default function OnboardingPage() {
             <div>
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4 animate-bounce-subtle">🏠</div>
-                <h2 className="font-display text-3xl font-bold text-charcoal mb-2">
+                <h2 className="font-display text-3xl font-bold text-foreground mb-2">
                   What&apos;s in your pantry?
                 </h2>
                 <p className="text-muted-foreground">
@@ -434,7 +434,7 @@ export default function OnboardingPage() {
               <div className="space-y-4 max-h-[400px] overflow-y-auto">
                 {commonPantryItems.map((category) => (
                   <div key={category.category}>
-                    <h3 className="font-bold text-charcoal mb-2">{category.category}</h3>
+                    <h3 className="font-bold text-foreground mb-2">{category.category}</h3>
                     <div className="flex flex-wrap gap-2">
                       {category.items.map((item) => (
                         <button
@@ -442,8 +442,8 @@ export default function OnboardingPage() {
                           onClick={() => togglePantryItem(item)}
                           className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                             formData.pantryItems.includes(item)
-                              ? "bg-lime text-white"
-                              : "bg-muted/50 hover:bg-muted text-charcoal"
+                              ? "bg-accent text-accent-foreground"
+                              : "bg-muted/50 hover:bg-muted text-foreground"
                           }`}
                         >
                           {formData.pantryItems.includes(item) ? "✓ " : ""}{item}
@@ -454,8 +454,8 @@ export default function OnboardingPage() {
                 ))}
               </div>
 
-              <div className="mt-4 p-4 bg-lime/10 rounded-2xl">
-                <div className="font-bold text-charcoal mb-1">
+              <div className="mt-4 p-4 bg-accent/10 rounded-2xl">
+                <div className="font-bold text-foreground mb-1">
                   {formData.pantryItems.length} items marked as "already have"
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -478,8 +478,8 @@ export default function OnboardingPage() {
             )}
             <Button
               onClick={nextStep}
-              className={`flex-1 font-display font-bold text-lg py-6 shadow-playful hover:scale-105 transition-transform ${
-                currentStep === steps.length ? "gradient-lime text-white" : "gradient-coral text-white"
+              className={`flex-1 font-display font-bold text-lg py-6 shadow-warm hover:shadow-warm-lg transition-all ${
+                currentStep === steps.length ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
               }`}
             >
               {currentStep === steps.length ? "Let's Cook! 🍳" : "Continue →"}
@@ -492,7 +492,7 @@ export default function OnboardingPage() {
           <div className="text-center mt-4">
             <button
               onClick={() => router.push("/")}
-              className="text-muted-foreground hover:text-coral text-sm"
+              className="text-muted-foreground hover:text-primary text-sm"
             >
               Already have an account? Skip to app →
             </button>

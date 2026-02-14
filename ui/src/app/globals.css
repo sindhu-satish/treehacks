@@ -4,24 +4,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Mahm Brand Colors - Warm, Homey, Kitchen-Inspired */
+/* Mahm Brand Colors - Poppi/Magic Spoon Inspired - BOLD & FUN */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-public-sans);
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-lilita);
   --font-mono: var(--font-geist-mono);
 
-  /* Custom Mahm colors - Earthy & Warm */
-  --color-terracotta: var(--terracotta);
-  --color-terracotta-light: var(--terracotta-light);
-  --color-sage: var(--sage);
-  --color-sage-light: var(--sage-light);
-  --color-forest: var(--forest);
-  --color-gold: var(--gold);
+  /* Custom Mahm colors - Vibrant & Playful */
+  --color-tomato: var(--tomato);
+  --color-tomato-light: var(--tomato-light);
+  --color-leaf: var(--leaf);
+  --color-leaf-light: var(--leaf-light);
+  --color-sunny: var(--sunny);
+  --color-peachy: var(--peachy);
   --color-cream: var(--cream);
-  --color-brown: var(--brown);
-  --color-warmwhite: var(--warmwhite);
+  --color-charcoal: var(--charcoal);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -62,96 +61,99 @@
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 1rem;
 
-  /* Mahm Brand Colors - Warm & Homey Kitchen Palette */
-  --terracotta: #C4704B;
-  --terracotta-light: #F5E1D6;
-  --sage: #7D9B76;
-  --sage-light: #C5D5B5;
-  --forest: #2D4739;
-  --gold: #D4A853;
-  --cream: #FDF6E3;
-  --brown: #8B7355;
-  --warmwhite: #FFFEF9;
+  /* Mahm Brand Colors - VIBRANT & PLAYFUL */
+  --tomato: #FF6B6B;
+  --tomato-light: #FFE8E8;
+  --leaf: #51CF66;
+  --leaf-light: #E8F8EA;
+  --sunny: #FFD43B;
+  --peachy: #FF922B;
+  --cream: #FFFBF5;
+  --charcoal: #2D3436;
 
-  /* Legacy color mappings for compatibility */
-  --coral: #C4704B;
-  --coral-light: #F5E1D6;
-  --lime: #7D9B76;
-  --sunny: #D4A853;
-  --charcoal: #2D4739;
-  --pink: #D4A853;
-  --purple: #8B7355;
-  --mint: #C5D5B5;
-  --peach: #F5E1D6;
+  /* Legacy mappings */
+  --coral: #FF6B6B;
+  --coral-light: #FFE8E8;
+  --lime: #51CF66;
+  --pink: #FF8ED4;
+  --purple: #9775FA;
+  --mint: #63E6BE;
+  --peach: #FFAA85;
 
-  /* Theme colors mapped to Mahm palette */
-  --background: #FDF6E3;
-  --foreground: #2D4739;
-  --card: #FFFEF9;
-  --card-foreground: #2D4739;
-  --popover: #FFFEF9;
-  --popover-foreground: #2D4739;
-  --primary: #C4704B;
-  --primary-foreground: #FFFEF9;
-  --secondary: #F5E1D6;
-  --secondary-foreground: #2D4739;
-  --muted: #F0EBE0;
-  --muted-foreground: #6B7D74;
-  --accent: #7D9B76;
-  --accent-foreground: #FFFEF9;
-  --destructive: #B54A32;
-  --border: #E5DFD3;
-  --input: #E5DFD3;
-  --ring: #C4704B;
-  --chart-1: #C4704B;
-  --chart-2: #7D9B76;
-  --chart-3: #D4A853;
-  --chart-4: #8B7355;
-  --chart-5: #C5D5B5;
-  --sidebar: #FDF6E3;
-  --sidebar-foreground: #2D4739;
-  --sidebar-primary: #C4704B;
-  --sidebar-primary-foreground: #FFFEF9;
-  --sidebar-accent: #F5E1D6;
-  --sidebar-accent-foreground: #2D4739;
-  --sidebar-border: #E5DFD3;
-  --sidebar-ring: #C4704B;
+  /* Semantic colors */
+  --terracotta: #FF6B6B;
+  --sage: #51CF66;
+  --forest: #2D3436;
+  --gold: #FFD43B;
+
+  /* Theme colors - BOLD */
+  --background: #FFFBF5;
+  --foreground: #2D3436;
+  --card: #FFFFFF;
+  --card-foreground: #2D3436;
+  --popover: #FFFFFF;
+  --popover-foreground: #2D3436;
+  --primary: #FF6B6B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFE8E8;
+  --secondary-foreground: #2D3436;
+  --muted: #FFF5F0;
+  --muted-foreground: #636E72;
+  --accent: #51CF66;
+  --accent-foreground: #FFFFFF;
+  --destructive: #E03131;
+  --border: #FFE0D6;
+  --input: #FFE0D6;
+  --ring: #FF6B6B;
+  --chart-1: #FF6B6B;
+  --chart-2: #51CF66;
+  --chart-3: #FFD43B;
+  --chart-4: #FF922B;
+  --chart-5: #9775FA;
+  --sidebar: #FFFBF5;
+  --sidebar-foreground: #2D3436;
+  --sidebar-primary: #FF6B6B;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFE8E8;
+  --sidebar-accent-foreground: #2D3436;
+  --sidebar-border: #FFE0D6;
+  --sidebar-ring: #FF6B6B;
 }
 
 .dark {
-  --background: #1C2420;
-  --foreground: #E8EBE9;
-  --card: #242D28;
-  --card-foreground: #E8EBE9;
-  --popover: #242D28;
-  --popover-foreground: #E8EBE9;
-  --primary: #D4845F;
-  --primary-foreground: #1C2420;
-  --secondary: #3D4A42;
-  --secondary-foreground: #E8EBE9;
-  --muted: #3D4A42;
-  --muted-foreground: #9BA8A0;
-  --accent: #8FB087;
-  --accent-foreground: #1C2420;
-  --destructive: #C45A3E;
-  --border: #3D4A42;
-  --input: #3D4A42;
-  --ring: #D4845F;
-  --chart-1: #D4845F;
-  --chart-2: #8FB087;
-  --chart-3: #E4B863;
-  --chart-4: #9B8365;
-  --chart-5: #C5D5B5;
-  --sidebar: #242D28;
-  --sidebar-foreground: #E8EBE9;
-  --sidebar-primary: #D4845F;
-  --sidebar-primary-foreground: #1C2420;
-  --sidebar-accent: #3D4A42;
-  --sidebar-accent-foreground: #E8EBE9;
-  --sidebar-border: #3D4A42;
-  --sidebar-ring: #D4845F;
+  --background: #1A1A2E;
+  --foreground: #EAEAEA;
+  --card: #16213E;
+  --card-foreground: #EAEAEA;
+  --popover: #16213E;
+  --popover-foreground: #EAEAEA;
+  --primary: #FF6B6B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2D3436;
+  --secondary-foreground: #EAEAEA;
+  --muted: #2D3436;
+  --muted-foreground: #A0A0A0;
+  --accent: #51CF66;
+  --accent-foreground: #1A1A2E;
+  --destructive: #E03131;
+  --border: #2D3436;
+  --input: #2D3436;
+  --ring: #FF6B6B;
+  --chart-1: #FF6B6B;
+  --chart-2: #51CF66;
+  --chart-3: #FFD43B;
+  --chart-4: #FF922B;
+  --chart-5: #9775FA;
+  --sidebar: #16213E;
+  --sidebar-foreground: #EAEAEA;
+  --sidebar-primary: #FF6B6B;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #2D3436;
+  --sidebar-accent-foreground: #EAEAEA;
+  --sidebar-border: #2D3436;
+  --sidebar-ring: #FF6B6B;
 }
 
 @layer base {
@@ -164,148 +166,155 @@
   }
 }
 
-/* Display font for headers */
+/* Display font for headers - FUN & BOLD */
 .font-display {
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-family: var(--font-lilita), var(--font-public-sans), system-ui, sans-serif;
 }
 
-/* Custom scrollbar - subtle and warm */
+/* Custom scrollbar - playful */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--cream);
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--sage);
-  border-radius: 4px;
+  background: linear-gradient(135deg, var(--tomato) 0%, var(--peachy) 100%);
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--forest);
+  background: linear-gradient(135deg, var(--peachy) 0%, var(--tomato) 100%);
 }
 
-/* Subtle Animations - Homey, not bouncy */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
+/* FUN Animations */
+@keyframes bounce-fun {
+  0%, 100% {
     transform: translateY(0);
   }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
-@keyframes gentle-pulse {
+@keyframes wiggle {
   0%, 100% {
-    opacity: 1;
+    transform: rotate(-3deg);
   }
   50% {
-    opacity: 0.7;
+    transform: rotate(3deg);
   }
 }
 
 @keyframes float {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+  75% {
+    transform: translateY(4px) rotate(-2deg);
+  }
+}
+
+@keyframes pulse-pop {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    transform: translateY(-4px);
+    transform: scale(1.05);
+    opacity: 0.9;
   }
 }
 
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes rainbow-shift {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.4s ease-out;
-}
-
-.animate-pulse-gentle {
-  animation: gentle-pulse 2s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
-
-.animate-spin-slow {
-  animation: spin-slow 3s linear infinite;
-}
-
-/* Legacy animation classes for compatibility */
-.animate-bounce-subtle {
-  animation: float 3s ease-in-out infinite;
+.animate-bounce-fun {
+  animation: bounce-fun 1.5s ease-in-out infinite;
 }
 
 .animate-wiggle {
-  animation: float 2s ease-in-out infinite;
+  animation: wiggle 0.5s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-pop {
+  animation: pulse-pop 2s ease-in-out infinite;
+}
+
+.animate-rainbow {
+  animation: rainbow-shift 5s linear infinite;
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+/* Legacy animation classes */
+.animate-bounce-subtle {
+  animation: bounce-fun 2s ease-in-out infinite;
+}
+
+.animate-pulse-gentle {
+  animation: pulse-pop 2s ease-in-out infinite;
 }
 
 .animate-sparkle {
-  animation: gentle-pulse 1.5s ease-in-out infinite;
+  animation: pulse-pop 1.5s ease-in-out infinite;
 }
 
-.animate-rainbow-border {
-  /* Disabled - too playful */
-  border-color: var(--terracotta);
-}
-
-/* Gradient backgrounds - Warm & Earthy */
+/* BOLD Gradient backgrounds */
 .gradient-coral {
-  background: linear-gradient(135deg, #C4704B 0%, #D4845F 100%);
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
 }
 
 .gradient-lime {
-  background: linear-gradient(135deg, #7D9B76 0%, #8FB087 100%);
+  background: linear-gradient(135deg, #51CF66 0%, #69DB7C 100%);
 }
 
 .gradient-sunny {
-  background: linear-gradient(135deg, #D4A853 0%, #E4C878 100%);
+  background: linear-gradient(135deg, #FFD43B 0%, #FFE066 100%);
+}
+
+.gradient-peachy {
+  background: linear-gradient(135deg, #FF922B 0%, #FFA94D 100%);
 }
 
 .gradient-purple {
-  background: linear-gradient(135deg, #8B7355 0%, #A08567 100%);
+  background: linear-gradient(135deg, #9775FA 0%, #B197FC 100%);
+}
+
+.gradient-pink {
+  background: linear-gradient(135deg, #FF8ED4 0%, #FFA8DC 100%);
+}
+
+.gradient-rainbow {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FFD43B 25%, #51CF66 50%, #63E6BE 75%, #9775FA 100%);
 }
 
 .gradient-hero {
-  background: linear-gradient(180deg, #FDF6E3 0%, #F5EFE0 50%, #FDF6E3 100%);
+  background: linear-gradient(135deg, #FFFBF5 0%, #FFE8E8 30%, #FFF5E8 60%, #FFFBF5 100%);
 }
 
-/* Sage/Kitchen themed gradient */
-.gradient-sage {
-  background: linear-gradient(135deg, #C5D5B5 0%, #D5E5C8 100%);
-}
-
-.gradient-warm {
-  background: linear-gradient(135deg, #F5E1D6 0%, #FDF6E3 100%);
-}
-
-/* Soft organic shapes */
+/* Fun blob shapes */
 .blob {
   border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
 }
@@ -314,97 +323,119 @@
   border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
 }
 
-/* Warm, soft shadows */
-.shadow-warm {
-  box-shadow: 0 4px 12px rgba(45, 71, 57, 0.08);
-}
-
-.shadow-warm-lg {
-  box-shadow: 0 8px 24px rgba(45, 71, 57, 0.12);
-}
-
-/* Legacy shadow classes - updated to warm tones */
+/* PLAYFUL shadows - offset style */
 .shadow-playful {
-  box-shadow: 0 4px 12px rgba(196, 112, 75, 0.15);
+  box-shadow: 4px 4px 0px var(--tomato);
 }
 
 .shadow-playful-lime {
-  box-shadow: 0 4px 12px rgba(125, 155, 118, 0.15);
+  box-shadow: 4px 4px 0px var(--leaf);
 }
 
 .shadow-playful-sunny {
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
+  box-shadow: 4px 4px 0px var(--sunny);
 }
 
-/* Subtle underline effect */
+.shadow-playful-purple {
+  box-shadow: 4px 4px 0px var(--purple);
+}
+
+/* Soft shadows for cards */
+.shadow-warm {
+  box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
+}
+
+.shadow-warm-lg {
+  box-shadow: 0 8px 30px rgba(255, 107, 107, 0.2);
+}
+
+/* Squiggly underline effect */
 .squiggly {
   text-decoration: underline;
-  text-decoration-style: solid;
-  text-decoration-color: var(--terracotta);
+  text-decoration-style: wavy;
+  text-decoration-color: var(--tomato);
   text-underline-offset: 4px;
-  text-decoration-thickness: 2px;
 }
 
-/* Card hover effect - subtle */
+/* Sticker effect - FUN */
+.sticker {
+  transform: rotate(-2deg);
+  border: 3px solid var(--charcoal);
+  box-shadow: 4px 4px 0px var(--charcoal);
+  transition: all 0.2s ease;
+}
+
+.sticker:hover {
+  transform: rotate(0deg) scale(1.05);
+}
+
+/* Bubble text effect */
+.bubble-text {
+  text-shadow: 3px 3px 0px var(--tomato), 6px 6px 0px rgba(0,0,0,0.1);
+}
+
+/* Card hover - bouncy */
 .card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(45, 71, 57, 0.12);
-}
-
-/* Grain texture overlay */
-.grain {
-  position: relative;
-}
-
-.grain::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.03;
-  pointer-events: none;
-  border-radius: inherit;
+  transform: translateY(-4px) rotate(1deg);
+  box-shadow: 0 12px 30px rgba(255, 107, 107, 0.2);
 }
 
 /* Gingham pattern background */
 .gingham {
-  background-color: #FFFEF9;
+  background-color: #FFFBF5;
   background-image:
-    linear-gradient(90deg, rgba(197, 213, 181, 0.3) 50%, transparent 50%),
-    linear-gradient(rgba(197, 213, 181, 0.3) 50%, transparent 50%);
+    linear-gradient(90deg, rgba(81, 207, 102, 0.2) 50%, transparent 50%),
+    linear-gradient(rgba(81, 207, 102, 0.2) 50%, transparent 50%);
   background-size: 20px 20px;
 }
 
-/* Legacy classes for compatibility */
-.sticker {
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 12px rgba(45, 71, 57, 0.1);
+/* Dotted pattern */
+.dotted {
+  background-image: radial-gradient(var(--tomato) 1px, transparent 1px);
+  background-size: 16px 16px;
 }
 
-.sticker:hover {
+/* Focus states - colorful */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--tomato);
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2);
+}
+
+/* Button transitions - snappy */
+button {
+  transition: all 0.15s ease;
+}
+
+button:hover {
   transform: translateY(-2px);
 }
 
-.bubble-text {
-  /* Simplified - no more heavy shadow */
+button:active {
+  transform: translateY(0) scale(0.98);
 }
 
-/* Focus states */
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: var(--sage);
-  box-shadow: 0 0 0 3px rgba(125, 155, 118, 0.2);
-}
-
-/* Button transitions */
-button {
+/* Tag/pill style */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
   transition: all 0.2s ease;
 }
 
-button:active {
-  transform: scale(0.98);
+.tag:hover {
+  transform: scale(1.05);
+}
+
+/* Emoji bounce on hover */
+.emoji-bounce:hover {
+  display: inline-block;
+  animation: bounce-fun 0.5s ease;
 }
