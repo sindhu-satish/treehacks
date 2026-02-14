@@ -4,7 +4,7 @@
 
 - **Data APIs** (Anika’s work) are in **`data-apis/`** — see [data-apis/README.md](data-apis/README.md); run that app from the `data-apis/` folder.
 - **Backend** (Python) is in **`backend/`**.
-- **Agent app** (this repo root) — run from here for the Mahm chat UI and APIs below.
+- **Agent app** is in **`multiagents/`** — run from that folder for the Mahm chat UI and APIs below.
 
 ## Person B (Agent Lead) — 3pm deliverable
 
@@ -16,9 +16,10 @@
 - [x] Graceful failure if a tool breaks (errors returned as JSON, agent responds with fallback message)
 - [x] One cached demo conversation: `data/demo-conversation.json` + `GET /api/demo`; "Load demo backup" in UI
 
-## Run locally (agent app at root)
+## Run locally (agent app)
 
 ```bash
+cd multiagents
 cp .env.example .env.local
 # Add your ANTHROPIC_API_KEY to .env.local
 
