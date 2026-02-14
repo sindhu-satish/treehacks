@@ -56,7 +56,9 @@ def cache_set(sb, cache_key: str, store: str, zip_code: str, query: str, respons
             "zip": zip_code,
             "query": query,
             "response": response,
-        }
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
+        },
+        on_conflict="cache_key",
     ).execute()
 
 def normalize_ingredient_to_query(ing: Any) -> Tuple[str, str]:
@@ -149,7 +151,19 @@ def quote_marketplace(payload: Dict[str, Any], sb, ttl_seconds: int = 1800) -> D
                 items_out.append(resp)
                 continue
 
-            matched = scrape_one_item(store, zip_code, query)
+            cached_any = cached  # from earlier cache_get (may be stale)
+            
+            try:
+                matched = scrape_one_item(store, zip_code, query)
+
+            except Exception as e:
+                if cached_any:
+                    resp = dict(cached_any["response"])
+                    resp["_cache"] = {"hit": True, "stale": True}
+                    resp["error"] = "scrape_failed_returned_stale_cache"
+                    items_out.append(resp)
+                    continue
+                matched = None
 
             normalized = {
                 "ingredient": ingredient_display,
