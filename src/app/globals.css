@@ -1,0 +1,212 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Mahm Brand Colors - Poppi/Fly By Jing inspired */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-nunito);
+  --font-mono: var(--font-geist-mono);
+
+  /* Custom Mahm colors */
+  --color-coral: var(--coral);
+  --color-coral-light: var(--coral-light);
+  --color-lime: var(--lime);
+  --color-sunny: var(--sunny);
+  --color-cream: var(--cream);
+  --color-charcoal: var(--charcoal);
+  --color-pink: var(--pink);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+:root {
+  --radius: 1rem;
+
+  /* Mahm Brand Colors */
+  --coral: #FF6B6B;
+  --coral-light: #FFE5E5;
+  --lime: #7ED957;
+  --sunny: #FFE66D;
+  --cream: #FFF9F5;
+  --charcoal: #2D3436;
+  --pink: #FF8FA3;
+
+  /* Theme colors mapped to Mahm palette */
+  --background: #FFF9F5;
+  --foreground: #2D3436;
+  --card: #FFFFFF;
+  --card-foreground: #2D3436;
+  --popover: #FFFFFF;
+  --popover-foreground: #2D3436;
+  --primary: #FF6B6B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFE5E5;
+  --secondary-foreground: #2D3436;
+  --muted: #F5F0EB;
+  --muted-foreground: #636E72;
+  --accent: #7ED957;
+  --accent-foreground: #2D3436;
+  --destructive: #E74C3C;
+  --border: #F0E6DE;
+  --input: #F0E6DE;
+  --ring: #FF6B6B;
+  --chart-1: #FF6B6B;
+  --chart-2: #7ED957;
+  --chart-3: #FFE66D;
+  --chart-4: #FF8FA3;
+  --chart-5: #74B9FF;
+  --sidebar: #FFF9F5;
+  --sidebar-foreground: #2D3436;
+  --sidebar-primary: #FF6B6B;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFE5E5;
+  --sidebar-accent-foreground: #2D3436;
+  --sidebar-border: #F0E6DE;
+  --sidebar-ring: #FF6B6B;
+}
+
+.dark {
+  --background: #1A1A2E;
+  --foreground: #EAEAEA;
+  --card: #16213E;
+  --card-foreground: #EAEAEA;
+  --popover: #16213E;
+  --popover-foreground: #EAEAEA;
+  --primary: #FF6B6B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2D3436;
+  --secondary-foreground: #EAEAEA;
+  --muted: #2D3436;
+  --muted-foreground: #A0A0A0;
+  --accent: #7ED957;
+  --accent-foreground: #1A1A2E;
+  --destructive: #E74C3C;
+  --border: #2D3436;
+  --input: #2D3436;
+  --ring: #FF6B6B;
+  --chart-1: #FF6B6B;
+  --chart-2: #7ED957;
+  --chart-3: #FFE66D;
+  --chart-4: #FF8FA3;
+  --chart-5: #74B9FF;
+  --sidebar: #16213E;
+  --sidebar-foreground: #EAEAEA;
+  --sidebar-primary: #FF6B6B;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #2D3436;
+  --sidebar-accent-foreground: #EAEAEA;
+  --sidebar-border: #2D3436;
+  --sidebar-ring: #FF6B6B;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--coral-light);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--coral);
+}
+
+/* Animations */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
+
+/* Gradient backgrounds */
+.gradient-coral {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8FA3 100%);
+}
+
+.gradient-lime {
+  background: linear-gradient(135deg, #7ED957 0%, #A8E6CF 100%);
+}
+
+.gradient-sunny {
+  background: linear-gradient(135deg, #FFE66D 0%, #FFEB99 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, #FFF9F5 0%, #FFE5E5 50%, #FFF9F5 100%);
+}
