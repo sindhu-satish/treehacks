@@ -138,7 +138,7 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
         <div className="p-4 border-b border-border/50 bg-cream/50">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-charcoal flex items-center gap-2">
+              <h3 className="font-bold text-foreground flex items-center gap-2">
                 <span>🛒</span> Price Comparison
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
@@ -150,7 +150,7 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
                 variant="outline"
                 size="sm"
                 onClick={selectCheapest}
-                className="text-lime border-lime/30 hover:bg-lime/10"
+                className="text-accent border-accent/30 hover:bg-accent/10"
               >
                 Select All Cheapest
               </Button>
@@ -175,10 +175,10 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
             return (
               <div key={idx} className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="font-medium text-charcoal flex items-center gap-2">
+                  <div className="font-medium text-foreground flex items-center gap-2">
                     {comparison.ingredient}
                     {isInCart && (
-                      <Badge className="bg-coral/20 text-coral border-0 text-xs">
+                      <Badge className="bg-primary/20 text-primary border-0 text-xs">
                         In Cart
                       </Badge>
                     )}
@@ -205,9 +205,9 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
                         disabled={isDisabled}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
                           isSelected
-                            ? "bg-coral text-white ring-2 ring-coral ring-offset-2"
+                            ? "bg-primary text-white ring-2 ring-primary ring-offset-2"
                             : storePrice.isCheapest
-                            ? "bg-lime/20 border border-lime/30 hover:bg-lime/30"
+                            ? "bg-accent/20 border border-accent/30 hover:bg-accent/30"
                             : "bg-muted/50 hover:bg-muted"
                         } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                       >
@@ -216,13 +216,13 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
                         </span>
                         <span
                           className={`font-bold ${
-                            isSelected ? "text-white" : storePrice.isCheapest ? "text-lime" : "text-charcoal"
+                            isSelected ? "text-white" : storePrice.isCheapest ? "text-accent" : "text-foreground"
                           }`}
                         >
                           ${storePrice.price.toFixed(2)}
                         </span>
                         {storePrice.isCheapest && !isSelected && (
-                          <Badge className="bg-lime text-white text-xs px-1.5 py-0">
+                          <Badge className="bg-accent text-white text-xs px-1.5 py-0">
                             Best
                           </Badge>
                         )}
@@ -252,7 +252,7 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
               🛍️
             </div>
             <div className="text-left">
-              <h3 className="font-bold text-charcoal">Shopping Cart</h3>
+              <h3 className="font-bold text-foreground">Shopping Cart</h3>
               <p className="text-sm text-muted-foreground">
                 {cartItemCount === 0
                   ? "Your cart is empty"
@@ -262,7 +262,7 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <div className="text-xl font-bold text-coral">${cartTotal.toFixed(2)}</div>
+              <div className="text-xl font-bold text-primary">${cartTotal.toFixed(2)}</div>
               <div className="text-xs text-muted-foreground">estimated total</div>
             </div>
             <span className={`text-muted-foreground transition-transform ${isCartOpen ? "rotate-180" : ""}`}>
@@ -278,8 +278,8 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
               {Object.entries(cartByStore).map(([storeId, storeData]) => (
                 <div key={storeId} className="bg-muted/30 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-charcoal">{storeData.name}</h4>
-                    <div className="text-sm font-medium text-coral">
+                    <h4 className="font-semibold text-foreground">{storeData.name}</h4>
+                    <div className="text-sm font-medium text-primary">
                       ${storeData.subtotal.toFixed(2)}
                     </div>
                   </div>
@@ -290,7 +290,7 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
                         className="flex items-center justify-between bg-white rounded-lg p-2"
                       >
                         <div className="flex-1">
-                          <div className="font-medium text-charcoal text-sm">{item.ingredient}</div>
+                          <div className="font-medium text-foreground text-sm">{item.ingredient}</div>
                           <div className="text-xs text-muted-foreground">
                             ${item.price.toFixed(2)} each
                           </div>
@@ -298,16 +298,16 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleUpdateQuantity(item.id, -1)}
-                            className="w-7 h-7 rounded-full bg-muted/50 text-charcoal hover:bg-muted flex items-center justify-center"
+                            className="w-7 h-7 rounded-full bg-muted/50 text-foreground hover:bg-muted flex items-center justify-center"
                           >
                             -
                           </button>
-                          <span className="w-8 text-center font-medium text-charcoal">
+                          <span className="w-8 text-center font-medium text-foreground">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => handleUpdateQuantity(item.id, 1)}
-                            className="w-7 h-7 rounded-full bg-muted/50 text-charcoal hover:bg-muted flex items-center justify-center"
+                            className="w-7 h-7 rounded-full bg-muted/50 text-foreground hover:bg-muted flex items-center justify-center"
                           >
                             +
                           </button>
@@ -329,7 +329,7 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
             <div className="mt-4 pt-4 border-t border-border/50">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground">Estimated Total</span>
-                <span className="text-2xl font-bold text-coral">${cartTotal.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-primary">${cartTotal.toFixed(2)}</span>
               </div>
               <Button className="w-full gradient-coral text-white" size="lg">
                 Proceed to Checkout

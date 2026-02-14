@@ -80,11 +80,11 @@ function ExtractRecipeModal({
         {!extractedRecipe ? (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-2xl font-bold text-charcoal">
+              <h2 className="font-display text-2xl font-bold text-foreground">
                 {isExtracting ? "Extracting Recipe..." : "Extract Recipe"}
               </h2>
               {!isExtracting && (
-                <button onClick={onClose} className="text-muted-foreground hover:text-charcoal text-2xl">
+                <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">
                   ×
                 </button>
               )}
@@ -95,11 +95,11 @@ function ExtractRecipeModal({
                 <div className="text-6xl mb-6 animate-bounce">🎬</div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-coral rounded-full animate-pulse" />
+                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                     <span className="text-muted-foreground">Fetching video content...</span>
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-lime rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+                    <span className="w-2 h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
                     <span className="text-muted-foreground">Analyzing ingredients...</span>
                   </div>
                   <div className="flex items-center justify-center gap-2">
@@ -111,13 +111,13 @@ function ExtractRecipeModal({
             ) : (
               <>
                 <div className="mb-6">
-                  <label className="font-bold text-charcoal mb-2 block">Paste video URL</label>
+                  <label className="font-bold text-foreground mb-2 block">Paste video URL</label>
                   <input
                     type="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://tiktok.com/... or instagram.com/reel/..."
-                    className="w-full p-4 border-2 border-border rounded-xl focus:outline-none focus:border-coral transition-colors"
+                    className="w-full p-4 border-2 border-border rounded-xl focus:outline-none focus:border-primary transition-colors"
                   />
                   <p className="text-xs text-muted-foreground mt-2">
                     Supports TikTok, Instagram Reels, and YouTube Shorts
@@ -152,17 +152,17 @@ function ExtractRecipeModal({
         ) : (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-2xl font-bold text-charcoal">Recipe Extracted!</h2>
-              <button onClick={onClose} className="text-muted-foreground hover:text-charcoal text-2xl">
+              <h2 className="font-display text-2xl font-bold text-foreground">Recipe Extracted!</h2>
+              <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">
                 ×
               </button>
             </div>
 
-            <div className="mb-4 p-4 bg-coral/10 rounded-2xl border-2 border-coral/30">
+            <div className="mb-4 p-4 bg-primary/10 rounded-2xl border-2 border-primary/30">
               <div className="text-center mb-2">
                 <span className="text-4xl">🎉</span>
               </div>
-              <h3 className="font-display text-xl font-bold text-charcoal text-center mb-1">
+              <h3 className="font-display text-xl font-bold text-foreground text-center mb-1">
                 {extractedRecipe.name}
               </h3>
               <p className="text-xs text-muted-foreground text-center">
@@ -174,12 +174,12 @@ function ExtractRecipeModal({
             </div>
 
             <div className="mb-4">
-              <h4 className="font-bold text-charcoal mb-2">Ingredients ({extractedRecipe.ingredients.length})</h4>
+              <h4 className="font-bold text-foreground mb-2">Ingredients ({extractedRecipe.ingredients.length})</h4>
               <div className="bg-muted/20 rounded-xl p-3 max-h-32 overflow-y-auto">
                 <ul className="text-sm space-y-1">
                   {extractedRecipe.ingredients.map((ing, i) => (
                     <li key={i} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-coral rounded-full" />
+                      <span className="w-1.5 h-1.5 bg-primary rounded-full" />
                       {ing}
                     </li>
                   ))}
@@ -188,12 +188,12 @@ function ExtractRecipeModal({
             </div>
 
             <div className="mb-6">
-              <h4 className="font-bold text-charcoal mb-2">Instructions ({extractedRecipe.instructions.length} steps)</h4>
+              <h4 className="font-bold text-foreground mb-2">Instructions ({extractedRecipe.instructions.length} steps)</h4>
               <div className="bg-muted/20 rounded-xl p-3 max-h-32 overflow-y-auto">
                 <ol className="text-sm space-y-2">
                   {extractedRecipe.instructions.map((step, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="font-bold text-coral shrink-0">{i + 1}.</span>
+                      <span className="font-bold text-primary shrink-0">{i + 1}.</span>
                       <span>{step}</span>
                     </li>
                   ))}
@@ -236,11 +236,11 @@ function PhotoRecipeModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-2xl font-bold text-charcoal">
+          <h2 className="font-display text-2xl font-bold text-foreground">
             {isGenerating ? "Creating Recipe..." : "Recipe from Photo"}
           </h2>
           {!isGenerating && (
-            <button onClick={onClose} className="text-muted-foreground hover:text-charcoal text-2xl">
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">
               ×
             </button>
           )}
@@ -256,41 +256,41 @@ function PhotoRecipeModal({ onClose }: { onClose: () => void }) {
             <div
               onClick={() => setHasPhoto(true)}
               className={`border-2 border-dashed rounded-2xl p-6 text-center mb-4 cursor-pointer transition-all ${
-                hasPhoto ? "border-lime bg-lime/10" : "border-lime/30 hover:border-lime"
+                hasPhoto ? "border-accent bg-accent/10" : "border-accent/30 hover:border-accent"
               }`}
             >
               {hasPhoto ? (
                 <>
                   <div className="text-5xl mb-2">✓</div>
-                  <p className="font-bold text-lime">Photo uploaded!</p>
+                  <p className="font-bold text-accent">Photo uploaded!</p>
                 </>
               ) : (
                 <>
                   <div className="text-5xl mb-3">📸</div>
-                  <p className="font-bold text-charcoal mb-1">Upload a meal photo</p>
+                  <p className="font-bold text-foreground mb-1">Upload a meal photo</p>
                   <p className="text-sm text-muted-foreground">We&apos;ll create a recipe so you can remake it!</p>
                 </>
               )}
             </div>
 
             <div className="mb-4">
-              <label className="font-bold text-charcoal mb-2 block">What is this dish? (optional)</label>
+              <label className="font-bold text-foreground mb-2 block">What is this dish? (optional)</label>
               <input
                 type="text"
                 value={dishName}
                 onChange={(e) => setDishName(e.target.value)}
                 placeholder="E.g., Mom's lasagna, Restaurant pasta..."
-                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-lime"
+                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-accent"
               />
             </div>
 
             <div className="mb-6">
-              <label className="font-bold text-charcoal mb-2 block">Any notes?</label>
+              <label className="font-bold text-foreground mb-2 block">Any notes?</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="E.g., It was really creamy, had a smoky flavor..."
-                className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-lime"
+                className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-accent"
               />
             </div>
 
@@ -321,18 +321,18 @@ export default function SavedPage() {
       {/* Header */}
       <header className="gradient-hero border-b border-border/50 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-pink/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-40 h-40 bg-lime/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-accent/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
         <div className="max-w-4xl mx-auto px-4 py-4 relative">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               onClick={() => router.push("/")}
-              className="text-muted-foreground hover:text-coral font-bold"
+              className="text-muted-foreground hover:text-primary font-bold"
             >
               ← Back
             </Button>
             <div className="flex-1">
-              <h1 className="font-display text-2xl font-bold text-charcoal">My Recipes</h1>
+              <h1 className="font-display text-2xl font-bold text-foreground">My Recipes</h1>
             </div>
             <MahmLogo size="sm" showText={false} />
           </div>
@@ -357,22 +357,22 @@ export default function SavedPage() {
         </div>
 
         <Tabs defaultValue="saved" className="w-full">
-          <TabsList className="bg-white border-2 border-coral/20 p-1 mb-6 shadow-playful">
+          <TabsList className="bg-white border-2 border-primary/20 p-1 mb-6 shadow-playful">
             <TabsTrigger
               value="saved"
-              className="data-[state=active]:bg-coral/10 data-[state=active]:text-coral font-display font-bold"
+              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-display font-bold"
             >
               ♥ Saved ({savedRecipes.length})
             </TabsTrigger>
             <TabsTrigger
               value="made"
-              className="data-[state=active]:bg-coral/10 data-[state=active]:text-coral font-display font-bold"
+              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-display font-bold"
             >
               👩‍🍳 Made ({madeRecipes.length})
             </TabsTrigger>
             <TabsTrigger
               value="inspiration"
-              className="data-[state=active]:bg-coral/10 data-[state=active]:text-coral font-display font-bold"
+              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-display font-bold"
             >
               ✨ Inspiration
             </TabsTrigger>
@@ -383,7 +383,7 @@ export default function SavedPage() {
             {savedRecipes.length === 0 ? (
               <Card className="p-8 text-center">
                 <div className="text-4xl mb-4">♡</div>
-                <h3 className="font-bold text-charcoal mb-2">No saved recipes yet</h3>
+                <h3 className="font-bold text-foreground mb-2">No saved recipes yet</h3>
                 <p className="text-muted-foreground mb-4">
                   Save recipes you love and they'll appear here
                 </p>
@@ -409,7 +409,7 @@ export default function SavedPage() {
             {madeRecipes.length === 0 ? (
               <Card className="p-8 text-center">
                 <div className="text-4xl mb-4">👩‍🍳</div>
-                <h3 className="font-bold text-charcoal mb-2">No recipes made yet</h3>
+                <h3 className="font-bold text-foreground mb-2">No recipes made yet</h3>
                 <p className="text-muted-foreground mb-4">
                   When you make a recipe, mark it as made to track your cooking journey
                 </p>
@@ -429,8 +429,8 @@ export default function SavedPage() {
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-charcoal">{recipe.name}</h3>
-                            <Badge className="bg-lime/20 text-charcoal border-0">
+                            <h3 className="font-bold text-foreground">{recipe.name}</h3>
+                            <Badge className="bg-accent/20 text-foreground border-0">
                               Made {recipe.madeCount}x
                             </Badge>
                           </div>
@@ -439,7 +439,7 @@ export default function SavedPage() {
                           </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <div className="text-lg font-bold text-coral">
+                          <div className="text-lg font-bold text-primary">
                             ${recipe.estimatedCost?.toFixed(2)}
                           </div>
                           <div className="text-xs text-muted-foreground">per recipe</div>
@@ -479,7 +479,7 @@ export default function SavedPage() {
                                   </div>
                                 </div>
                                 {entry.notes && (
-                                  <p className="text-charcoal">{entry.notes}</p>
+                                  <p className="text-foreground">{entry.notes}</p>
                                 )}
                               </div>
                             ))}
@@ -496,7 +496,7 @@ export default function SavedPage() {
           {/* Inspiration (Short-form content) */}
           <TabsContent value="inspiration">
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-charcoal mb-2">Trending recipes</h2>
+              <h2 className="text-lg font-bold text-foreground mb-2">Trending recipes</h2>
               <p className="text-muted-foreground text-sm">
                 Paste a TikTok, Reel, or YouTube Short and Mahm will extract the recipe for you
               </p>
@@ -547,7 +547,7 @@ export default function SavedPage() {
                         {content.platform === "instagram" && "📷"}
                         {content.platform === "youtube" && "▶️"}
                       </div>
-                      <div className="text-sm font-medium text-charcoal line-clamp-2">
+                      <div className="text-sm font-medium text-foreground line-clamp-2">
                         {content.title}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
@@ -563,11 +563,11 @@ export default function SavedPage() {
                       {content.platform}
                     </Badge>
                     {content.recipeId ? (
-                      <Badge className="ml-2 text-xs bg-lime/20 text-charcoal border-0">
+                      <Badge className="ml-2 text-xs bg-accent/20 text-foreground border-0">
                         Recipe extracted
                       </Badge>
                     ) : (
-                      <span className="ml-2 text-xs text-coral font-medium">
+                      <span className="ml-2 text-xs text-primary font-medium">
                         Extract recipe →
                       </span>
                     )}
