@@ -71,8 +71,15 @@ const MOCK_RECIPES = [
 ];
 
 export async function runSearchRecipes(input: SearchRecipesInput): Promise<string> {
+  const params = new URLSearchParams({
+    query: input.query,
+    max_results: String(input.max_results ?? 5),
+  });
+  if (input.dietary_filters?.length) {
+    params.set("dietary_filters", JSON.stringify(input.dietary_filters));
+  }
   const apiRecipes = await safeFetch<unknown[]>(
-    `${BASE}/api/recipes?query=${encodeURIComponent(input.query)}&max_results=${input.max_results ?? 5}`,
+    `${BASE}/api/recipes?${params.toString()}`,
     []
   );
   const recipes = Array.isArray(apiRecipes) && apiRecipes.length > 0
