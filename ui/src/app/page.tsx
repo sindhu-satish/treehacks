@@ -535,11 +535,11 @@ export default function Home() {
   if (!isOnboarded) {
     return (
       <div className="min-h-screen bg-background relative overflow-hidden">
-        {/* Fun background elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-coral/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute top-1/4 right-0 w-96 h-96 bg-lime/20 rounded-full blur-3xl translate-x-1/2" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-sunny/20 rounded-full blur-3xl translate-y-1/2" />
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-pink/20 rounded-full blur-3xl" />
+        {/* Warm background elements */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-sage/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-1/4 right-0 w-96 h-96 bg-terracotta/10 rounded-full blur-3xl translate-x-1/2" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-gold/15 rounded-full blur-3xl translate-y-1/2" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-sage-light/30 rounded-full blur-3xl" />
 
         <div className="relative min-h-screen flex flex-col">
           {/* Header */}
@@ -553,12 +553,12 @@ export default function Home() {
               <MahmLogo size="xl" showText={false} />
             </div>
 
-            <h1 className="font-display text-5xl md:text-7xl font-bold text-charcoal mb-6">
+            <h1 className="font-display text-5xl md:text-7xl font-bold text-forest mb-6">
               Like having a{" "}
-              <span className="text-coral">mom</span>
+              <span className="text-terracotta">mom</span>
               <br />
               who&apos;s also a{" "}
-              <span className="text-lime">nutritionist</span>
+              <span className="text-sage">nutritionist</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mb-10">
@@ -568,13 +568,13 @@ export default function Home() {
 
             {/* Feature Pills */}
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <div className="px-6 py-3 bg-coral/20 rounded-full font-bold text-coral shadow-playful animate-bounce-subtle">
+              <div className="px-6 py-3 bg-terracotta/15 rounded-full font-semibold text-terracotta shadow-warm">
                 Personalized nutrition
               </div>
-              <div className="px-6 py-3 bg-lime/20 rounded-full font-bold text-charcoal shadow-playful-lime animate-bounce-subtle" style={{ animationDelay: "0.1s" }}>
+              <div className="px-6 py-3 bg-sage/15 rounded-full font-semibold text-forest shadow-warm">
                 Real local prices
               </div>
-              <div className="px-6 py-3 bg-sunny/30 rounded-full font-bold text-charcoal shadow-playful-sunny animate-bounce-subtle" style={{ animationDelay: "0.2s" }}>
+              <div className="px-6 py-3 bg-gold/20 rounded-full font-semibold text-forest shadow-warm">
                 Weekly meal plans
               </div>
             </div>
@@ -583,7 +583,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 onClick={() => router.push("/onboarding")}
-                className="gradient-coral text-white font-display font-bold text-xl px-10 py-7 rounded-2xl shadow-playful hover:scale-105 transition-transform"
+                className="gradient-coral text-white font-display font-bold text-xl px-10 py-7 rounded-xl shadow-warm hover:shadow-warm-lg transition-all"
               >
                 Get Started Free
               </Button>
@@ -594,7 +594,7 @@ export default function Home() {
                   localStorage.setItem("mahm_onboarded", "true");
                   setIsOnboarded(true);
                 }}
-                className="border-2 border-coral text-coral font-display font-bold text-xl px-10 py-7 rounded-2xl hover:bg-coral/10"
+                className="border-2 border-terracotta text-terracotta font-display font-bold text-xl px-10 py-7 rounded-xl hover:bg-terracotta/10"
               >
                 Try Demo
               </Button>
@@ -602,29 +602,29 @@ export default function Home() {
           </main>
 
           {/* Features Section */}
-          <section className="px-4 py-16 bg-white/50">
+          <section className="px-4 py-16 bg-warmwhite/50">
             <div className="max-w-5xl mx-auto">
-              <h2 className="font-display text-3xl font-bold text-charcoal text-center mb-12">
+              <h2 className="font-display text-3xl font-bold text-forest text-center mb-12">
                 Everything you need to eat well
               </h2>
               <div className="grid md:grid-cols-3 gap-8">
-                <Card className="p-6 border-2 border-coral/20 shadow-playful text-center">
+                <Card className="p-6 border border-terracotta/20 shadow-warm text-center card-hover">
                   <div className="text-5xl mb-4">💬</div>
-                  <h3 className="font-display font-bold text-xl text-charcoal mb-2">Chat with Mahm</h3>
+                  <h3 className="font-display font-bold text-xl text-forest mb-2">Chat with Mahm</h3>
                   <p className="text-muted-foreground">
                     Get personalized meal recommendations based on your preferences, goals, and what&apos;s in your fridge.
                   </p>
                 </Card>
-                <Card className="p-6 border-2 border-lime/20 shadow-playful-lime text-center">
+                <Card className="p-6 border border-sage/30 shadow-warm text-center card-hover">
                   <div className="text-5xl mb-4">🛒</div>
-                  <h3 className="font-display font-bold text-xl text-charcoal mb-2">Smart Marketplace</h3>
+                  <h3 className="font-display font-bold text-xl text-forest mb-2">Smart Marketplace</h3>
                   <p className="text-muted-foreground">
                     Compare prices across local stores and find the best deals for your grocery list.
                   </p>
                 </Card>
-                <Card className="p-6 border-2 border-sunny/30 shadow-playful-sunny text-center">
+                <Card className="p-6 border border-gold/30 shadow-warm text-center card-hover">
                   <div className="text-5xl mb-4">📅</div>
-                  <h3 className="font-display font-bold text-xl text-charcoal mb-2">Meal Calendar</h3>
+                  <h3 className="font-display font-bold text-xl text-forest mb-2">Meal Calendar</h3>
                   <p className="text-muted-foreground">
                     Plan your whole week with auto-generated grocery lists and nutrition tracking.
                   </p>
@@ -636,7 +636,7 @@ export default function Home() {
           {/* Footer */}
           <footer className="py-6 text-center border-t border-border/50">
             <p className="text-muted-foreground">
-              Made with <span className="text-coral">♥</span> at TreeHacks 2026
+              Made with <span className="text-terracotta">♥</span> at TreeHacks 2026
             </p>
           </footer>
         </div>
@@ -804,23 +804,23 @@ export default function Home() {
                 <MahmLogo size="xl" showText={false} />
               </div>
               <div className="pt-24">
-                <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal mb-4 bubble-text">
+                <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-forest mb-4">
                   Like having a{" "}
-                  <span className="text-coral squiggly">mom</span> who&apos;s also a{" "}
-                  <span className="text-lime">nutritionist</span>
+                  <span className="text-terracotta squiggly">mom</span> who&apos;s also a{" "}
+                  <span className="text-sage">nutritionist</span>
                 </h2>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
                   Tell Mahm your dietary needs, budget, and cravings. She&apos;ll recommend meals,
                   find the cheapest local ingredients, and plan your whole week.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3 mt-8">
-                  <span className="px-5 py-2.5 bg-coral/20 rounded-full text-sm font-bold text-coral shadow-playful sticker">
+                  <span className="px-5 py-2.5 bg-terracotta/15 rounded-full text-sm font-semibold text-terracotta shadow-warm">
                     Personalized nutrition
                   </span>
-                  <span className="px-5 py-2.5 bg-lime/20 rounded-full text-sm font-bold text-charcoal shadow-playful-lime sticker" style={{ animationDelay: "0.1s" }}>
+                  <span className="px-5 py-2.5 bg-sage/15 rounded-full text-sm font-semibold text-forest shadow-warm">
                     Real local prices
                   </span>
-                  <span className="px-5 py-2.5 bg-sunny/30 rounded-full text-sm font-bold text-charcoal shadow-playful-sunny sticker" style={{ animationDelay: "0.2s" }}>
+                  <span className="px-5 py-2.5 bg-gold/20 rounded-full text-sm font-semibold text-forest shadow-warm">
                     Weekly meal plans
                   </span>
                 </div>
@@ -1221,15 +1221,10 @@ export default function Home() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-4 px-4 text-center bg-white/50">
+      <footer className="border-t border-border/50 py-4 px-4 text-center bg-warmwhite/50">
         <p className="text-sm text-muted-foreground">
-          Made with <span className="text-coral">♥</span> at TreeHacks 2026 |{" "}
-          <span className="font-display font-bold">
-            <span className="text-coral">M</span>
-            <span className="text-sunny">a</span>
-            <span className="text-lime">h</span>
-            <span className="text-pink">m</span>
-          </span>{" "}
+          Made with <span className="text-terracotta">♥</span> at TreeHacks 2026 |{" "}
+          <span className="font-display font-bold text-forest">Mahm</span>{" "}
           — Make something your Mahm would be proud of
         </p>
       </footer>

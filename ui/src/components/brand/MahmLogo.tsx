@@ -23,66 +23,55 @@ export function MahmLogo({ size = "md", showText = true, animated = true }: Mahm
 
   return (
     <div className="flex items-center gap-2">
-      {/* Cute Mom Icon - A warm bowl with steam and a heart */}
+      {/* Warm bowl icon with steam */}
       <div className={`${sizeClasses[size]} relative ${animated ? "animate-float" : ""}`}>
         <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          {/* Bowl body */}
-          <ellipse cx="32" cy="42" rx="24" ry="14" fill="#FF5252"/>
-          <ellipse cx="32" cy="38" rx="20" ry="10" fill="#FFE0E0"/>
+          {/* Bowl body - terracotta */}
+          <ellipse cx="32" cy="44" rx="22" ry="12" fill="#C4704B"/>
+          <ellipse cx="32" cy="40" rx="18" ry="9" fill="#F5E1D6"/>
 
-          {/* Bowl rim shine */}
-          <path d="M14 38 Q32 32 50 38" stroke="#FF80AB" strokeWidth="2" strokeLinecap="round"/>
+          {/* Bowl rim highlight */}
+          <path d="M16 40 Q32 35 48 40" stroke="#D4845F" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
 
-          {/* Steam wisps */}
+          {/* Steam wisps - sage green */}
           <path
-            d="M22 28 Q20 22 24 18 Q22 14 26 10"
-            stroke="#69F0AE"
-            strokeWidth="2.5"
+            d="M24 30 Q22 24 26 20"
+            stroke="#7D9B76"
+            strokeWidth="2"
             strokeLinecap="round"
             fill="none"
             className={animated ? "animate-pulse-gentle" : ""}
           />
           <path
-            d="M32 26 Q30 20 34 16 Q32 12 36 8"
-            stroke="#FFD740"
-            strokeWidth="2.5"
+            d="M32 28 Q30 22 34 16"
+            stroke="#8FB087"
+            strokeWidth="2"
             strokeLinecap="round"
             fill="none"
             className={animated ? "animate-pulse-gentle" : ""}
-            style={{ animationDelay: "0.3s" }}
+            style={{ animationDelay: "0.4s" }}
           />
           <path
-            d="M42 28 Q40 22 44 18 Q42 14 46 10"
-            stroke="#FF80AB"
-            strokeWidth="2.5"
+            d="M40 30 Q38 24 42 20"
+            stroke="#7D9B76"
+            strokeWidth="2"
             strokeLinecap="round"
             fill="none"
             className={animated ? "animate-pulse-gentle" : ""}
-            style={{ animationDelay: "0.6s" }}
+            style={{ animationDelay: "0.8s" }}
           />
 
-          {/* Heart in the middle */}
-          <path
-            d="M32 36 C32 33 28 30 26 32 C24 34 26 38 32 42 C38 38 40 34 38 32 C36 30 32 33 32 36Z"
-            fill="#FF5252"
-            className={animated ? "animate-sparkle" : ""}
-          />
-
-          {/* Little sparkles */}
-          <circle cx="18" cy="14" r="1.5" fill="#FFD740" className={animated ? "animate-sparkle" : ""}/>
-          <circle cx="46" cy="12" r="1.5" fill="#69F0AE" className={animated ? "animate-sparkle" : ""} style={{ animationDelay: "0.5s" }}/>
-          <circle cx="52" cy="24" r="1" fill="#B388FF" className={animated ? "animate-sparkle" : ""} style={{ animationDelay: "1s" }}/>
+          {/* Small leaf garnish */}
+          <ellipse cx="32" cy="38" rx="4" ry="2" fill="#7D9B76" opacity="0.8"/>
+          <path d="M32 38 L32 35" stroke="#5A7A54" strokeWidth="1" strokeLinecap="round"/>
         </svg>
       </div>
 
-      {/* Logo Text */}
+      {/* Logo Text - warm forest green */}
       {showText && (
         <div className="font-display">
-          <span className={`${textSizeClasses[size]} font-bold tracking-tight`}>
-            <span className="text-coral">M</span>
-            <span className="text-sunny">a</span>
-            <span className="text-lime">h</span>
-            <span className="text-pink">m</span>
+          <span className={`${textSizeClasses[size]} font-bold tracking-tight text-forest`}>
+            Mahm
           </span>
         </div>
       )}
@@ -95,13 +84,9 @@ export function MahmLogoMini({ className = "" }: { className?: string }) {
   return (
     <div className={`flex items-center justify-center ${className}`}>
       <div className="relative">
-        {/* Simple heart bowl */}
-        <div className="w-8 h-8 gradient-coral rounded-full flex items-center justify-center shadow-playful">
-          <span className="text-white text-lg">♡</span>
-        </div>
-        {/* Little steam */}
-        <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-lime text-xs animate-bounce-subtle">
-          ~
+        {/* Simple warm bowl */}
+        <div className="w-8 h-8 gradient-coral rounded-full flex items-center justify-center shadow-warm">
+          <span className="text-warmwhite text-sm">~</span>
         </div>
       </div>
     </div>
@@ -114,14 +99,11 @@ export function MahmLogoFull({ animated = true }: { animated?: boolean }) {
     <div className="flex items-center gap-3">
       <MahmLogo size="lg" showText={false} animated={animated} />
       <div>
-        <div className="font-display text-3xl font-bold tracking-tight">
-          <span className="text-coral">M</span>
-          <span className="text-sunny">a</span>
-          <span className="text-lime">h</span>
-          <span className="text-pink">m</span>
+        <div className="font-display text-3xl font-bold tracking-tight text-forest">
+          Mahm
         </div>
         <p className="text-xs text-muted-foreground -mt-1">
-          like a mom, but make it AI
+          your AI kitchen companion
         </p>
       </div>
     </div>

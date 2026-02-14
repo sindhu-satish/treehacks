@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Nunito, Fredoka, Geist_Mono } from "next/font/google";
+import { Public_Sans, Fraunces, Geist_Mono } from "next/font/google";
 import { MahmProvider } from "@/contexts/MahmContext";
 import "./globals.css";
 
-const nunito = Nunito({
-  variable: "--font-nunito",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const fredoka = Fredoka({
-  variable: "--font-fredoka",
+const publicSans = Public_Sans({
+  variable: "--font-public-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${nunito.variable} ${fredoka.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${publicSans.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <MahmProvider>
           {children}
