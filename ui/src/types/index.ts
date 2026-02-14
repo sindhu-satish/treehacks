@@ -176,3 +176,27 @@ export interface ShortFormContent {
   creator: string;
   recipeId?: string; // linked recipe if we've extracted it
 }
+
+// Shopping cart types
+export interface CartItem {
+  id: string;
+  ingredient: string;
+  storeId: string;
+  storeName: string;
+  price: number;
+  quantity: number;
+  unit: string;
+  recipeId?: string;
+  recipeName?: string;
+}
+
+export interface ShoppingCart {
+  items: CartItem[];
+  totalCost: number;
+  storeBreakdown: {
+    storeId: string;
+    storeName: string;
+    items: CartItem[];
+    subtotal: number;
+  }[];
+}

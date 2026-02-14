@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { MahmLogo } from "@/components/brand/MahmLogo";
 import { dummyUserProfile } from "@/lib/dummy-data";
 
 const dietaryOptions = [
@@ -52,6 +53,35 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(dummyUserProfile);
   const [isEditing, setIsEditing] = useState(false);
   const [newDislikedFood, setNewDislikedFood] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Load profile from localStorage on mount
+  useEffect(() => {
+    const savedProfile = localStorage.getItem("mahm_user_profile");
+    if (savedProfile) {
+      try {
+        const parsed = JSON.parse(savedProfile);
+        setProfile(parsed);
+      } catch (e) {
+        console.error("Failed to parse saved profile:", e);
+      }
+    }
+  }, []);
+
+  const handleSave = () => {
+    setIsSaving(true);
+    // Save to localStorage
+    localStorage.setItem("mahm_user_profile", JSON.stringify(profile));
+
+    // Simulate a brief save delay for UX
+    setTimeout(() => {
+      setIsSaving(false);
+      setSaveSuccess(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }, 500);
+  };
 
   const toggleDietaryRestriction = (restriction: string) => {
     setProfile((prev) => ({
@@ -115,40 +145,43 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="gradient-hero border-b border-border/50">
-        <div className="max-w-2xl mx-auto px-4 py-4">
+      <header className="gradient-hero border-b border-border/50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-coral/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
+        <div className="max-w-2xl mx-auto px-4 py-4 relative">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               onClick={() => router.push("/")}
-              className="text-muted-foreground hover:text-charcoal"
+              className="text-muted-foreground hover:text-coral font-bold"
             >
               ← Back
             </Button>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-charcoal">Your Profile</h1>
+              <h1 className="font-display text-2xl font-bold text-charcoal">Your Profile</h1>
             </div>
+            <MahmLogo size="sm" showText={false} />
           </div>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Header */}
-        <Card className="p-6">
+        <Card className="p-6 border-2 border-coral/20 shadow-playful">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full gradient-coral flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-20 h-20 rounded-full gradient-coral flex items-center justify-center text-white text-3xl font-display font-bold shadow-lg animate-float">
               {profile.name.charAt(0)}
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-charcoal">{profile.name}</h2>
+              <h2 className="font-display text-2xl font-bold text-charcoal">{profile.name}</h2>
               <p className="text-muted-foreground">{profile.email}</p>
+              <Badge className="mt-2 bg-lime/20 text-charcoal border-0 font-bold">Pro Cook in Training</Badge>
             </div>
           </div>
         </Card>
 
         {/* Dietary Restrictions */}
-        <Card className="p-6">
-          <h3 className="font-bold text-charcoal mb-4">Dietary Restrictions</h3>
+        <Card className="p-6 border-2 border-lime/20">
+          <h3 className="font-display font-bold text-charcoal mb-4 text-lg">🥗 Dietary Restrictions</h3>
           <div className="flex flex-wrap gap-2">
             {dietaryOptions.map((option) => (
               <button
@@ -167,8 +200,8 @@ export default function ProfilePage() {
         </Card>
 
         {/* Allergies */}
-        <Card className="p-6">
-          <h3 className="font-bold text-charcoal mb-4">Allergies & Intolerances</h3>
+        <Card className="p-6 border-2 border-coral/20">
+          <h3 className="font-display font-bold text-charcoal mb-4 text-lg">⚠️ Allergies & Intolerances</h3>
           <div className="flex flex-wrap gap-2">
             {allergyOptions.map((option) => (
               <button
@@ -357,9 +390,30 @@ export default function ProfilePage() {
         </Card>
 
         {/* Save Button */}
-        <Button className="w-full gradient-coral text-white" size="lg">
-          Save Changes
-        </Button>
+        <div className="relative">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`w-full font-display font-bold text-lg shadow-playful hover:scale-105 transition-transform ${
+              saveSuccess
+                ? "bg-lime hover:bg-lime text-white"
+                : "gradient-coral text-white"
+            }`}
+            size="lg"
+          >
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin">⏳</span> Saving...
+              </span>
+            ) : saveSuccess ? (
+              <span className="flex items-center gap-2">
+                <span>✓</span> Saved Successfully!
+              </span>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+        </div>
       </main>
     </div>
   );
