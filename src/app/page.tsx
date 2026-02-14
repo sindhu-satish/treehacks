@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,12 +21,12 @@ import {
 import { ChatMessage as ChatMessageType } from "@/types";
 
 export default function Home() {
+  const router = useRouter();
   const [messages, setMessages] = useState<ChatMessageType[]>(dummyChatHistory);
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
   const [showRecipes, setShowRecipes] = useState(true);
   const [showMarketplace, setShowMarketplace] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -75,7 +76,6 @@ export default function Home() {
             { id: "tc2", name: "find_stores", status: "complete" },
           ],
         };
-        setShowCalendar(true);
         setActiveTab("calendar");
       } else if (lowerContent.includes("love") || lowerContent.includes("great") || lowerContent.includes("perfect") || lowerContent.includes("sounds good")) {
         response = {
@@ -134,39 +134,54 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-background">
       {/* Hero Header */}
       <header className="gradient-hero border-b border-border/50">
-        <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl gradient-coral flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push("/")}>
+              <div className="w-10 h-10 rounded-xl gradient-coral flex items-center justify-center text-white text-xl font-bold shadow-lg">
                 M
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-charcoal">Mahm</h1>
-                <p className="text-sm text-muted-foreground">Make At Home Mmmm</p>
+                <h1 className="text-xl font-bold text-charcoal">Mahm</h1>
+                <p className="text-xs text-muted-foreground">Make At Home Mmmm</p>
               </div>
             </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <Button variant="ghost" className="text-muted-foreground hover:text-charcoal">
-                How it works
+            <nav className="flex items-center gap-2 md:gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/saved")}
+                className="text-muted-foreground hover:text-charcoal"
+              >
+                <span className="hidden sm:inline">My Recipes</span>
+                <span className="sm:hidden">♥</span>
               </Button>
-              <Button variant="ghost" className="text-muted-foreground hover:text-charcoal">
-                Recipes
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/profile")}
+                className="text-muted-foreground hover:text-charcoal"
+              >
+                <span className="hidden sm:inline">Profile</span>
+                <span className="sm:hidden">⚙</span>
               </Button>
-              <Button className="gradient-coral text-white hover:opacity-90">
-                Get started
-              </Button>
+              <div
+                onClick={() => router.push("/profile")}
+                className="w-8 h-8 rounded-full bg-charcoal text-white flex items-center justify-center text-sm font-bold cursor-pointer"
+              >
+                A
+              </div>
             </nav>
           </div>
 
           {/* Tagline - only show on landing */}
           {messages.length <= 1 && (
             <div className="mt-8 mb-4 text-center">
-              <h2 className="text-4xl md:text-5xl font-bold text-charcoal mb-4">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-charcoal mb-4">
                 Like having a mom who&apos;s also a{" "}
                 <span className="text-coral">nutritionist</span> and a{" "}
                 <span className="text-lime">personal shopper</span>
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
                 Tell Mahm your dietary needs, budget, and cravings. She&apos;ll recommend meals,
                 find the cheapest local ingredients, and plan your whole week.
               </p>
@@ -190,22 +205,22 @@ export default function Home() {
       <main className="flex-1 flex flex-col max-w-6xl mx-auto w-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
           <div className="border-b border-border/50 px-4">
-            <TabsList className="bg-transparent h-auto p-0 gap-4">
+            <TabsList className="bg-transparent h-auto p-0 gap-2 md:gap-4">
               <TabsTrigger
                 value="chat"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-2 data-[state=active]:border-coral rounded-none px-1 pb-3 pt-4 font-semibold"
+                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-2 data-[state=active]:border-coral rounded-none px-1 pb-3 pt-4 font-semibold text-sm md:text-base"
               >
                 Chat with Mahm
               </TabsTrigger>
               <TabsTrigger
                 value="marketplace"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-2 data-[state=active]:border-coral rounded-none px-1 pb-3 pt-4 font-semibold"
+                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-2 data-[state=active]:border-coral rounded-none px-1 pb-3 pt-4 font-semibold text-sm md:text-base"
               >
                 Marketplace
               </TabsTrigger>
               <TabsTrigger
                 value="calendar"
-                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-2 data-[state=active]:border-coral rounded-none px-1 pb-3 pt-4 font-semibold"
+                className="data-[state=active]:bg-transparent data-[state=active]:text-coral data-[state=active]:border-b-2 data-[state=active]:border-coral rounded-none px-1 pb-3 pt-4 font-semibold text-sm md:text-base"
               >
                 Meal Calendar
               </TabsTrigger>
@@ -229,16 +244,29 @@ export default function Home() {
 
               {/* Side Panel - Recipes */}
               {showRecipes && (
-                <div className="hidden lg:block w-80 shrink-0">
-                  <div className="sticky top-4">
-                    <h3 className="font-bold text-charcoal mb-3 flex items-center gap-2">
+                <div className="hidden lg:block w-80 shrink-0 overflow-y-auto">
+                  <div className="sticky top-0 bg-background pb-2">
+                    <h3 className="font-bold text-charcoal mb-3 flex items-center justify-between">
                       <span>Recommended for you</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.push("/saved")}
+                        className="text-coral text-xs"
+                      >
+                        View all →
+                      </Button>
                     </h3>
-                    <div className="space-y-3">
-                      {dummyRecipes.map((recipe) => (
-                        <RecipeCard key={recipe.id} recipe={recipe} compact />
-                      ))}
-                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {dummyRecipes.map((recipe) => (
+                      <RecipeCard
+                        key={recipe.id}
+                        recipe={recipe}
+                        compact
+                        onSelect={() => router.push(`/recipe/${recipe.id}`)}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
@@ -285,7 +313,7 @@ export default function Home() {
           {/* Calendar Tab */}
           <TabsContent value="calendar" className="flex-1 p-4 mt-0 overflow-auto">
             <div className="max-w-6xl mx-auto space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-charcoal mb-2">Your Meal Plan</h2>
                   <p className="text-muted-foreground">

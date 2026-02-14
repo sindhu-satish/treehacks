@@ -29,6 +29,11 @@ export interface Recipe {
   cuisine: string;
   difficulty: "easy" | "medium" | "hard";
   imageUrl?: string;
+  estimatedCost?: number;
+  cheapestStore?: string;
+  isSaved?: boolean;
+  madeCount?: number;
+  lastMade?: Date;
 }
 
 export interface Ingredient {
@@ -36,6 +41,16 @@ export interface Ingredient {
   amount: number;
   unit: string;
   notes?: string;
+  price?: number;
+  cheapestStore?: string;
+  storeOptions?: StorePrice[];
+}
+
+export interface StorePrice {
+  storeId: string;
+  storeName: string;
+  price: number;
+  inStock: boolean;
 }
 
 export interface NutritionInfo {
@@ -109,6 +124,7 @@ export interface GroceryItem {
   recipes: string[];
   estimatedCost?: number;
   store?: string;
+  checked?: boolean;
 }
 
 // User preferences
@@ -122,4 +138,41 @@ export interface UserPreferences {
   availableTime: number; // minutes per meal
   healthGoals: string[];
   householdSize: number;
+}
+
+// User profile
+export interface UserProfile {
+  id: string;
+  name: string;
+  email?: string;
+  avatarUrl?: string;
+  preferences: UserPreferences;
+  savedRecipes: string[];
+  madeRecipes: RecipeJournalEntry[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Recipe journal entry (when user makes a recipe)
+export interface RecipeJournalEntry {
+  id: string;
+  recipeId: string;
+  recipeName: string;
+  madeAt: Date;
+  rating: number; // 1-5
+  photos: string[];
+  notes: string;
+  modifications: string;
+  wouldMakeAgain: boolean;
+}
+
+// Short-form content (TikTok, Reels, etc.)
+export interface ShortFormContent {
+  id: string;
+  platform: "tiktok" | "instagram" | "youtube";
+  url: string;
+  thumbnailUrl: string;
+  title: string;
+  creator: string;
+  recipeId?: string; // linked recipe if we've extracted it
 }
