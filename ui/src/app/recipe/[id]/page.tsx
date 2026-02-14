@@ -140,7 +140,7 @@ export default function RecipeDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-charcoal mb-2">Recipe not found</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Recipe not found</h1>
           <Button onClick={() => router.push("/")} className="gradient-coral text-white">
             Go back home
           </Button>
@@ -168,7 +168,7 @@ export default function RecipeDetailPage() {
             <Button
               variant="ghost"
               onClick={() => router.back()}
-              className="text-muted-foreground hover:text-charcoal"
+              className="text-muted-foreground hover:text-foreground"
             >
               ← Back
             </Button>
@@ -176,7 +176,7 @@ export default function RecipeDetailPage() {
             <Button
               variant={isSaved ? "default" : "outline"}
               onClick={() => setIsSaved(!isSaved)}
-              className={isSaved ? "bg-coral text-white" : "border-coral text-coral"}
+              className={isSaved ? "bg-primary text-white" : "border-primary text-primary"}
             >
               {isSaved ? "♥ Saved" : "♡ Save"}
             </Button>
@@ -189,11 +189,11 @@ export default function RecipeDetailPage() {
         <div className="mb-6">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-charcoal mb-2">{recipe.name}</h1>
+              <h1 className="text-3xl font-bold text-foreground mb-2">{recipe.name}</h1>
               <p className="text-muted-foreground">{recipe.description}</p>
             </div>
             {recipe.madeCount && recipe.madeCount > 0 && (
-              <Badge className="bg-lime/20 text-charcoal border-0 shrink-0">
+              <Badge className="bg-accent/20 text-foreground border-0 shrink-0">
                 Made {recipe.madeCount}x
               </Badge>
             )}
@@ -213,7 +213,7 @@ export default function RecipeDetailPage() {
               <span>🍽️</span>
               <span>{recipe.cuisine}</span>
             </span>
-            <Badge variant="secondary" className="bg-lime/20 text-charcoal border-0">
+            <Badge variant="secondary" className="bg-accent/20 text-foreground border-0">
               {recipe.difficulty}
             </Badge>
           </div>
@@ -224,7 +224,7 @@ export default function RecipeDetailPage() {
               <Badge
                 key={tag}
                 variant="outline"
-                className="bg-coral-light/30 text-charcoal border-coral/20"
+                className="bg-primary-light/30 text-foreground border-primary/20"
               >
                 {tag}
               </Badge>
@@ -233,17 +233,17 @@ export default function RecipeDetailPage() {
         </div>
 
         {/* Cost Banner */}
-        <Card className="p-4 mb-6 border-lime/30 bg-lime/5">
+        <Card className="p-4 mb-6 border-accent/30 bg-accent/5">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm text-muted-foreground">Estimated cost</div>
-              <div className="text-2xl font-bold text-charcoal">
+              <div className="text-2xl font-bold text-foreground">
                 ${totalCost.toFixed(2)}
                 <span className="text-sm font-normal text-muted-foreground ml-2">
                   (${(totalCost / recipe.servings).toFixed(2)}/serving)
                 </span>
               </div>
-              <div className="text-sm text-lime mt-1">
+              <div className="text-sm text-accent mt-1">
                 Cheapest at {recipe.cheapestStore}
               </div>
             </div>
@@ -256,17 +256,17 @@ export default function RecipeDetailPage() {
         {/* Main Content Tabs */}
         <Tabs defaultValue="ingredients" className="mb-6">
           <TabsList className="bg-white border border-border/50 p-1">
-            <TabsTrigger value="ingredients" className="data-[state=active]:bg-coral/10 data-[state=active]:text-coral">
+            <TabsTrigger value="ingredients" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
               Ingredients
             </TabsTrigger>
-            <TabsTrigger value="instructions" className="data-[state=active]:bg-coral/10 data-[state=active]:text-coral">
+            <TabsTrigger value="instructions" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
               Instructions
             </TabsTrigger>
-            <TabsTrigger value="nutrition" className="data-[state=active]:bg-coral/10 data-[state=active]:text-coral">
+            <TabsTrigger value="nutrition" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
               Nutrition
             </TabsTrigger>
             {journalEntries.length > 0 && (
-              <TabsTrigger value="history" className="data-[state=active]:bg-coral/10 data-[state=active]:text-coral">
+              <TabsTrigger value="history" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 My History ({journalEntries.length})
               </TabsTrigger>
             )}
@@ -286,7 +286,7 @@ export default function RecipeDetailPage() {
                       variant="outline"
                       size="sm"
                       onClick={selectAllCheapest}
-                      className="text-lime border-lime/30 hover:bg-lime/10"
+                      className="text-accent border-accent/30 hover:bg-accent/10"
                     >
                       Select Cheapest
                     </Button>
@@ -315,14 +315,14 @@ export default function RecipeDetailPage() {
                     <div
                       key={idx}
                       className={`rounded-xl p-4 transition-all ${
-                        isInCart ? "bg-lime/10 border border-lime/30" : isSelected ? "bg-coral/5 border border-coral/30" : "bg-muted/30"
+                        isInCart ? "bg-accent/10 border border-accent/30" : isSelected ? "bg-primary/5 border border-primary/30" : "bg-muted/30"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
                           <input type="checkbox" className="w-5 h-5 rounded border-border accent-coral" />
                           <div>
-                            <span className="font-medium text-charcoal">{ing.name}</span>
+                            <span className="font-medium text-foreground">{ing.name}</span>
                             <span className="text-muted-foreground ml-2">
                               {ing.amount} {ing.unit}
                             </span>
@@ -333,7 +333,7 @@ export default function RecipeDetailPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           {isInCart && (
-                            <Badge className="bg-lime/20 text-lime border-0 text-xs">
+                            <Badge className="bg-accent/20 text-accent border-0 text-xs">
                               In Cart
                             </Badge>
                           )}
@@ -364,18 +364,18 @@ export default function RecipeDetailPage() {
                                 disabled={isDisabled}
                                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
                                   isStoreSelected
-                                    ? "bg-coral text-white ring-2 ring-coral ring-offset-2"
+                                    ? "bg-primary text-white ring-2 ring-coral ring-offset-2"
                                     : isCheapest
-                                    ? "bg-lime/20 border border-lime/30 hover:bg-lime/30"
+                                    ? "bg-accent/20 border border-accent/30 hover:bg-accent/30"
                                     : "bg-white hover:bg-muted/50"
                                 } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                               >
                                 <span className={isStoreSelected ? "text-white" : ""}>{store.storeName}</span>
-                                <span className={`font-bold ${isStoreSelected ? "text-white" : isCheapest ? "text-lime" : "text-charcoal"}`}>
+                                <span className={`font-bold ${isStoreSelected ? "text-white" : isCheapest ? "text-accent" : "text-foreground"}`}>
                                   ${store.price.toFixed(2)}
                                 </span>
                                 {isCheapest && !isStoreSelected && (
-                                  <Badge className="bg-lime text-white text-xs px-1.5 py-0">Best</Badge>
+                                  <Badge className="bg-accent text-white text-xs px-1.5 py-0">Best</Badge>
                                 )}
                                 {!store.inStock && (
                                   <Badge variant="outline" className="text-xs text-muted-foreground">Out</Badge>
@@ -388,7 +388,7 @@ export default function RecipeDetailPage() {
                         <div className="text-right ml-8">
                           <div className="font-medium">${ing.price?.toFixed(2) || "—"}</div>
                           {ing.cheapestStore && (
-                            <div className="text-xs text-lime">{ing.cheapestStore}</div>
+                            <div className="text-xs text-accent">{ing.cheapestStore}</div>
                           )}
                         </div>
                       )}
@@ -410,7 +410,7 @@ export default function RecipeDetailPage() {
                       🛍️
                     </div>
                     <div className="text-left">
-                      <h3 className="font-bold text-charcoal">Shopping Cart</h3>
+                      <h3 className="font-bold text-foreground">Shopping Cart</h3>
                       <p className="text-sm text-muted-foreground">
                         {cartItemCount} item{cartItemCount !== 1 ? "s" : ""} from {Object.keys(cartByStore).length} store{Object.keys(cartByStore).length !== 1 ? "s" : ""}
                       </p>
@@ -418,7 +418,7 @@ export default function RecipeDetailPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <div className="text-xl font-bold text-coral">${cartTotal.toFixed(2)}</div>
+                      <div className="text-xl font-bold text-primary">${cartTotal.toFixed(2)}</div>
                       <div className="text-xs text-muted-foreground">estimated</div>
                     </div>
                     <span className={`text-muted-foreground transition-transform ${showCart ? "rotate-180" : ""}`}>
@@ -433,8 +433,8 @@ export default function RecipeDetailPage() {
                       {Object.entries(cartByStore).map(([storeId, storeData]) => (
                         <div key={storeId} className="bg-muted/30 rounded-xl p-4">
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-semibold text-charcoal">{storeData.name}</h4>
-                            <div className="text-sm font-medium text-coral">
+                            <h4 className="font-semibold text-foreground">{storeData.name}</h4>
+                            <div className="text-sm font-medium text-primary">
                               ${storeData.subtotal.toFixed(2)}
                             </div>
                           </div>
@@ -445,7 +445,7 @@ export default function RecipeDetailPage() {
                                 className="flex items-center justify-between bg-white rounded-lg p-2"
                               >
                                 <div className="flex-1">
-                                  <div className="font-medium text-charcoal text-sm">{item.ingredient}</div>
+                                  <div className="font-medium text-foreground text-sm">{item.ingredient}</div>
                                   <div className="text-xs text-muted-foreground">
                                     ${item.price.toFixed(2)} each
                                   </div>
@@ -453,16 +453,16 @@ export default function RecipeDetailPage() {
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => updateQuantity(item.id, -1)}
-                                    className="w-7 h-7 rounded-full bg-muted/50 text-charcoal hover:bg-muted flex items-center justify-center"
+                                    className="w-7 h-7 rounded-full bg-muted/50 text-foreground hover:bg-muted flex items-center justify-center"
                                   >
                                     -
                                   </button>
-                                  <span className="w-8 text-center font-medium text-charcoal">
+                                  <span className="w-8 text-center font-medium text-foreground">
                                     {item.quantity}
                                   </span>
                                   <button
                                     onClick={() => updateQuantity(item.id, 1)}
-                                    className="w-7 h-7 rounded-full bg-muted/50 text-charcoal hover:bg-muted flex items-center justify-center"
+                                    className="w-7 h-7 rounded-full bg-muted/50 text-foreground hover:bg-muted flex items-center justify-center"
                                   >
                                     +
                                   </button>
@@ -483,7 +483,7 @@ export default function RecipeDetailPage() {
                     <div className="mt-4 pt-4 border-t border-border/50">
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-muted-foreground">Estimated Total</span>
-                        <span className="text-2xl font-bold text-coral">${cartTotal.toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-primary">${cartTotal.toFixed(2)}</span>
                       </div>
                       <Button className="w-full gradient-coral text-white" size="lg">
                         Proceed to Checkout
@@ -505,7 +505,7 @@ export default function RecipeDetailPage() {
                       {idx + 1}
                     </div>
                     <div className="flex-1 pt-1">
-                      <p className="text-charcoal">{step}</p>
+                      <p className="text-foreground">{step}</p>
                     </div>
                   </li>
                 ))}
@@ -516,18 +516,18 @@ export default function RecipeDetailPage() {
           {/* Nutrition Tab */}
           <TabsContent value="nutrition" className="mt-4">
             <Card className="p-4">
-              <h3 className="font-semibold text-charcoal mb-4">Per serving</h3>
+              <h3 className="font-semibold text-foreground mb-4">Per serving</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-coral/10 rounded-xl">
-                  <div className="text-3xl font-bold text-coral">{recipe.nutrition.calories}</div>
+                <div className="text-center p-4 bg-primary/10 rounded-xl">
+                  <div className="text-3xl font-bold text-primary">{recipe.nutrition.calories}</div>
                   <div className="text-sm text-muted-foreground">Calories</div>
                 </div>
-                <div className="text-center p-4 bg-lime/10 rounded-xl">
-                  <div className="text-3xl font-bold text-lime">{recipe.nutrition.protein}g</div>
+                <div className="text-center p-4 bg-accent/10 rounded-xl">
+                  <div className="text-3xl font-bold text-accent">{recipe.nutrition.protein}g</div>
                   <div className="text-sm text-muted-foreground">Protein</div>
                 </div>
                 <div className="text-center p-4 bg-sunny/20 rounded-xl">
-                  <div className="text-3xl font-bold text-charcoal">{recipe.nutrition.carbs}g</div>
+                  <div className="text-3xl font-bold text-foreground">{recipe.nutrition.carbs}g</div>
                   <div className="text-sm text-muted-foreground">Carbs</div>
                 </div>
                 <div className="text-center p-4 bg-pink/10 rounded-xl">
@@ -569,14 +569,14 @@ export default function RecipeDetailPage() {
                         ))}
                       </div>
                     </div>
-                    {entry.notes && <p className="text-charcoal mb-2">{entry.notes}</p>}
+                    {entry.notes && <p className="text-foreground mb-2">{entry.notes}</p>}
                     {entry.modifications && (
                       <p className="text-sm text-muted-foreground">
                         <span className="font-medium">Modifications:</span> {entry.modifications}
                       </p>
                     )}
                     {entry.wouldMakeAgain && (
-                      <Badge className="mt-2 bg-lime/20 text-charcoal border-0">
+                      <Badge className="mt-2 bg-accent/20 text-foreground border-0">
                         Would make again
                       </Badge>
                     )}
@@ -594,7 +594,7 @@ export default function RecipeDetailPage() {
           </Button>
           <Button
             variant="outline"
-            className="border-lime text-lime hover:bg-lime/10 flex-1 sm:flex-none"
+            className="border-accent text-accent hover:bg-accent/10 flex-1 sm:flex-none"
             size="lg"
             onClick={() => setShowMadeModal(true)}
           >
@@ -607,11 +607,11 @@ export default function RecipeDetailPage() {
       {showMadeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md p-6">
-            <h2 className="text-xl font-bold text-charcoal mb-4">How did it go?</h2>
+            <h2 className="text-xl font-bold text-foreground mb-4">How did it go?</h2>
 
             {/* Rating */}
             <div className="mb-4">
-              <label className="text-sm font-medium text-charcoal mb-2 block">Rating</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Rating</label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -629,7 +629,7 @@ export default function RecipeDetailPage() {
 
             {/* Notes */}
             <div className="mb-4">
-              <label className="text-sm font-medium text-charcoal mb-2 block">Notes</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -640,7 +640,7 @@ export default function RecipeDetailPage() {
 
             {/* Modifications */}
             <div className="mb-6">
-              <label className="text-sm font-medium text-charcoal mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Any modifications?
               </label>
               <textarea
@@ -653,8 +653,8 @@ export default function RecipeDetailPage() {
 
             {/* Photo Upload Placeholder */}
             <div className="mb-6">
-              <label className="text-sm font-medium text-charcoal mb-2 block">Add a photo</label>
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center text-muted-foreground hover:border-coral/50 cursor-pointer transition-colors">
+              <label className="text-sm font-medium text-foreground mb-2 block">Add a photo</label>
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center text-muted-foreground hover:border-primary/50 cursor-pointer transition-colors">
                 📷 Tap to upload a photo
               </div>
             </div>

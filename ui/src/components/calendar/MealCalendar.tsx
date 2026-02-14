@@ -222,12 +222,12 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-coral/20 overflow-hidden shadow-playful">
+    <div className="bg-white rounded-2xl border-2 border-primary/20 overflow-hidden shadow-playful">
       {/* Header with Week Navigation */}
       <div className="p-4 border-b border-border/50 bg-cream/50">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-display font-bold text-charcoal flex items-center gap-2 text-lg">
+            <h3 className="font-display font-bold text-foreground flex items-center gap-2 text-lg">
               <span>📅</span> Your Weekly Meal Plan
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
@@ -235,7 +235,7 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
             </p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-coral">${totalCost.toFixed(0)}</div>
+            <div className="text-2xl font-bold text-primary">${totalCost.toFixed(0)}</div>
             <div className="text-xs text-muted-foreground">estimated total</div>
           </div>
         </div>
@@ -251,9 +251,9 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
             ← Previous
           </Button>
           <div className="text-center">
-            <div className="font-semibold text-charcoal">{formatWeekRange()}</div>
+            <div className="font-semibold text-foreground">{formatWeekRange()}</div>
             {currentWeekOffset === 0 && (
-              <Badge className="bg-coral/10 text-coral border-0 text-xs mt-1">Current Week</Badge>
+              <Badge className="bg-primary/10 text-primary border-0 text-xs mt-1">Current Week</Badge>
             )}
             {currentWeekOffset < 0 && (
               <Badge className="bg-muted text-muted-foreground border-0 text-xs mt-1">Past</Badge>
@@ -276,10 +276,10 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
             <button
               key={type}
               onClick={() => toggleMealType(type)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-full text-sm font-bold transition-all ${
                 enabledMeals[type]
-                  ? "bg-coral text-white"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  ? "bg-primary text-white ring-2 ring-primary ring-offset-2 shadow-md scale-105"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted border border-transparent"
               }`}
             >
               {mealTypeLabels[type].icon} {mealTypeLabels[type].label}
@@ -300,13 +300,13 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                 <div
                   key={idx}
                   className={`p-3 text-center border-r border-border/30 last:border-r-0 ${
-                    isToday ? "bg-coral/10" : isPast ? "bg-muted/30" : ""
+                    isToday ? "bg-primary/10" : isPast ? "bg-muted/30" : ""
                   }`}
                 >
-                  <div className={`text-xs font-medium ${isToday ? "text-coral" : "text-muted-foreground"}`}>
+                  <div className={`text-xs font-medium ${isToday ? "text-primary" : "text-muted-foreground"}`}>
                     {dayNames[date.getDay()]}
                   </div>
-                  <div className={`text-lg font-bold ${isToday ? "text-coral" : isPast ? "text-muted-foreground" : "text-charcoal"}`}>
+                  <div className={`text-lg font-bold ${isToday ? "text-primary" : isPast ? "text-muted-foreground" : "text-foreground"}`}>
                     {date.getDate()}
                   </div>
                 </div>
@@ -334,13 +334,13 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                       key={idx}
                       className={`p-2 border-r border-border/30 last:border-r-0 min-h-[100px] relative group ${
                         isPast ? "bg-muted/20" : ""
-                      } ${isOut ? "bg-sunny/10" : ""}`}
+                      } ${isOut ? "bg-amber-400/10" : ""}`}
                     >
                       {/* Meal Type Label (only on first column) */}
                       {idx === 0 && (
                         <Badge
                           variant="outline"
-                          className="mb-2 text-xs capitalize bg-sunny/20 border-sunny/30 font-display font-bold"
+                          className="mb-2 text-xs capitalize bg-amber-400/20 border-amber-400/30 font-display font-bold"
                         >
                           {mealTypeLabels[mealType].icon} {mealTypeLabels[mealType].label}
                         </Badge>
@@ -353,15 +353,15 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                           return (
                             <div
                               onClick={() => setShowEatingOutModal({ dayIndex: idx, mealType })}
-                              className="cursor-pointer hover:bg-sunny/20 rounded-lg p-1 -m-1 transition-colors"
+                              className="cursor-pointer hover:bg-amber-400/20 rounded-lg p-1 -m-1 transition-colors"
                             >
-                              <div className="text-xs font-bold text-sunny flex items-center gap-1">
+                              <div className="text-xs font-bold text-amber-500 flex items-center gap-1">
                                 <span>🍽️</span> Eating Out
                               </div>
                               <div className="text-xs text-muted-foreground mt-1">
                                 Tap to log meal
                               </div>
-                              <Badge className="mt-1 text-xs bg-sunny/20 text-charcoal border-0">
+                              <Badge className="mt-1 text-xs bg-amber-400/20 text-foreground border-0">
                                 + Add photo
                               </Badge>
                             </div>
@@ -372,22 +372,22 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                           return (
                             <div
                               onClick={() => !displayMeal.isSwapped && mealData && handleMealClick(mealData, idx, mealType)}
-                              className="cursor-pointer hover:bg-coral/5 rounded-lg p-1 -m-1 transition-colors"
+                              className="cursor-pointer hover:bg-primary/5 rounded-lg p-1 -m-1 transition-colors"
                             >
                               {displayMeal.isSwapped && (
                                 <div className="text-lg mb-1">{(displayMeal as { image?: string }).image}</div>
                               )}
-                              <div className="text-xs font-medium text-charcoal line-clamp-2 hover:text-coral transition-colors">
+                              <div className="text-xs font-medium text-foreground line-clamp-2 hover:text-primary transition-colors">
                                 {displayMeal.name}
                                 {displayMeal.isSwapped && (
-                                  <Badge className="ml-1 text-[10px] bg-purple/20 text-purple border-0">New</Badge>
+                                  <Badge className="ml-1 text-[10px] bg-violet-500/20 text-violet-500 border-0">New</Badge>
                                 )}
                               </div>
                               <div className="text-xs text-muted-foreground mt-1">
                                 {displayMeal.calories} cal
                               </div>
                               {!displayMeal.isSwapped && (displayMeal as { cost?: number }).cost && (
-                                <div className="text-xs text-lime mt-0.5 font-medium">
+                                <div className="text-xs text-accent mt-0.5 font-medium">
                                   ${((displayMeal as { cost?: number }).cost || 0).toFixed(2)}
                                 </div>
                               )}
@@ -428,7 +428,7 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                               e.stopPropagation();
                               handleSwapMeal(idx, mealType, mealData);
                             }}
-                            className="w-5 h-5 rounded-full text-xs bg-purple/30 text-charcoal hover:bg-purple/50"
+                            className="w-5 h-5 rounded-full text-xs bg-violet-500/30 text-foreground hover:bg-violet-500/50"
                             title="Swap meal"
                           >
                             🔄
@@ -438,7 +438,7 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                               e.stopPropagation();
                               handleRegenerateMeal(idx, mealType);
                             }}
-                            className="w-5 h-5 rounded-full text-xs bg-lime/30 text-charcoal hover:bg-lime/50"
+                            className="w-5 h-5 rounded-full text-xs bg-accent/30 text-foreground hover:bg-accent/50"
                             title="Generate new meal"
                           >
                             ✨
@@ -448,7 +448,7 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                               e.stopPropagation();
                               toggleEatingOut(idx, mealType);
                             }}
-                            className="w-5 h-5 rounded-full text-xs bg-sunny/30 text-charcoal hover:bg-sunny/50"
+                            className="w-5 h-5 rounded-full text-xs bg-amber-400/30 text-foreground hover:bg-amber-400/50"
                             title="Mark as eating out"
                           >
                             🍽️
@@ -460,7 +460,7 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                             }}
                             className={`w-5 h-5 rounded-full text-xs ${
                               isRemoved
-                                ? "bg-lime/20 text-lime hover:bg-lime/30"
+                                ? "bg-accent/20 text-accent hover:bg-accent/30"
                                 : "bg-muted/50 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
                             }`}
                           >
@@ -474,7 +474,7 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                         <button
                           className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <span className="w-8 h-8 rounded-full bg-coral/10 text-coral flex items-center justify-center text-lg hover:bg-coral/20 transition-colors">
+                          <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg hover:bg-primary/20 transition-colors">
                             +
                           </span>
                         </button>
@@ -508,7 +508,7 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
               return (
                 <div key={idx} className="p-2 border-r border-border/30 last:border-r-0">
                   <div className="text-xs text-muted-foreground mb-1">Daily total</div>
-                  <div className="text-sm font-bold text-coral">
+                  <div className="text-sm font-bold text-primary">
                     {dailyCalories} cal
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -526,10 +526,10 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-xl font-bold text-charcoal">Log Your Meal</h2>
+              <h2 className="font-display text-xl font-bold text-foreground">Log Your Meal</h2>
               <button
                 onClick={() => setShowEatingOutModal(null)}
-                className="text-muted-foreground hover:text-charcoal text-2xl"
+                className="text-muted-foreground hover:text-foreground text-2xl"
               >
                 ×
               </button>
@@ -540,38 +540,38 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
             </div>
 
             {/* Photo Upload */}
-            <div className="border-2 border-dashed border-sunny/50 rounded-2xl p-6 text-center mb-4 hover:border-sunny transition-colors cursor-pointer bg-sunny/5">
+            <div className="border-2 border-dashed border-amber-400/50 rounded-2xl p-6 text-center mb-4 hover:border-amber-400 transition-colors cursor-pointer bg-amber-400/5">
               <div className="text-4xl mb-2">📸</div>
-              <p className="font-bold text-charcoal mb-1">Add a photo</p>
+              <p className="font-bold text-foreground mb-1">Add a photo</p>
               <p className="text-xs text-muted-foreground">We&apos;ll estimate the nutrition</p>
             </div>
 
             {/* Restaurant/Location */}
             <div className="mb-4">
-              <label className="font-bold text-charcoal mb-2 block text-sm">Where did you eat?</label>
+              <label className="font-bold text-foreground mb-2 block text-sm">Where did you eat?</label>
               <input
                 type="text"
                 placeholder="Restaurant name or location..."
-                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-sunny text-sm"
+                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-amber-400 text-sm"
               />
             </div>
 
             {/* What did you have */}
             <div className="mb-4">
-              <label className="font-bold text-charcoal mb-2 block text-sm">What did you have?</label>
+              <label className="font-bold text-foreground mb-2 block text-sm">What did you have?</label>
               <textarea
                 placeholder="Describe your meal..."
-                className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-sunny text-sm"
+                className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-amber-400 text-sm"
               />
             </div>
 
             {/* Estimated calories */}
             <div className="mb-6">
-              <label className="font-bold text-charcoal mb-2 block text-sm">Estimated calories (optional)</label>
+              <label className="font-bold text-foreground mb-2 block text-sm">Estimated calories (optional)</label>
               <input
                 type="number"
                 placeholder="e.g., 650"
-                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-sunny text-sm"
+                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-amber-400 text-sm"
               />
             </div>
 
@@ -588,7 +588,7 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
               </Button>
               <Button
                 onClick={() => setShowEatingOutModal(null)}
-                className="flex-1 gradient-sunny text-charcoal font-bold"
+                className="flex-1 bg-amber-400 text-foreground font-bold"
               >
                 Save
               </Button>
@@ -602,19 +602,19 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-xl font-bold text-charcoal">Swap Meal</h2>
+              <h2 className="font-display text-xl font-bold text-foreground">Swap Meal</h2>
               <button
                 onClick={() => setShowSwapModal(null)}
-                className="text-muted-foreground hover:text-charcoal text-2xl"
+                className="text-muted-foreground hover:text-foreground text-2xl"
               >
                 ×
               </button>
             </div>
 
             {/* Current meal */}
-            <div className="mb-4 p-3 bg-coral/10 rounded-xl">
+            <div className="mb-4 p-3 bg-primary/10 rounded-xl">
               <div className="text-xs text-muted-foreground mb-1">Current meal</div>
-              <div className="font-bold text-charcoal">{showSwapModal.currentRecipe.recipe.name}</div>
+              <div className="font-bold text-foreground">{showSwapModal.currentRecipe.recipe.name}</div>
               <div className="text-sm text-muted-foreground">
                 {showSwapModal.currentRecipe.recipe.nutrition.calories} cal • {showSwapModal.currentRecipe.recipe.prepTime + showSwapModal.currentRecipe.recipe.cookTime} min
               </div>
@@ -622,22 +622,22 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
 
             {/* Swap suggestions */}
             <div className="mb-4">
-              <div className="text-sm font-bold text-charcoal mb-3">Swap with:</div>
+              <div className="text-sm font-bold text-foreground mb-3">Swap with:</div>
               <div className="space-y-2">
                 {getSwapSuggestions(showSwapModal.currentRecipe.recipe.name).map((suggestion) => (
                   <button
                     key={suggestion.id}
                     onClick={() => handleSelectSwap(showSwapModal.dayIndex, showSwapModal.mealType, suggestion)}
-                    className="w-full p-3 bg-muted/30 rounded-xl text-left hover:bg-lime/10 hover:border-lime border-2 border-transparent transition-all flex items-center gap-3"
+                    className="w-full p-3 bg-muted/30 rounded-xl text-left hover:bg-accent/10 hover:border-accent border-2 border-transparent transition-all flex items-center gap-3"
                   >
                     <span className="text-3xl">{suggestion.image}</span>
                     <div className="flex-1">
-                      <div className="font-bold text-charcoal">{suggestion.name}</div>
+                      <div className="font-bold text-foreground">{suggestion.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {suggestion.calories} cal • {suggestion.time} min
                       </div>
                     </div>
-                    <span className="text-lime text-lg">→</span>
+                    <span className="text-accent text-lg">→</span>
                   </button>
                 ))}
               </div>
@@ -649,10 +649,10 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                 setShowSwapModal(null);
                 handleRegenerateMeal(showSwapModal.dayIndex, showSwapModal.mealType);
               }}
-              className="w-full p-3 border-2 border-dashed border-purple/30 rounded-xl text-center hover:bg-purple/10 transition-colors"
+              className="w-full p-3 border-2 border-dashed border-violet-500/30 rounded-xl text-center hover:bg-violet-500/10 transition-colors"
             >
               <span className="text-lg mr-2">✨</span>
-              <span className="font-bold text-purple">Generate a completely new suggestion</span>
+              <span className="font-bold text-violet-500">Generate a completely new suggestion</span>
             </button>
 
             <div className="mt-4 pt-4 border-t border-border/50">

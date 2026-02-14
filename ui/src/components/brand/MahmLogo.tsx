@@ -23,29 +23,29 @@ export function MahmLogo({ size = "md", showText = true, animated = true }: Mahm
 
   return (
     <div className="flex items-center gap-2">
-      {/* Cute Mom Icon - A warm bowl with steam and a heart */}
+      {/* Fun bowl icon with colorful steam */}
       <div className={`${sizeClasses[size]} relative ${animated ? "animate-float" : ""}`}>
         <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          {/* Bowl body */}
-          <ellipse cx="32" cy="42" rx="24" ry="14" fill="#FF5252"/>
-          <ellipse cx="32" cy="38" rx="20" ry="10" fill="#FFE0E0"/>
+          {/* Bowl body - vibrant coral/tomato */}
+          <ellipse cx="32" cy="44" rx="24" ry="14" fill="#FF6B6B"/>
+          <ellipse cx="32" cy="40" rx="20" ry="10" fill="#FFE8E8"/>
 
           {/* Bowl rim shine */}
-          <path d="M14 38 Q32 32 50 38" stroke="#FF80AB" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M14 40 Q32 34 50 40" stroke="#FF8E8E" strokeWidth="2" strokeLinecap="round"/>
 
-          {/* Steam wisps */}
+          {/* Steam wisps - rainbow colors! */}
           <path
             d="M22 28 Q20 22 24 18 Q22 14 26 10"
-            stroke="#69F0AE"
-            strokeWidth="2.5"
+            stroke="#51CF66"
+            strokeWidth="3"
             strokeLinecap="round"
             fill="none"
             className={animated ? "animate-pulse-gentle" : ""}
           />
           <path
             d="M32 26 Q30 20 34 16 Q32 12 36 8"
-            stroke="#FFD740"
-            strokeWidth="2.5"
+            stroke="#FFD43B"
+            strokeWidth="3"
             strokeLinecap="round"
             fill="none"
             className={animated ? "animate-pulse-gentle" : ""}
@@ -53,36 +53,36 @@ export function MahmLogo({ size = "md", showText = true, animated = true }: Mahm
           />
           <path
             d="M42 28 Q40 22 44 18 Q42 14 46 10"
-            stroke="#FF80AB"
-            strokeWidth="2.5"
+            stroke="#FF8ED4"
+            strokeWidth="3"
             strokeLinecap="round"
             fill="none"
             className={animated ? "animate-pulse-gentle" : ""}
             style={{ animationDelay: "0.6s" }}
           />
 
-          {/* Heart in the middle */}
+          {/* Heart in the bowl */}
           <path
-            d="M32 36 C32 33 28 30 26 32 C24 34 26 38 32 42 C38 38 40 34 38 32 C36 30 32 33 32 36Z"
-            fill="#FF5252"
-            className={animated ? "animate-sparkle" : ""}
+            d="M32 38 C32 35 28 32 26 34 C24 36 26 40 32 44 C38 40 40 36 38 34 C36 32 32 35 32 38Z"
+            fill="#FF6B6B"
+            className={animated ? "animate-pulse-pop" : ""}
           />
 
-          {/* Little sparkles */}
-          <circle cx="18" cy="14" r="1.5" fill="#FFD740" className={animated ? "animate-sparkle" : ""}/>
-          <circle cx="46" cy="12" r="1.5" fill="#69F0AE" className={animated ? "animate-sparkle" : ""} style={{ animationDelay: "0.5s" }}/>
-          <circle cx="52" cy="24" r="1" fill="#B388FF" className={animated ? "animate-sparkle" : ""} style={{ animationDelay: "1s" }}/>
+          {/* Sparkles */}
+          <circle cx="18" cy="14" r="2" fill="#FFD43B" className={animated ? "animate-sparkle" : ""}/>
+          <circle cx="46" cy="12" r="2" fill="#51CF66" className={animated ? "animate-sparkle" : ""} style={{ animationDelay: "0.5s" }}/>
+          <circle cx="52" cy="24" r="1.5" fill="#9775FA" className={animated ? "animate-sparkle" : ""} style={{ animationDelay: "1s" }}/>
         </svg>
       </div>
 
-      {/* Logo Text */}
+      {/* Logo Text - COLORFUL */}
       {showText && (
         <div className="font-display">
           <span className={`${textSizeClasses[size]} font-bold tracking-tight`}>
-            <span className="text-coral">M</span>
-            <span className="text-sunny">a</span>
-            <span className="text-lime">h</span>
-            <span className="text-pink">m</span>
+            <span className="text-primary">M</span>
+            <span className="text-accent">a</span>
+            <span style={{ color: '#FFD43B' }}>h</span>
+            <span style={{ color: '#FF8ED4' }}>m</span>
           </span>
         </div>
       )}
@@ -100,7 +100,7 @@ export function MahmLogoMini({ className = "" }: { className?: string }) {
           <span className="text-white text-lg">♡</span>
         </div>
         {/* Little steam */}
-        <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-lime text-xs animate-bounce-subtle">
+        <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-accent text-xs animate-bounce-fun">
           ~
         </div>
       </div>
@@ -115,13 +115,13 @@ export function MahmLogoFull({ animated = true }: { animated?: boolean }) {
       <MahmLogo size="lg" showText={false} animated={animated} />
       <div>
         <div className="font-display text-3xl font-bold tracking-tight">
-          <span className="text-coral">M</span>
-          <span className="text-sunny">a</span>
-          <span className="text-lime">h</span>
-          <span className="text-pink">m</span>
+          <span className="text-primary">M</span>
+          <span className="text-accent">a</span>
+          <span style={{ color: '#FFD43B' }}>h</span>
+          <span style={{ color: '#FF8ED4' }}>m</span>
         </div>
         <p className="text-xs text-muted-foreground -mt-1">
-          like a mom, but make it AI
+          like a mom, but make it AI ✨
         </p>
       </div>
     </div>

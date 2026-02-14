@@ -146,18 +146,18 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="gradient-hero border-b border-border/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-coral/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
         <div className="max-w-2xl mx-auto px-4 py-4 relative">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               onClick={() => router.push("/")}
-              className="text-muted-foreground hover:text-coral font-bold"
+              className="text-muted-foreground hover:text-primary font-bold"
             >
               ← Back
             </Button>
             <div className="flex-1">
-              <h1 className="font-display text-2xl font-bold text-charcoal">Your Profile</h1>
+              <h1 className="font-display text-2xl font-bold text-foreground">Your Profile</h1>
             </div>
             <MahmLogo size="sm" showText={false} />
           </div>
@@ -166,22 +166,22 @@ export default function ProfilePage() {
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Header */}
-        <Card className="p-6 border-2 border-coral/20 shadow-playful">
+        <Card className="p-6 border-2 border-primary/20 shadow-playful">
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-full gradient-coral flex items-center justify-center text-white text-3xl font-display font-bold shadow-lg animate-float">
               {profile.name.charAt(0)}
             </div>
             <div className="flex-1">
-              <h2 className="font-display text-2xl font-bold text-charcoal">{profile.name}</h2>
+              <h2 className="font-display text-2xl font-bold text-foreground">{profile.name}</h2>
               <p className="text-muted-foreground">{profile.email}</p>
-              <Badge className="mt-2 bg-lime/20 text-charcoal border-0 font-bold">Pro Cook in Training</Badge>
+              <Badge className="mt-2 bg-accent/20 text-foreground border-0 font-bold">Pro Cook in Training</Badge>
             </div>
           </div>
         </Card>
 
         {/* Dietary Restrictions */}
-        <Card className="p-6 border-2 border-lime/20">
-          <h3 className="font-display font-bold text-charcoal mb-4 text-lg">🥗 Dietary Restrictions</h3>
+        <Card className="p-6 border-2 border-accent/20">
+          <h3 className="font-display font-bold text-foreground mb-4 text-lg">🥗 Dietary Restrictions</h3>
           <div className="flex flex-wrap gap-2">
             {dietaryOptions.map((option) => (
               <button
@@ -189,8 +189,8 @@ export default function ProfilePage() {
                 onClick={() => toggleDietaryRestriction(option)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   profile.preferences.dietaryRestrictions.includes(option)
-                    ? "bg-coral text-white"
-                    : "bg-muted/50 text-charcoal hover:bg-muted"
+                    ? "bg-primary text-white"
+                    : "bg-muted/50 text-foreground hover:bg-muted"
                 }`}
               >
                 {option}
@@ -200,8 +200,8 @@ export default function ProfilePage() {
         </Card>
 
         {/* Allergies */}
-        <Card className="p-6 border-2 border-coral/20">
-          <h3 className="font-display font-bold text-charcoal mb-4 text-lg">⚠️ Allergies & Intolerances</h3>
+        <Card className="p-6 border-2 border-primary/20">
+          <h3 className="font-display font-bold text-foreground mb-4 text-lg">⚠️ Allergies & Intolerances</h3>
           <div className="flex flex-wrap gap-2">
             {allergyOptions.map((option) => (
               <button
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   profile.preferences.allergies.includes(option)
                     ? "bg-destructive text-white"
-                    : "bg-muted/50 text-charcoal hover:bg-muted"
+                    : "bg-muted/50 text-foreground hover:bg-muted"
                 }`}
               >
                 {option}
@@ -221,7 +221,7 @@ export default function ProfilePage() {
 
         {/* Foods You Dislike */}
         <Card className="p-6">
-          <h3 className="font-bold text-charcoal mb-4">Foods You Dislike</h3>
+          <h3 className="font-bold text-foreground mb-4">Foods You Dislike</h3>
           <p className="text-sm text-muted-foreground mb-4">
             Mahm will never recommend recipes with these ingredients
           </p>
@@ -229,7 +229,7 @@ export default function ProfilePage() {
             {profile.preferences.dislikedFoods.map((food) => (
               <Badge
                 key={food}
-                className="bg-muted/50 text-charcoal border-0 px-3 py-1.5 cursor-pointer hover:bg-destructive/20"
+                className="bg-muted/50 text-foreground border-0 px-3 py-1.5 cursor-pointer hover:bg-destructive/20"
                 onClick={() => removeDislikedFood(food)}
               >
                 {food} ×
@@ -253,7 +253,7 @@ export default function ProfilePage() {
 
         {/* Health Goals */}
         <Card className="p-6">
-          <h3 className="font-bold text-charcoal mb-4">Health Goals</h3>
+          <h3 className="font-bold text-foreground mb-4">Health Goals</h3>
           <div className="flex flex-wrap gap-2">
             {healthGoalOptions.map((option) => (
               <button
@@ -261,8 +261,8 @@ export default function ProfilePage() {
                 onClick={() => toggleHealthGoal(option)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   profile.preferences.healthGoals.includes(option)
-                    ? "bg-lime text-white"
-                    : "bg-muted/50 text-charcoal hover:bg-muted"
+                    ? "bg-accent text-white"
+                    : "bg-muted/50 text-foreground hover:bg-muted"
                 }`}
               >
                 {option}
@@ -273,7 +273,7 @@ export default function ProfilePage() {
 
         {/* Cooking Skill */}
         <Card className="p-6">
-          <h3 className="font-bold text-charcoal mb-4">Cooking Skill Level</h3>
+          <h3 className="font-bold text-foreground mb-4">Cooking Skill Level</h3>
           <div className="space-y-3">
             {skillLevels.map((level) => (
               <button
@@ -289,11 +289,11 @@ export default function ProfilePage() {
                 }
                 className={`w-full p-4 rounded-xl text-left transition-all ${
                   profile.preferences.cookingSkill === level.value
-                    ? "bg-coral/10 border-2 border-coral"
+                    ? "bg-primary/10 border-2 border-primary"
                     : "bg-muted/30 border-2 border-transparent hover:border-border"
                 }`}
               >
-                <div className="font-semibold text-charcoal">{level.label}</div>
+                <div className="font-semibold text-foreground">{level.label}</div>
                 <div className="text-sm text-muted-foreground">{level.description}</div>
               </button>
             ))}
@@ -302,15 +302,15 @@ export default function ProfilePage() {
 
         {/* Budget & Time */}
         <Card className="p-6">
-          <h3 className="font-bold text-charcoal mb-4">Budget & Time</h3>
+          <h3 className="font-bold text-foreground mb-4">Budget & Time</h3>
 
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-charcoal mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Weekly grocery budget
               </label>
               <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-charcoal">$</span>
+                <span className="text-lg font-bold text-foreground">$</span>
                 <input
                   type="number"
                   value={profile.preferences.budget}
@@ -330,7 +330,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-charcoal mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Time available for cooking (weeknights)
               </label>
               <div className="flex gap-2">
@@ -348,8 +348,8 @@ export default function ProfilePage() {
                     }
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       profile.preferences.availableTime === time
-                        ? "bg-coral text-white"
-                        : "bg-muted/50 text-charcoal hover:bg-muted"
+                        ? "bg-primary text-white"
+                        : "bg-muted/50 text-foreground hover:bg-muted"
                     }`}
                   >
                     {time} min
@@ -359,7 +359,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-charcoal mb-2 block">
+              <label className="text-sm font-medium text-foreground mb-2 block">
                 Household size
               </label>
               <div className="flex gap-2">
@@ -377,8 +377,8 @@ export default function ProfilePage() {
                     }
                     className={`w-12 h-12 rounded-lg text-sm font-medium transition-all ${
                       profile.preferences.householdSize === size
-                        ? "bg-coral text-white"
-                        : "bg-muted/50 text-charcoal hover:bg-muted"
+                        ? "bg-primary text-white"
+                        : "bg-muted/50 text-foreground hover:bg-muted"
                     }`}
                   >
                     {size}
@@ -396,7 +396,7 @@ export default function ProfilePage() {
             disabled={isSaving}
             className={`w-full font-display font-bold text-lg shadow-playful hover:scale-105 transition-transform ${
               saveSuccess
-                ? "bg-lime hover:bg-lime text-white"
+                ? "bg-accent hover:bg-accent text-white"
                 : "gradient-coral text-white"
             }`}
             size="lg"
