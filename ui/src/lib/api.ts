@@ -130,12 +130,17 @@ export interface AuthUser {
   email?: string;
 }
 
-/** POST /api/auth/register — body: { name, email? }. Returns user. */
-export async function register(name: string, email?: string): Promise<AuthUser> {
+/** POST /api/auth/register — body: { name, email, password, profile? }. Returns user. Creates user + user_profiles. */
+export async function register(payload: {
+  name: string;
+  email: string;
+  password: string;
+  profile?: Record<string, unknown>;
+}): Promise<AuthUser> {
   const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
     method: "POST",
     headers: headers(),
-    body: JSON.stringify({ name, email }),
+    body: JSON.stringify(payload),
     credentials: "include",
   });
   if (!res.ok) {
@@ -145,8 +150,8 @@ export async function register(name: string, email?: string): Promise<AuthUser> 
   return res.json();
 }
 
-/** POST /api/auth/login — body: { email? } or { user_id? }. Returns { user_id }. */
-export async function login(by: { email?: string; user_id?: string }): Promise<{ user_id: string }> {
+/** POST /api/auth/login — body: { email, password } or { user_id? }. Returns { user_id }. */
+export async function login(by: { email?: string; password?: string; user_id?: string }): Promise<{ user_id: string }> {
   const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
     method: "POST",
     headers: headers(),
@@ -156,6 +161,53 @@ export async function login(by: { email?: string; user_id?: string }): Promise<{
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { message?: string }).message || "Login failed");
+  }
+  return res.json();
+}
+
+/** GET /api/user/profile — requires userId. Returns profile with zip, budget_weekly, diet, allergies, dislikes, max_prep_minutes, household_size, prefs. */
+export interface UserProfile {
+  id: string;
+  zip: string;
+  budget_weekly: number;
+  diet: string;
+  allergies: string[];
+  dislikes: string[];
+  max_prep_minutes: number;
+  household_size: number;
+  prefs: Record<string, unknown>;
+  savedRecipes?: string[];
+  madeRecipes?: unknown[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export async function getProfile(userId: string): Promise<UserProfile> {
+  const res = await fetch(`${BACKEND_URL}/api/user/profile`, {
+    headers: headers(userId),
+    credentials: "include",
+  });
+  if (!res.ok) {
+    if (res.status === 401) throw new Error("Not logged in");
+    throw new Error("Failed to load profile");
+  }
+  return res.json();
+}
+
+/** PUT /api/user/profile — requires userId. Body: { zip?, budget_weekly?, diet?, allergies?, dislikes?, max_prep_minutes?, household_size?, prefs? } */
+export async function putProfile(
+  userId: string,
+  profile: Partial<Omit<UserProfile, "id" | "savedRecipes" | "madeRecipes" | "createdAt" | "updatedAt">>
+): Promise<UserProfile> {
+  const res = await fetch(`${BACKEND_URL}/api/user/profile`, {
+    method: "PUT",
+    headers: headers(userId),
+    credentials: "include",
+    body: JSON.stringify(profile),
+  });
+  if (!res.ok) {
+    if (res.status === 401) throw new Error("Not logged in");
+    throw new Error("Failed to save profile");
   }
   return res.json();
 }

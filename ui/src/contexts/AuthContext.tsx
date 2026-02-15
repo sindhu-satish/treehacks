@@ -8,8 +8,8 @@ const STORAGE_KEY = "mahm_user_id";
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
-  register: (name: string, email?: string) => Promise<void>;
-  login: (by: { email?: string; user_id?: string }) => Promise<void>;
+  register: (payload: { name: string; email: string; password: string; profile?: Record<string, unknown> }) => Promise<void>;
+  login: (by: { email?: string; password?: string; user_id?: string }) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -39,13 +39,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadStoredUser();
   }, [loadStoredUser]);
 
-  const register = useCallback(async (name: string, email?: string) => {
-    const u = await apiRegister(name, email);
+  const register = useCallback(async (payload: { name: string; email: string; password: string; profile?: Record<string, unknown> }) => {
+    const u = await apiRegister(payload);
     setUser(u);
     if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEY, u.user_id);
   }, []);
 
-  const login = useCallback(async (by: { email?: string; user_id?: string }) => {
+  const login = useCallback(async (by: { email?: string; password?: string; user_id?: string }) => {
     const { user_id } = await apiLogin(by);
     const u = await me(user_id);
     setUser(u);

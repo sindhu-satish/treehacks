@@ -15,10 +15,24 @@ import { MealCalendar } from "@/components/calendar/MealCalendar";
 import { GroceryList } from "@/components/calendar/GroceryList";
 import { MahmLogo, MahmLogoFull } from "@/components/brand/MahmLogo";
 import { NutritionDashboard } from "@/components/nutrition/NutritionDashboard";
-import {
-  dummyRecipes,
-  dummyGroceryComparison,
-} from "@/lib/dummy-data";
+import { dummyRecipes } from "@/lib/dummy-data";
+import { useAuth } from "@/contexts/AuthContext";
+import { LoginModal } from "@/components/auth/LoginModal";
+
+/** Extract ingredient names for Bright Data: handles string[] or {name, unit, amount, ...}[] */
+function extractIngredientNames(ings: unknown): string[] {
+  if (!ings || !Array.isArray(ings)) return [];
+  return ings
+    .map((i) => {
+      if (typeof i === "string" && i.trim()) return i.trim();
+      if (i && typeof i === "object" && "name" in i) {
+        const name = (i as { name?: string }).name;
+        return typeof name === "string" ? name.trim() : "";
+      }
+      return "";
+    })
+    .filter((n) => n.length > 0);
+}
 
 function createEmptyMealPlan(): MealPlan {
   const today = new Date();
@@ -44,7 +58,7 @@ function createEmptyMealPlan(): MealPlan {
     groceryList: [],
   };
 }
-import { healthCheck, sendChatMessage } from "@/lib/api";
+import { healthCheck, sendChatMessage, comparePrices, getProfile } from "@/lib/api";
 import {
   ChatMessage as ChatMessageType,
   GroceryComparison as GroceryComparisonType,
@@ -578,6 +592,9 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
 
 export default function Home() {
   const router = useRouter();
+  const { user, logout } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -587,7 +604,9 @@ export default function Home() {
   const [showMealLog, setShowMealLog] = useState(false);
   const [showRecipeFromPhoto, setShowRecipeFromPhoto] = useState(false);
   const [showNutritionDashboard, setShowNutritionDashboard] = useState(false);
-  const [marketplaceComparisons, setMarketplaceComparisons] = useState<GroceryComparisonType[]>(dummyGroceryComparison);
+  const [marketplaceComparisons, setMarketplaceComparisons] = useState<GroceryComparisonType[]>([]);
+  const [groceryListItems, setGroceryListItems] = useState<{ name: string; amount: string; category: string; estimatedPrice: number }[]>([]);
+  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
   const [marketplaceError, setMarketplaceError] = useState<string | null>(null);
   const [backendOk, setBackendOk] = useState<boolean | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlan>(createEmptyMealPlan);
@@ -606,14 +625,22 @@ export default function Home() {
     });
   };
 
-  const handleConfirmAddToCalendar = () => {
+  const handleConfirmAddToCalendar = async () => {
     if (!addToCalendarModal) return;
     const { recipe, dayIndex, mealType } = addToCalendarModal;
+    const ingredients = extractIngredientNames(recipe.ingredients);
+    if (ingredients.length === 0) {
+      setAddToCalendarModal(null);
+      setActiveTab("calendar");
+      return;
+    }
+
+    setMarketplaceLoading(true);
     const minimalRecipe: Recipe = {
       id: recipe.id,
       name: recipe.name,
       description: "",
-      ingredients: (recipe.ingredients ?? []).map((name) => ({ name, amount: 0, unit: "" })),
+      ingredients: ingredients.map((name) => ({ name, amount: 0, unit: "" })),
       instructions: [],
       prepTime: 0,
       cookTime: recipe.cook_time_min ?? 0,
@@ -632,8 +659,28 @@ export default function Home() {
       );
       return { ...prev, days };
     });
+    setGroceryListItems(ingredients.map((name) => ({ name, amount: "1", category: "other", estimatedPrice: 0 })));
     setAddToCalendarModal(null);
-    setActiveTab("calendar");
+    setActiveTab("marketplace");
+
+    let zip = "94305";
+    if (user?.user_id) {
+      try {
+        const profile = await getProfile(user.user_id);
+        if (profile.zip?.trim()) zip = profile.zip.trim();
+      } catch {
+        /* use default */
+      }
+    }
+    try {
+      const comparisons = await comparePrices(zip, ingredients);
+      setMarketplaceComparisons(comparisons);
+    } catch (e) {
+      setMarketplaceError(e instanceof Error ? e.message : "Could not load prices");
+      setMarketplaceComparisons([]);
+    } finally {
+      setMarketplaceLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -825,32 +872,6 @@ export default function Home() {
     }
   };
 
-  const groceryListItems = [
-    { name: "Red lentils", amount: "2 cups", category: "grains", estimatedPrice: 2.99 },
-    { name: "Coconut milk", amount: "2 cans", category: "canned", estimatedPrice: 3.98 },
-    { name: "Chickpeas", amount: "4 cans", category: "canned", estimatedPrice: 3.96 },
-    { name: "Black beans", amount: "4 cans", category: "canned", estimatedPrice: 3.96 },
-    { name: "Fresh spinach", amount: "10 oz", category: "produce", estimatedPrice: 4.58 },
-    { name: "Cauliflower", amount: "2 heads", category: "produce", estimatedPrice: 5.98 },
-    { name: "Bell peppers", amount: "4 medium", category: "produce", estimatedPrice: 3.96 },
-    { name: "Avocados", amount: "4 medium", category: "produce", estimatedPrice: 3.16 },
-    { name: "Red cabbage", amount: "1 small", category: "produce", estimatedPrice: 2.49 },
-    { name: "Onions", amount: "3 medium", category: "produce", estimatedPrice: 1.50 },
-    { name: "Garlic", amount: "2 heads", category: "produce", estimatedPrice: 1.00 },
-    { name: "Fresh ginger", amount: "1 piece", category: "produce", estimatedPrice: 0.75 },
-    { name: "Limes", amount: "4", category: "produce", estimatedPrice: 1.00 },
-    { name: "Cilantro", amount: "2 bunches", category: "produce", estimatedPrice: 1.98 },
-    { name: "Corn tortillas", amount: "24 count", category: "grains", estimatedPrice: 3.49 },
-    { name: "Turmeric", amount: "1 jar", category: "spices", estimatedPrice: 3.99 },
-    { name: "Cumin", amount: "1 jar", category: "spices", estimatedPrice: 3.99 },
-    { name: "Garam masala", amount: "1 jar", category: "spices", estimatedPrice: 4.99 },
-    { name: "Curry powder", amount: "1 jar", category: "spices", estimatedPrice: 3.99 },
-    { name: "Vegetable broth", amount: "2 cartons", category: "canned", estimatedPrice: 5.98 },
-    { name: "Tomato paste", amount: "2 cans", category: "canned", estimatedPrice: 1.98 },
-    { name: "Salsa verde", amount: "1 jar", category: "canned", estimatedPrice: 3.49 },
-    { name: "Coconut cream", amount: "1 can", category: "canned", estimatedPrice: 2.49 },
-  ];
-
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
       {/* Hero Header */}
@@ -893,12 +914,53 @@ export default function Home() {
                 <span className="hidden sm:inline">Profile</span>
                 <span className="sm:hidden text-lg">⚙</span>
               </Button>
-              <div
-                onClick={() => router.push("/profile")}
-                className="w-9 h-9 rounded-full gradient-coral text-white flex items-center justify-center text-sm font-bold cursor-pointer shadow-playful hover:scale-105 transition-transform"
-              >
-                A
-              </div>
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="w-9 h-9 rounded-full gradient-coral text-white flex items-center justify-center text-sm font-bold cursor-pointer shadow-playful hover:scale-105 transition-transform"
+                  >
+                    {(user.name || user.email || "U").charAt(0).toUpperCase()}
+                  </button>
+                  {showUserMenu && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setShowUserMenu(false)}
+                        aria-hidden="true"
+                      />
+                      <div className="absolute right-0 top-full mt-2 w-48 py-2 bg-white rounded-xl border-2 border-border shadow-lg z-50">
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            router.push("/profile");
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm font-medium hover:bg-muted/50"
+                        >
+                          Profile
+                        </button>
+                        <button
+                          onClick={async () => {
+                            setShowUserMenu(false);
+                            await logout();
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm font-medium text-destructive hover:bg-destructive/10"
+                        >
+                          Log out
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setShowLoginModal(true)}
+                  size="sm"
+                  className="gradient-coral text-white font-bold"
+                >
+                  Log in
+                </Button>
+              )}
             </nav>
           </div>
 
@@ -1066,10 +1128,28 @@ export default function Home() {
                 </div>
               )}
 
-              <GroceryComparison
-                comparisons={marketplaceComparisons}
-                groceryListItems={groceryListItems.map(item => item.name)}
-              />
+              {marketplaceLoading && (
+                <div className="mb-4 p-6 bg-accent/10 rounded-xl border border-accent/30 text-center">
+                  <div className="text-2xl mb-2 animate-pulse">🛒</div>
+                  <p className="font-medium text-foreground">Fetching prices from Walmart and Target...</p>
+                  <p className="text-sm text-muted-foreground mt-1">This may take a moment for each ingredient</p>
+                </div>
+              )}
+
+              {!marketplaceLoading && marketplaceComparisons.length === 0 && !marketplaceError && (
+                <div className="mb-4 p-8 bg-muted/30 rounded-xl border border-border/50 text-center">
+                  <div className="text-4xl mb-3">🛒</div>
+                  <p className="font-medium text-foreground">No price comparisons yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">Add a recipe to your calendar from the chat to see Walmart and Target prices for each ingredient</p>
+                </div>
+              )}
+
+              {marketplaceComparisons.length > 0 && (
+                <GroceryComparison
+                  comparisons={marketplaceComparisons}
+                  groceryListItems={groceryListItems.map(item => item.name)}
+                />
+              )}
             </div>
           </TabsContent>
 
@@ -1242,6 +1322,14 @@ export default function Home() {
             setShowRecipeFromPhoto(false);
             router.push(`/recipe/${recipeId}`);
           }}
+        />
+      )}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <LoginModal
+          onClose={() => setShowLoginModal(false)}
+          onSuccess={() => setShowLoginModal(false)}
         />
       )}
 

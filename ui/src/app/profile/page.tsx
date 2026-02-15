@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MahmLogo } from "@/components/brand/MahmLogo";
-import { dummyUserProfile } from "@/lib/dummy-data";
+import { getProfile, putProfile, type UserProfile } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { LoginModal } from "@/components/auth/LoginModal";
 
 const dietaryOptions = [
   "vegetarian",
@@ -31,111 +33,127 @@ const allergyOptions = [
   "fish",
 ];
 
-const healthGoalOptions = [
-  "weight loss",
-  "weight gain",
-  "muscle building",
-  "more energy",
-  "better sleep",
-  "heart health",
-  "gut health",
-  "reduce inflammation",
-];
-
-const skillLevels = [
-  { value: "beginner", label: "Beginner", description: "New to cooking, prefer simple recipes" },
-  { value: "intermediate", label: "Intermediate", description: "Comfortable with most techniques" },
-  { value: "advanced", label: "Advanced", description: "Enjoy complex recipes and challenges" },
-];
+const defaultProfile: UserProfile = {
+  id: "",
+  zip: "",
+  budget_weekly: 80,
+  diet: "",
+  allergies: [],
+  dislikes: [],
+  max_prep_minutes: 30,
+  household_size: 1,
+  prefs: {},
+};
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [profile, setProfile] = useState(dummyUserProfile);
-  const [isEditing, setIsEditing] = useState(false);
+  const { user, logout } = useAuth();
+  const [profile, setProfile] = useState<UserProfile>(defaultProfile);
   const [newDislikedFood, setNewDislikedFood] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Load profile from localStorage on mount
+  const userId = user?.user_id ?? null;
+
   useEffect(() => {
-    const savedProfile = localStorage.getItem("mahm_user_profile");
-    if (savedProfile) {
-      try {
-        const parsed = JSON.parse(savedProfile);
-        // Merge with default profile to ensure all required fields exist
-        setProfile({
-          ...dummyUserProfile,
-          ...parsed,
-          preferences: {
-            ...dummyUserProfile.preferences,
-            ...(parsed.preferences || {}),
-          },
-        });
-      } catch (e) {
-        console.error("Failed to parse saved profile:", e);
+    if (!userId) {
+      setLoading(false);
+      setError("Log in to load and save your profile");
+      // Fallback to localStorage for anonymous users
+      const saved = localStorage.getItem("mahm_user_profile");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setProfile({
+            ...defaultProfile,
+            ...parsed,
+            allergies: Array.isArray(parsed.allergies) ? parsed.allergies : [],
+            dislikes: Array.isArray(parsed.dislikes) ? parsed.dislikes : [],
+          });
+        } catch {
+          /* ignore */
+        }
       }
+      return;
     }
-  }, []);
+    getProfile(userId)
+      .then((p) =>
+        setProfile({
+          ...defaultProfile,
+          ...p,
+          allergies: Array.isArray(p.allergies) ? p.allergies : [],
+          dislikes: Array.isArray(p.dislikes) ? p.dislikes : [],
+        })
+      )
+      .catch(() => setError("Could not load profile"))
+      .finally(() => setLoading(false));
+  }, [userId]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!userId) {
+      // Anonymous: save to localStorage
+      localStorage.setItem("mahm_user_profile", JSON.stringify(profile));
+      setIsSaving(true);
+      setTimeout(() => {
+        setIsSaving(false);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }, 300);
+      return;
+    }
+
     setIsSaving(true);
-    // Save to localStorage
-    localStorage.setItem("mahm_user_profile", JSON.stringify(profile));
-
-    // Simulate a brief save delay for UX
-    setTimeout(() => {
-      setIsSaving(false);
+    setError(null);
+    try {
+      const updated = await putProfile(userId, {
+        zip: profile.zip,
+        budget_weekly: profile.budget_weekly,
+        diet: profile.diet,
+        allergies: Array.isArray(profile.allergies) ? profile.allergies : [],
+        dislikes: Array.isArray(profile.dislikes) ? profile.dislikes : [],
+        max_prep_minutes: profile.max_prep_minutes,
+        household_size: profile.household_size,
+        prefs: profile.prefs,
+      });
+      setProfile({
+        ...defaultProfile,
+        ...updated,
+        allergies: Array.isArray(updated.allergies) ? updated.allergies : [],
+        dislikes: Array.isArray(updated.dislikes) ? updated.dislikes : [],
+      });
       setSaveSuccess(true);
-      // Hide success message after 3 seconds
       setTimeout(() => setSaveSuccess(false), 3000);
-    }, 500);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to save");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const toggleDietaryRestriction = (restriction: string) => {
+  const toggleDiet = (diet: string) => {
     setProfile((prev) => ({
       ...prev,
-      preferences: {
-        ...prev.preferences,
-        dietaryRestrictions: prev.preferences.dietaryRestrictions.includes(restriction)
-          ? prev.preferences.dietaryRestrictions.filter((r) => r !== restriction)
-          : [...prev.preferences.dietaryRestrictions, restriction],
-      },
+      diet: prev.diet === diet ? "" : diet,
     }));
   };
 
   const toggleAllergy = (allergy: string) => {
     setProfile((prev) => ({
       ...prev,
-      preferences: {
-        ...prev.preferences,
-        allergies: prev.preferences.allergies.includes(allergy)
-          ? prev.preferences.allergies.filter((a) => a !== allergy)
-          : [...prev.preferences.allergies, allergy],
-      },
-    }));
-  };
-
-  const toggleHealthGoal = (goal: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      preferences: {
-        ...prev.preferences,
-        healthGoals: prev.preferences.healthGoals.includes(goal)
-          ? prev.preferences.healthGoals.filter((g) => g !== goal)
-          : [...prev.preferences.healthGoals, goal],
-      },
+      allergies: prev.allergies.includes(allergy)
+        ? prev.allergies.filter((a) => a !== allergy)
+        : [...prev.allergies, allergy],
     }));
   };
 
   const addDislikedFood = () => {
-    if (newDislikedFood.trim() && !profile.preferences.dislikedFoods.includes(newDislikedFood.trim())) {
-      setProfile((prev) => ({
-        ...prev,
-        preferences: {
-          ...prev.preferences,
-          dislikedFoods: [...prev.preferences.dislikedFoods, newDislikedFood.trim()],
-        },
-      }));
+    const t = newDislikedFood.trim();
+    const dislikes = Array.isArray(profile.dislikes) ? profile.dislikes : [];
+    if (t && !dislikes.includes(t)) {
+      setProfile((prev) => ({ ...prev, dislikes: [...(Array.isArray(prev.dislikes) ? prev.dislikes : []), t] }));
       setNewDislikedFood("");
     }
   };
@@ -143,16 +161,20 @@ export default function ProfilePage() {
   const removeDislikedFood = (food: string) => {
     setProfile((prev) => ({
       ...prev,
-      preferences: {
-        ...prev.preferences,
-        dislikedFoods: prev.preferences.dislikedFoods.filter((f) => f !== food),
-      },
+      dislikes: (Array.isArray(prev.dislikes) ? prev.dislikes : []).filter((f) => f !== food),
     }));
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground animate-pulse">Loading profile...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="gradient-hero border-b border-border/50 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
         <div className="max-w-2xl mx-auto px-4 py-4 relative">
@@ -167,38 +189,90 @@ export default function ProfilePage() {
             <div className="flex-1">
               <h1 className="font-display text-2xl font-bold text-foreground">Your Profile</h1>
             </div>
+            {userId && (
+              <Button
+                variant="ghost"
+                onClick={async () => {
+                  await logout();
+                  router.push("/");
+                }}
+                className="text-muted-foreground hover:text-destructive font-semibold"
+              >
+                Log out
+              </Button>
+            )}
             <MahmLogo size="sm" showText={false} />
           </div>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Profile Header */}
-        <Card className="p-6 border-2 border-primary/20 shadow-playful">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full gradient-coral flex items-center justify-center text-white text-3xl font-display font-bold shadow-lg animate-float">
-              {profile.name.charAt(0)}
-            </div>
-            <div className="flex-1">
-              <h2 className="font-display text-2xl font-bold text-foreground">{profile.name}</h2>
-              <p className="text-muted-foreground">{profile.email}</p>
-              <Badge className="mt-2 bg-accent/20 text-foreground border-0 font-bold">Pro Cook in Training</Badge>
-            </div>
+        {error && (
+          <div className="p-3 bg-muted/50 rounded-xl border border-border flex items-center justify-between gap-4">
+            <span className="text-sm text-muted-foreground">{error}</span>
+            <Button
+              size="sm"
+              className="gradient-coral text-white font-bold"
+              onClick={() => setShowLoginModal(true)}
+            >
+              Log in
+            </Button>
+          </div>
+        )}
+
+        {showLoginModal && (
+          <LoginModal
+            onClose={() => setShowLoginModal(false)}
+            onSuccess={() => {
+              setShowLoginModal(false);
+              setError(null);
+            }}
+          />
+        )}
+
+        {/* Zip */}
+        <Card className="p-6 border-2 border-primary/20">
+          <h3 className="font-display font-bold text-foreground mb-4 text-lg">📍 Zip Code</h3>
+          <input
+            type="text"
+            value={profile.zip}
+            onChange={(e) => setProfile((prev) => ({ ...prev, zip: e.target.value }))}
+            placeholder="e.g. 94305"
+            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+        </Card>
+
+        {/* Budget */}
+        <Card className="p-6 border-2 border-accent/20">
+          <h3 className="font-display font-bold text-foreground mb-4 text-lg">💰 Weekly Budget</h3>
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-bold text-foreground">$</span>
+            <input
+              type="number"
+              min={0}
+              value={profile.budget_weekly || ""}
+              onChange={(e) =>
+                setProfile((prev) => ({
+                  ...prev,
+                  budget_weekly: parseInt(e.target.value, 10) || 0,
+                }))
+              }
+              className="w-24 px-4 py-2 border border-border rounded-lg text-center font-semibold focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <span className="text-muted-foreground">per week</span>
           </div>
         </Card>
 
-        {/* Dietary Restrictions */}
-        <Card className="p-6 border-2 border-accent/20">
-          <h3 className="font-display font-bold text-foreground mb-4 text-lg">🥗 Dietary Restrictions</h3>
+        {/* Diet */}
+        <Card className="p-6 border-2 border-primary/20">
+          <h3 className="font-display font-bold text-foreground mb-4 text-lg">🥗 Diet</h3>
           <div className="flex flex-wrap gap-2">
             {dietaryOptions.map((option) => (
               <button
                 key={option}
-                onClick={() => toggleDietaryRestriction(option)}
+                onClick={() => toggleDiet(option)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  profile.preferences.dietaryRestrictions.includes(option)
-                    ? "bg-primary text-white"
-                    : "bg-muted/50 text-foreground hover:bg-muted"
+                  profile.diet === option ? "bg-primary text-white" : "bg-muted/50 text-foreground hover:bg-muted"
                 }`}
               >
                 {option}
@@ -209,14 +283,14 @@ export default function ProfilePage() {
 
         {/* Allergies */}
         <Card className="p-6 border-2 border-primary/20">
-          <h3 className="font-display font-bold text-foreground mb-4 text-lg">⚠️ Allergies & Intolerances</h3>
+          <h3 className="font-display font-bold text-foreground mb-4 text-lg">⚠️ Allergies</h3>
           <div className="flex flex-wrap gap-2">
             {allergyOptions.map((option) => (
               <button
                 key={option}
                 onClick={() => toggleAllergy(option)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  profile.preferences.allergies.includes(option)
+                  (Array.isArray(profile.allergies) ? profile.allergies : []).includes(option)
                     ? "bg-destructive text-white"
                     : "bg-muted/50 text-foreground hover:bg-muted"
                 }`}
@@ -227,14 +301,12 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* Foods You Dislike */}
+        {/* Dislikes */}
         <Card className="p-6">
           <h3 className="font-bold text-foreground mb-4">Foods You Dislike</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Mahm will never recommend recipes with these ingredients
-          </p>
+          <p className="text-sm text-muted-foreground mb-4">Mahm will never recommend recipes with these ingredients</p>
           <div className="flex flex-wrap gap-2 mb-4">
-            {profile.preferences.dislikedFoods.map((food) => (
+            {(Array.isArray(profile.dislikes) ? profile.dislikes : []).map((food) => (
               <Badge
                 key={food}
                 className="bg-muted/50 text-foreground border-0 px-3 py-1.5 cursor-pointer hover:bg-destructive/20"
@@ -251,7 +323,7 @@ export default function ProfilePage() {
               onChange={(e) => setNewDislikedFood(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addDislikedFood()}
               placeholder="Add a food you dislike..."
-              className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-coral/50"
+              className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
             <Button onClick={addDislikedFood} className="gradient-coral text-white">
               Add
@@ -259,153 +331,48 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* Health Goals */}
+        {/* Max prep time */}
         <Card className="p-6">
-          <h3 className="font-bold text-foreground mb-4">Health Goals</h3>
+          <h3 className="font-bold text-foreground mb-4">Max Prep Time (minutes)</h3>
           <div className="flex flex-wrap gap-2">
-            {healthGoalOptions.map((option) => (
+            {[15, 30, 45, 60].map((min) => (
               <button
-                key={option}
-                onClick={() => toggleHealthGoal(option)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  profile.preferences.healthGoals.includes(option)
-                    ? "bg-accent text-white"
-                    : "bg-muted/50 text-foreground hover:bg-muted"
+                key={min}
+                onClick={() => setProfile((prev) => ({ ...prev, max_prep_minutes: min }))}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  profile.max_prep_minutes === min ? "bg-primary text-white" : "bg-muted/50 text-foreground hover:bg-muted"
                 }`}
               >
-                {option}
+                {min} min
               </button>
             ))}
           </div>
         </Card>
 
-        {/* Cooking Skill */}
+        {/* Household size */}
         <Card className="p-6">
-          <h3 className="font-bold text-foreground mb-4">Cooking Skill Level</h3>
-          <div className="space-y-3">
-            {skillLevels.map((level) => (
+          <h3 className="font-bold text-foreground mb-4">Household Size</h3>
+          <div className="flex flex-wrap gap-2">
+            {[1, 2, 3, 4, 5, 6].map((size) => (
               <button
-                key={level.value}
-                onClick={() =>
-                  setProfile((prev) => ({
-                    ...prev,
-                    preferences: {
-                      ...prev.preferences,
-                      cookingSkill: level.value as "beginner" | "intermediate" | "advanced",
-                    },
-                  }))
-                }
-                className={`w-full p-4 rounded-xl text-left transition-all ${
-                  profile.preferences.cookingSkill === level.value
-                    ? "bg-primary/10 border-2 border-primary"
-                    : "bg-muted/30 border-2 border-transparent hover:border-border"
+                key={size}
+                onClick={() => setProfile((prev) => ({ ...prev, household_size: size }))}
+                className={`w-12 h-12 rounded-lg text-sm font-medium transition-all ${
+                  profile.household_size === size ? "bg-primary text-white" : "bg-muted/50 text-foreground hover:bg-muted"
                 }`}
               >
-                <div className="font-semibold text-foreground">{level.label}</div>
-                <div className="text-sm text-muted-foreground">{level.description}</div>
+                {size}
               </button>
             ))}
           </div>
         </Card>
 
-        {/* Budget & Time */}
-        <Card className="p-6">
-          <h3 className="font-bold text-foreground mb-4">Budget & Time</h3>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Weekly grocery budget
-              </label>
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-foreground">$</span>
-                <input
-                  type="number"
-                  value={profile.preferences.budget}
-                  onChange={(e) =>
-                    setProfile((prev) => ({
-                      ...prev,
-                      preferences: {
-                        ...prev.preferences,
-                        budget: parseInt(e.target.value) || 0,
-                      },
-                    }))
-                  }
-                  className="w-24 px-4 py-2 border border-border rounded-lg text-center font-semibold focus:outline-none focus:ring-2 focus:ring-coral/50"
-                />
-                <span className="text-muted-foreground">per week</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Time available for cooking (weeknights)
-              </label>
-              <div className="flex gap-2">
-                {[15, 30, 45, 60].map((time) => (
-                  <button
-                    key={time}
-                    onClick={() =>
-                      setProfile((prev) => ({
-                        ...prev,
-                        preferences: {
-                          ...prev.preferences,
-                          availableTime: time,
-                        },
-                      }))
-                    }
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      profile.preferences.availableTime === time
-                        ? "bg-primary text-white"
-                        : "bg-muted/50 text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {time} min
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Household size
-              </label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5, 6].map((size) => (
-                  <button
-                    key={size}
-                    onClick={() =>
-                      setProfile((prev) => ({
-                        ...prev,
-                        preferences: {
-                          ...prev.preferences,
-                          householdSize: size,
-                        },
-                      }))
-                    }
-                    className={`w-12 h-12 rounded-lg text-sm font-medium transition-all ${
-                      profile.preferences.householdSize === size
-                        ? "bg-primary text-white"
-                        : "bg-muted/50 text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Save Button */}
         <div className="relative">
           <Button
             onClick={handleSave}
             disabled={isSaving}
             className={`w-full font-display font-bold text-lg shadow-playful hover:scale-105 transition-transform ${
-              saveSuccess
-                ? "bg-accent hover:bg-accent text-white"
-                : "gradient-coral text-white"
+              saveSuccess ? "bg-accent hover:bg-accent text-white" : "gradient-coral text-white"
             }`}
             size="lg"
           >
@@ -415,7 +382,7 @@ export default function ProfilePage() {
               </span>
             ) : saveSuccess ? (
               <span className="flex items-center gap-2">
-                <span>✓</span> Saved Successfully!
+                <span>✓</span> Saved!
               </span>
             ) : (
               "Save Changes"
