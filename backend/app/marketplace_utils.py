@@ -307,7 +307,7 @@ def compare_prices_via_request_api(ingredients: List[Any], zip_code: str) -> Lis
     ]
     grocery_comparison: List[Dict[str, Any]] = []
 
-    for idx, ing in enumerate(ingredients[:3]):
+    for idx, ing in enumerate(ingredients[:5]):
         if idx > 0:
             time.sleep(2)  # Avoid rate limiting / timeouts from back-to-back requests
         display, query = normalize_ingredient_to_query(ing)
