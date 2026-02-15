@@ -4,12 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Mahm Brand Colors - Poppi/Magic Spoon Inspired - BOLD & FUN */
+/* Mahm Brand Colors - Modern, Bold, Playful & Quirky */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-public-sans);
-  --font-display: var(--font-lilita);
+  --font-sans: var(--font-nunito);
+  --font-display: var(--font-baloo);
   --font-mono: var(--font-geist-mono);
 
   /* Custom Mahm colors - Vibrant & Playful */
@@ -63,63 +63,63 @@
 :root {
   --radius: 1rem;
 
-  /* Mahm Brand Colors - VIBRANT & PLAYFUL */
-  --tomato: #FF6B6B;
-  --tomato-light: #FFE8E8;
-  --leaf: #51CF66;
-  --leaf-light: #E8F8EA;
-  --sunny: #FFD43B;
-  --peachy: #FF922B;
-  --cream: #FFFBF5;
+  /* Mahm Brand Colors - Tomato & Sage Kitchen Palette */
+  --tomato: #E54B3C;
+  --tomato-light: #FDEAE8;
+  --sage: #8FBF9F;
+  --sage-light: #E8F2EB;
+  --sunny: #F4D03F;
+  --peachy: #F39C6B;
+  --cream: #FFF8E7;
   --charcoal: #2D3436;
 
   /* Legacy mappings */
-  --coral: #FF6B6B;
-  --coral-light: #FFE8E8;
-  --lime: #51CF66;
-  --pink: #FF8ED4;
-  --purple: #9775FA;
-  --mint: #63E6BE;
-  --peach: #FFAA85;
+  --coral: #E54B3C;
+  --coral-light: #FDEAE8;
+  --lime: #8FBF9F;
+  --pink: #E8A0BF;
+  --purple: #9B7EDE;
+  --mint: #7ECEC1;
+  --peach: #F39C6B;
 
   /* Semantic colors */
-  --terracotta: #FF6B6B;
-  --sage: #51CF66;
+  --terracotta: #E54B3C;
+  --leaf: #8FBF9F;
   --forest: #2D3436;
-  --gold: #FFD43B;
+  --gold: #F4D03F;
 
-  /* Theme colors - BOLD */
-  --background: #FFFBF5;
+  /* Theme colors - Kitchen Fresh */
+  --background: #FFF8E7;
   --foreground: #2D3436;
-  --card: #FFFFFF;
+  --card: #FFFDF9;
   --card-foreground: #2D3436;
-  --popover: #FFFFFF;
+  --popover: #FFFDF9;
   --popover-foreground: #2D3436;
-  --primary: #FF6B6B;
+  --primary: #E54B3C;
   --primary-foreground: #FFFFFF;
-  --secondary: #FFE8E8;
+  --secondary: #FDEAE8;
   --secondary-foreground: #2D3436;
-  --muted: #FFF5F0;
+  --muted: #F5F0E8;
   --muted-foreground: #636E72;
-  --accent: #51CF66;
+  --accent: #8FBF9F;
   --accent-foreground: #FFFFFF;
-  --destructive: #E03131;
-  --border: #FFE0D6;
-  --input: #FFE0D6;
-  --ring: #FF6B6B;
-  --chart-1: #FF6B6B;
-  --chart-2: #51CF66;
-  --chart-3: #FFD43B;
-  --chart-4: #FF922B;
-  --chart-5: #9775FA;
-  --sidebar: #FFFBF5;
+  --destructive: #D63031;
+  --border: #E8DFD0;
+  --input: #E8DFD0;
+  --ring: #E54B3C;
+  --chart-1: #E54B3C;
+  --chart-2: #8FBF9F;
+  --chart-3: #F4D03F;
+  --chart-4: #F39C6B;
+  --chart-5: #9B7EDE;
+  --sidebar: #FFF8E7;
   --sidebar-foreground: #2D3436;
-  --sidebar-primary: #FF6B6B;
+  --sidebar-primary: #E54B3C;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FFE8E8;
+  --sidebar-accent: #E8F2EB;
   --sidebar-accent-foreground: #2D3436;
-  --sidebar-border: #FFE0D6;
-  --sidebar-ring: #FF6B6B;
+  --sidebar-border: #E8DFD0;
+  --sidebar-ring: #E54B3C;
 }
 
 .dark {
@@ -129,31 +129,31 @@
   --card-foreground: #EAEAEA;
   --popover: #16213E;
   --popover-foreground: #EAEAEA;
-  --primary: #FF6B6B;
+  --primary: #E54B3C;
   --primary-foreground: #FFFFFF;
   --secondary: #2D3436;
   --secondary-foreground: #EAEAEA;
   --muted: #2D3436;
   --muted-foreground: #A0A0A0;
-  --accent: #51CF66;
+  --accent: #8FBF9F;
   --accent-foreground: #1A1A2E;
-  --destructive: #E03131;
+  --destructive: #D63031;
   --border: #2D3436;
   --input: #2D3436;
-  --ring: #FF6B6B;
-  --chart-1: #FF6B6B;
-  --chart-2: #51CF66;
-  --chart-3: #FFD43B;
-  --chart-4: #FF922B;
-  --chart-5: #9775FA;
+  --ring: #E54B3C;
+  --chart-1: #E54B3C;
+  --chart-2: #8FBF9F;
+  --chart-3: #F4D03F;
+  --chart-4: #F39C6B;
+  --chart-5: #9B7EDE;
   --sidebar: #16213E;
   --sidebar-foreground: #EAEAEA;
-  --sidebar-primary: #FF6B6B;
+  --sidebar-primary: #E54B3C;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #2D3436;
   --sidebar-accent-foreground: #EAEAEA;
   --sidebar-border: #2D3436;
-  --sidebar-ring: #FF6B6B;
+  --sidebar-ring: #E54B3C;
 }
 
 @layer base {
@@ -166,9 +166,9 @@
   }
 }
 
-/* Display font for headers - FUN & BOLD */
+/* Display font for headers - Playful & Bold */
 .font-display {
-  font-family: var(--font-lilita), var(--font-public-sans), system-ui, sans-serif;
+  font-family: var(--font-baloo), var(--font-nunito), system-ui, sans-serif;
 }
 
 /* Custom scrollbar - playful */
@@ -281,37 +281,41 @@
   animation: pulse-pop 1.5s ease-in-out infinite;
 }
 
-/* BOLD Gradient backgrounds */
+/* Modern Gradient backgrounds - Kitchen Fresh */
 .gradient-coral {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+  background: linear-gradient(135deg, #E54B3C 0%, #F06B5D 100%);
 }
 
 .gradient-lime {
-  background: linear-gradient(135deg, #51CF66 0%, #69DB7C 100%);
+  background: linear-gradient(135deg, #8FBF9F 0%, #A8D4B8 100%);
 }
 
 .gradient-sunny {
-  background: linear-gradient(135deg, #FFD43B 0%, #FFE066 100%);
+  background: linear-gradient(135deg, #F4D03F 0%, #F7DC6F 100%);
 }
 
 .gradient-peachy {
-  background: linear-gradient(135deg, #FF922B 0%, #FFA94D 100%);
+  background: linear-gradient(135deg, #F39C6B 0%, #F5B48A 100%);
 }
 
 .gradient-purple {
-  background: linear-gradient(135deg, #9775FA 0%, #B197FC 100%);
+  background: linear-gradient(135deg, #9B7EDE 0%, #B8A4E8 100%);
 }
 
 .gradient-pink {
-  background: linear-gradient(135deg, #FF8ED4 0%, #FFA8DC 100%);
+  background: linear-gradient(135deg, #E8A0BF 0%, #F0BDD4 100%);
 }
 
 .gradient-rainbow {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FFD43B 25%, #51CF66 50%, #63E6BE 75%, #9775FA 100%);
+  background: linear-gradient(135deg, #E54B3C 0%, #F4D03F 25%, #8FBF9F 50%, #7ECEC1 75%, #9B7EDE 100%);
 }
 
 .gradient-hero {
-  background: linear-gradient(135deg, #FFFBF5 0%, #FFE8E8 30%, #FFF5E8 60%, #FFFBF5 100%);
+  background-color: #FFF8E7;
+  background-image:
+    linear-gradient(90deg, rgba(143, 191, 159, 0.2) 50%, transparent 50%),
+    linear-gradient(rgba(143, 191, 159, 0.2) 50%, transparent 50%);
+  background-size: 20px 20px;
 }
 
 /* Fun blob shapes */
@@ -342,11 +346,11 @@
 
 /* Soft shadows for cards */
 .shadow-warm {
-  box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
+  box-shadow: 0 4px 20px rgba(229, 75, 60, 0.15);
 }
 
 .shadow-warm-lg {
-  box-shadow: 0 8px 30px rgba(255, 107, 107, 0.2);
+  box-shadow: 0 8px 30px rgba(229, 75, 60, 0.2);
 }
 
 /* Squiggly underline effect */
@@ -381,16 +385,16 @@
 
 .card-hover:hover {
   transform: translateY(-4px) rotate(1deg);
-  box-shadow: 0 12px 30px rgba(255, 107, 107, 0.2);
+  box-shadow: 0 12px 30px rgba(229, 75, 60, 0.2);
 }
 
-/* Gingham pattern background */
+/* Gingham pattern background - Kitchen tablecloth style */
 .gingham {
-  background-color: #FFFBF5;
+  background-color: #FFF8E7;
   background-image:
-    linear-gradient(90deg, rgba(81, 207, 102, 0.2) 50%, transparent 50%),
-    linear-gradient(rgba(81, 207, 102, 0.2) 50%, transparent 50%);
-  background-size: 20px 20px;
+    linear-gradient(90deg, rgba(143, 191, 159, 0.25) 50%, transparent 50%),
+    linear-gradient(rgba(143, 191, 159, 0.25) 50%, transparent 50%);
+  background-size: 24px 24px;
 }
 
 /* Dotted pattern */

@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Public_Sans, Lilita_One, Geist_Mono } from "next/font/google";
+import { Nunito, Baloo_2, Geist_Mono } from "next/font/google";
 import { MahmProvider } from "@/contexts/MahmContext";
 import "./globals.css";
 
-const publicSans = Public_Sans({
-  variable: "--font-public-sans",
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const lilitaOne = Lilita_One({
-  variable: "--font-lilita",
+const baloo2 = Baloo_2({
+  variable: "--font-baloo",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${publicSans.variable} ${lilitaOne.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${nunito.variable} ${baloo2.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <MahmProvider>
           {children}

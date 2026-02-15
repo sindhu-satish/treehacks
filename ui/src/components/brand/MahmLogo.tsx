@@ -23,66 +23,69 @@ export function MahmLogo({ size = "md", showText = true, animated = true }: Mahm
 
   return (
     <div className="flex items-center gap-2">
-      {/* Fun bowl icon with colorful steam */}
+      {/* Hand-drawn cute mom face with wooden spoon */}
       <div className={`${sizeClasses[size]} relative ${animated ? "animate-float" : ""}`}>
         <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          {/* Bowl body - vibrant coral/tomato */}
-          <ellipse cx="32" cy="44" rx="24" ry="14" fill="#FF6B6B"/>
-          <ellipse cx="32" cy="40" rx="20" ry="10" fill="#FFE8E8"/>
+          {/* Hair buns */}
+          <circle cx="14" cy="28" r="8" fill="#2D3436"/>
+          <circle cx="50" cy="28" r="8" fill="#2D3436"/>
 
-          {/* Bowl rim shine */}
-          <path d="M14 40 Q32 34 50 40" stroke="#FF8E8E" strokeWidth="2" strokeLinecap="round"/>
+          {/* Face */}
+          <ellipse cx="32" cy="38" rx="18" ry="16" fill="#FFF8E7" stroke="#2D3436" strokeWidth="2.5"/>
 
-          {/* Steam wisps - rainbow colors! */}
+          {/* Hair on top */}
           <path
-            d="M22 28 Q20 22 24 18 Q22 14 26 10"
-            stroke="#51CF66"
-            strokeWidth="3"
-            strokeLinecap="round"
-            fill="none"
-            className={animated ? "animate-pulse-gentle" : ""}
-          />
-          <path
-            d="M32 26 Q30 20 34 16 Q32 12 36 8"
-            stroke="#FFD43B"
-            strokeWidth="3"
-            strokeLinecap="round"
-            fill="none"
-            className={animated ? "animate-pulse-gentle" : ""}
-            style={{ animationDelay: "0.3s" }}
-          />
-          <path
-            d="M42 28 Q40 22 44 18 Q42 14 46 10"
-            stroke="#FF8ED4"
-            strokeWidth="3"
-            strokeLinecap="round"
-            fill="none"
-            className={animated ? "animate-pulse-gentle" : ""}
-            style={{ animationDelay: "0.6s" }}
+            d="M14 32 Q14 18 32 18 Q50 18 50 32"
+            fill="#2D3436"
           />
 
-          {/* Heart in the bowl */}
+          {/* Rosy cheeks */}
+          <circle cx="20" cy="42" r="4" fill="#E54B3C" opacity="0.3"/>
+          <circle cx="44" cy="42" r="4" fill="#E54B3C" opacity="0.3"/>
+
+          {/* Eyes - happy closed eyes */}
           <path
-            d="M32 38 C32 35 28 32 26 34 C24 36 26 40 32 44 C38 40 40 36 38 34 C36 32 32 35 32 38Z"
-            fill="#FF6B6B"
+            d="M24 38 Q26 35 28 38"
+            stroke="#2D3436"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <path
+            d="M36 38 Q38 35 40 38"
+            stroke="#2D3436"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+          />
+
+          {/* Cute smile */}
+          <path
+            d="M26 46 Q32 52 38 46"
+            stroke="#2D3436"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+          />
+
+          {/* Wooden spoon */}
+          <ellipse cx="56" cy="14" rx="6" ry="8" fill="#DEB887" stroke="#2D3436" strokeWidth="2"/>
+          <rect x="54" y="20" width="4" height="20" rx="2" fill="#C4A574" stroke="#2D3436" strokeWidth="1.5"/>
+
+          {/* Little heart on spoon */}
+          <path
+            d="M56 12 C56 12 54.5 11 53.5 12 C52.5 13 53.5 14 56 16 C58.5 14 59.5 13 58.5 12 C57.5 11 56 12 56 12Z"
+            fill="#E54B3C"
             className={animated ? "animate-pulse-pop" : ""}
           />
-
-          {/* Sparkles */}
-          <circle cx="18" cy="14" r="2" fill="#FFD43B" className={animated ? "animate-sparkle" : ""}/>
-          <circle cx="46" cy="12" r="2" fill="#51CF66" className={animated ? "animate-sparkle" : ""} style={{ animationDelay: "0.5s" }}/>
-          <circle cx="52" cy="24" r="1.5" fill="#9775FA" className={animated ? "animate-sparkle" : ""} style={{ animationDelay: "1s" }}/>
         </svg>
       </div>
 
-      {/* Logo Text - COLORFUL */}
+      {/* Logo Text - Clean, single color */}
       {showText && (
         <div className="font-display">
-          <span className={`${textSizeClasses[size]} font-bold tracking-tight`}>
-            <span className="text-primary">M</span>
-            <span className="text-accent">a</span>
-            <span style={{ color: '#FFD43B' }}>h</span>
-            <span style={{ color: '#FF8ED4' }}>m</span>
+          <span className={`${textSizeClasses[size]} font-bold tracking-tight text-foreground`}>
+            mahm
           </span>
         </div>
       )}
@@ -95,13 +98,13 @@ export function MahmLogoMini({ className = "" }: { className?: string }) {
   return (
     <div className={`flex items-center justify-center ${className}`}>
       <div className="relative">
-        {/* Simple heart bowl */}
-        <div className="w-8 h-8 gradient-coral rounded-full flex items-center justify-center shadow-playful">
-          <span className="text-white text-lg">♡</span>
+        {/* Simple pot icon */}
+        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-playful border-2 border-foreground">
+          <span className="text-white text-sm">🍲</span>
         </div>
-        {/* Little steam */}
-        <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-accent text-xs animate-bounce-fun">
-          ~
+        {/* Little heart */}
+        <div className="absolute -top-1 -right-1 text-accent text-xs">
+          ♥
         </div>
       </div>
     </div>
@@ -114,14 +117,11 @@ export function MahmLogoFull({ animated = true }: { animated?: boolean }) {
     <div className="flex items-center gap-3">
       <MahmLogo size="lg" showText={false} animated={animated} />
       <div>
-        <div className="font-display text-3xl font-bold tracking-tight">
-          <span className="text-primary">M</span>
-          <span className="text-accent">a</span>
-          <span style={{ color: '#FFD43B' }}>h</span>
-          <span style={{ color: '#FF8ED4' }}>m</span>
+        <div className="font-display text-3xl font-bold tracking-tight text-foreground">
+          mahm
         </div>
         <p className="text-xs text-muted-foreground -mt-1">
-          like a mom, but make it AI ✨
+          like a mom, but make it AI
         </p>
       </div>
     </div>

@@ -263,13 +263,13 @@ export const dummyGroceryComparison: GroceryComparison[] = [
 
 export const dummyMealPlan: MealPlan = {
   id: "mp1",
-  startDate: new Date(),
-  endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  startDate: new Date("2025-02-10"),
+  endDate: new Date("2025-02-17"),
   totalCost: 73,
   groceryList: [],
   days: [
     {
-      date: new Date(),
+      date: new Date("2025-02-10"),
       meals: {
         breakfast: { recipe: { ...dummyRecipes[0], id: "b1", name: "Overnight Oats with Berries", nutrition: { calories: 320, protein: 12, carbs: 45, fat: 8, fiber: 6 } } as Recipe, servings: 1 },
         lunch: { recipe: { ...dummyRecipes[3], id: "l1", name: "Mediterranean Quinoa Bowl" } as Recipe, servings: 1 },
@@ -278,7 +278,7 @@ export const dummyMealPlan: MealPlan = {
       dailyNutrition: { calories: 1380, protein: 55, carbs: 181, fat: 48, fiber: 30 },
     },
     {
-      date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+      date: new Date("2025-02-11"),
       meals: {
         breakfast: { recipe: { ...dummyRecipes[0], id: "b2", name: "Banana Peanut Butter Smoothie", nutrition: { calories: 380, protein: 14, carbs: 48, fat: 16, fiber: 5 } } as Recipe, servings: 1 },
         lunch: { recipe: { ...dummyRecipes[0], id: "l2", name: "Leftover Lentil Dal", nutrition: { calories: 320, protein: 14, carbs: 42, fat: 12, fiber: 8 } } as Recipe, servings: 1 },
@@ -287,7 +287,7 @@ export const dummyMealPlan: MealPlan = {
       dailyNutrition: { calories: 1270, protein: 50, carbs: 166, fat: 50, fiber: 31 },
     },
     {
-      date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      date: new Date("2025-02-12"),
       meals: {
         breakfast: { recipe: { ...dummyRecipes[0], id: "b3", name: "Avocado Toast with Seeds", nutrition: { calories: 340, protein: 10, carbs: 32, fat: 20, fiber: 8 } } as Recipe, servings: 1 },
         lunch: { recipe: { ...dummyRecipes[1], id: "l3", name: "Leftover Chickpea Curry", nutrition: { calories: 285, protein: 11, carbs: 38, fat: 10, fiber: 10 } } as Recipe, servings: 1 },
@@ -296,7 +296,7 @@ export const dummyMealPlan: MealPlan = {
       dailyNutrition: { calories: 1305, protein: 45, carbs: 166, fat: 58, fiber: 46 },
     },
     {
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      date: new Date("2025-02-13"),
       meals: {
         breakfast: { recipe: { ...dummyRecipes[0], id: "b4", name: "Greek Yogurt Parfait", nutrition: { calories: 290, protein: 18, carbs: 38, fat: 8, fiber: 4 } } as Recipe, servings: 1 },
         lunch: { recipe: { ...dummyRecipes[2], id: "l4", name: "Leftover Black Bean Tacos", nutrition: { calories: 340, protein: 12, carbs: 48, fat: 14, fiber: 14 } } as Recipe, servings: 1 },
@@ -305,7 +305,7 @@ export const dummyMealPlan: MealPlan = {
       dailyNutrition: { calories: 1220, protein: 49, carbs: 162, fat: 49, fiber: 30 },
     },
     {
-      date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+      date: new Date("2025-02-14"),
       meals: {
         breakfast: { recipe: { ...dummyRecipes[0], id: "b5", name: "Chia Pudding", nutrition: { calories: 280, protein: 8, carbs: 32, fat: 14, fiber: 10 } } as Recipe, servings: 1 },
         lunch: { recipe: { ...dummyRecipes[3], id: "l5", name: "Leftover Quinoa Bowl", nutrition: { calories: 295, protein: 9, carbs: 38, fat: 13, fiber: 6 } } as Recipe, servings: 1 },
@@ -314,7 +314,7 @@ export const dummyMealPlan: MealPlan = {
       dailyNutrition: { calories: 1215, protein: 45, carbs: 154, fat: 51, fiber: 32 },
     },
     {
-      date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      date: new Date("2025-02-15"),
       meals: {
         breakfast: { recipe: { ...dummyRecipes[0], id: "b6", name: "Veggie Scramble", nutrition: { calories: 320, protein: 16, carbs: 12, fat: 24, fiber: 4 } } as Recipe, servings: 1 },
         lunch: { recipe: { ...dummyRecipes[0], id: "l6", name: "Leftover Lentil Dal", nutrition: { calories: 320, protein: 14, carbs: 42, fat: 12, fiber: 8 } } as Recipe, servings: 1 },
@@ -323,7 +323,7 @@ export const dummyMealPlan: MealPlan = {
       dailyNutrition: { calories: 1210, protein: 52, carbs: 130, fat: 56, fiber: 32 },
     },
     {
-      date: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+      date: new Date("2025-02-16"),
       meals: {
         breakfast: { recipe: { ...dummyRecipes[0], id: "b7", name: "Pancakes with Fresh Fruit", nutrition: { calories: 420, protein: 10, carbs: 68, fat: 12, fiber: 4 } } as Recipe, servings: 1 },
         lunch: { recipe: { ...dummyRecipes[1], id: "l7", name: "Leftover Chickpea Curry", nutrition: { calories: 285, protein: 11, carbs: 38, fat: 10, fiber: 10 } } as Recipe, servings: 1 },
@@ -339,31 +339,31 @@ export const dummyChatHistory: ChatMessage[] = [
     id: "1",
     role: "assistant",
     content: "Hey there! I'm Mahm, your AI nutritionist and meal planning buddy. I'm here to help you eat well without the stress. Tell me a bit about yourself - any dietary restrictions, allergies, or foods you absolutely can't stand? And what's your weekly grocery budget looking like?",
-    timestamp: new Date(Date.now() - 5 * 60 * 1000),
+    timestamp: new Date("2025-02-10T10:00:00"),
   },
   {
     id: "2",
     role: "user",
     content: "I'm vegetarian, lactose intolerant, trying to lose weight, $80/week budget",
-    timestamp: new Date(Date.now() - 4 * 60 * 1000),
+    timestamp: new Date("2025-02-10T10:01:00"),
   },
   {
     id: "3",
     role: "assistant",
     content: "Got it! Vegetarian + lactose-free + weight loss goals on $80/week - totally doable. A few more quick questions to make sure I nail this:\n\n1. **Cooking skill level?** (Total beginner, comfortable, or chef mode?)\n2. **Any foods you hate?** (No judgment - we all have our nemeses)\n3. **How much time do you have for cooking on weeknights?** (15 min? 30? An hour?)",
-    timestamp: new Date(Date.now() - 3 * 60 * 1000),
+    timestamp: new Date("2025-02-10T10:02:00"),
   },
   {
     id: "4",
     role: "user",
     content: "Beginner. Hate tofu. Usually have about 30 mins on weeknights",
-    timestamp: new Date(Date.now() - 2 * 60 * 1000),
+    timestamp: new Date("2025-02-10T10:03:00"),
   },
   {
     id: "5",
     role: "assistant",
     content: "Perfect! No tofu, beginner-friendly, 30-min max. I've got you covered.\n\nHere are 3 dinner ideas that fit your needs - all high-protein (since you mentioned weight loss), dairy-free, and totally beginner-proof:",
-    timestamp: new Date(Date.now() - 1 * 60 * 1000),
+    timestamp: new Date("2025-02-10T10:04:00"),
     toolCalls: [
       { id: "tc1", name: "search_recipes", status: "complete" },
       { id: "tc2", name: "get_nutrition", status: "complete" },
@@ -388,8 +388,8 @@ export const dummyUserProfile: UserProfile = {
   },
   savedRecipes: ["1", "3"],
   madeRecipes: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: new Date("2025-01-01"),
+  updatedAt: new Date("2025-01-15"),
 };
 
 export const dummyJournalEntries: RecipeJournalEntry[] = [
@@ -397,7 +397,7 @@ export const dummyJournalEntries: RecipeJournalEntry[] = [
     id: "j1",
     recipeId: "1",
     recipeName: "Creamy Lentil Dal",
-    madeAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    madeAt: new Date("2025-02-03"),
     rating: 5,
     photos: [],
     notes: "So good! Added extra spinach.",
@@ -408,7 +408,7 @@ export const dummyJournalEntries: RecipeJournalEntry[] = [
     id: "j2",
     recipeId: "1",
     recipeName: "Creamy Lentil Dal",
-    madeAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    madeAt: new Date("2025-02-08"),
     rating: 5,
     photos: [],
     notes: "Even better the second time!",
@@ -419,7 +419,7 @@ export const dummyJournalEntries: RecipeJournalEntry[] = [
     id: "j3",
     recipeId: "3",
     recipeName: "Black Bean Tacos",
-    madeAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+    madeAt: new Date("2025-02-06"),
     rating: 4,
     photos: [],
     notes: "Quick and easy weeknight dinner",

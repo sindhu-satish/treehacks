@@ -312,6 +312,22 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
   const [mealPlanStatus, setMealPlanStatus] = useState<"planned" | "unplanned" | null>(null);
   const [mealType, setMealType] = useState<string | null>(null);
   const [hasPhoto, setHasPhoto] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
+  const [portionSize, setPortionSize] = useState<string>("Regular");
+  const [isLogging, setIsLogging] = useState(false);
+  const [logSuccess, setLogSuccess] = useState(false);
+
+  const handleLogMeal = async () => {
+    setIsLogging(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsLogging(false);
+    setLogSuccess(true);
+    // Close after showing success
+    setTimeout(() => {
+      onClose();
+    }, 1500);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -429,8 +445,14 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
               {["Creamy Lentil Dal", "Chickpea Tikka Masala", "Black Bean Tacos"].map((meal) => (
                 <button
                   key={meal}
-                  className="w-full p-3 rounded-lg text-left text-sm font-medium bg-white hover:bg-accent/10 border-2 border-transparent hover:border-accent/30 transition-all"
+                  onClick={() => setSelectedMeal(meal)}
+                  className={`w-full p-3 rounded-lg text-left text-sm font-medium transition-all ${
+                    selectedMeal === meal
+                      ? "bg-accent/20 border-2 border-accent text-foreground"
+                      : "bg-white hover:bg-accent/10 border-2 border-transparent hover:border-accent/30"
+                  }`}
                 >
+                  {selectedMeal === meal && <span className="mr-2">✓</span>}
                   {meal}
                 </button>
               ))}
@@ -466,7 +488,12 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
             {["Small", "Regular", "Large", "XL"].map((size) => (
               <button
                 key={size}
-                className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-muted/50 text-foreground hover:bg-primary/20 transition-colors"
+                onClick={() => setPortionSize(size)}
+                className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  portionSize === size
+                    ? "bg-primary text-white"
+                    : "bg-muted/50 text-foreground hover:bg-primary/20"
+                }`}
               >
                 {size}
               </button>
@@ -475,15 +502,42 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <Button
-          className="w-full gradient-coral text-white font-bold text-lg py-6 shadow-playful hover:scale-105 transition-transform"
-          disabled={!mealPlanStatus || !mealType || (mealPlanStatus === "unplanned" && !hasPhoto)}
+          onClick={handleLogMeal}
+          className={`w-full font-bold text-lg py-6 shadow-playful transition-transform ${
+            logSuccess
+              ? "bg-accent hover:bg-accent text-white"
+              : "gradient-coral text-white hover:scale-105"
+          }`}
+          disabled={
+            isLogging ||
+            logSuccess ||
+            !mealPlanStatus ||
+            !mealType ||
+            (mealPlanStatus === "planned" && !selectedMeal) ||
+            (mealPlanStatus === "unplanned" && !hasPhoto)
+          }
         >
-          {mealPlanStatus === "planned" ? "Log Meal" : "Analyze Meal"}
+          {isLogging ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="animate-spin">⏳</span> Logging...
+            </span>
+          ) : logSuccess ? (
+            <span className="flex items-center justify-center gap-2">
+              <span>✓</span> Meal Logged!
+            </span>
+          ) : (
+            mealPlanStatus === "planned" ? "Log Meal" : "Analyze Meal"
+          )}
         </Button>
 
         {mealPlanStatus === "unplanned" && !hasPhoto && (
           <p className="text-xs text-center text-primary mt-2">
             Photo required for unplanned meals to estimate nutrition
+          </p>
+        )}
+        {mealPlanStatus === "planned" && !selectedMeal && (
+          <p className="text-xs text-center text-muted-foreground mt-2">
+            Please select a meal from your plan
           </p>
         )}
       </Card>
