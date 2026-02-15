@@ -1,6 +1,6 @@
 "use client";
-
-import { useState, useRef, useEffect, useMemo, Suspense } from "react";
+import FoodPhotoTracker from "@/components/nutrition/FoodPhotoTracker";
+import { Suspense, useMemo, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,9 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { RecipeCard } from "@/components/recipe/RecipeCard";
 import { GroceryComparison } from "@/components/marketplace/GroceryComparison";
-import { MealCalendar } from "@/components/calendar/MealCalendar";
+import { MealCalendar, ActualMealEntry } from "@/components/calendar/MealCalendar";
 import { GroceryList } from "@/components/calendar/GroceryList";
-import { MahmLogo, MahmLogoFull } from "@/components/brand/MahmLogo";
+import { MahmLogo } from "@/components/brand/MahmLogo";
 import { NutritionDashboard } from "@/components/nutrition/NutritionDashboard";
 import { dummyRecipes } from "@/lib/dummy-data";
 import { useAuth } from "@/contexts/AuthContext";
@@ -58,7 +58,7 @@ function createEmptyMealPlan(): MealPlan {
     groceryList: [],
   };
 }
-import { healthCheck, sendChatMessage, comparePrices, getProfile, estimateNutrition, extractRecipe, type MealSuggestion, type ExtractedRecipe } from "@/lib/api";
+import { healthCheck, sendChatMessage, comparePrices, estimateNutrition, getDefaultMeals, type MealSuggestion } from "@/lib/api";
 import {
   ChatMessage as ChatMessageType,
   GroceryComparison as GroceryComparisonType,
@@ -69,306 +69,120 @@ import {
   ChatRecipeFromApi,
 } from "@/types";
 
-// Recipe from Photo Modal Component
-function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => void; onRecipeGenerated: (recipeId: string) => void }) {
-  const [hasPhoto, setHasPhoto] = useState(false);
-  const [restaurantName, setRestaurantName] = useState("");
-  const [dishName, setDishName] = useState("");
-  const [notes, setNotes] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generateError, setGenerateError] = useState<string | null>(null);
-  const [generatedRecipe, setGeneratedRecipe] = useState<ExtractedRecipe | null>(null);
+type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "dessert";
 
-  const handleGenerate = async () => {
-    if (!dishName.trim()) {
-      setGenerateError("Please enter a dish name");
-      return;
-    }
-
-    setIsGenerating(true);
-    setGenerateError(null);
-
-    try {
-      // Call the real OpenAI-powered API
-      const recipe = await extractRecipe(dishName, restaurantName, notes);
-      setGeneratedRecipe(recipe);
-    } catch (error) {
-      console.error("Recipe generation failed:", error);
-      setGenerateError("Failed to generate recipe. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleSaveRecipe = () => {
-    // In a real app, this would save to the database
-    // For now, redirect to a recipe page
-    onRecipeGenerated("generated-1");
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-        {!generatedRecipe ? (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-2xl font-bold text-foreground">
-                {isGenerating ? "Generating Recipe..." : "Extract Recipe"}
-              </h2>
-              {!isGenerating && (
-                <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">
-                  ×
-                </button>
-              )}
-            </div>
-
-            {isGenerating ? (
-              <div className="py-12 text-center">
-                <div className="text-6xl mb-6 animate-bounce">🍳</div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
-                    <span className="text-muted-foreground">Analyzing photo...</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
-                    <span className="text-muted-foreground">Identifying ingredients...</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
-                    <span className="text-muted-foreground">Creating recipe steps...</span>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground mt-6">
-                  Our AI is working its magic!
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* Photo Upload */}
-                <div
-                  onClick={() => setHasPhoto(true)}
-                  className={`border-2 border-dashed rounded-2xl p-6 text-center mb-4 cursor-pointer transition-all ${
-                    hasPhoto
-                      ? "border-accent bg-accent/10"
-                      : "border-accent/30 hover:border-accent hover:bg-accent/5"
-                  }`}
-                >
-                  {hasPhoto ? (
-                    <>
-                      <div className="text-5xl mb-2">✓</div>
-                      <p className="font-bold text-accent">Photo uploaded!</p>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setHasPhoto(false);
-                        }}
-                        className="text-xs text-muted-foreground hover:text-primary mt-2"
-                      >
-                        Remove photo
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-5xl mb-3 animate-float">📸</div>
-                      <p className="font-bold text-foreground mb-1">Upload a photo of a dish</p>
-                      <p className="text-sm text-muted-foreground">We&apos;ll create a recipe you can make at home!</p>
-                    </>
-                  )}
-                </div>
-
-                {/* Where did you have it? */}
-                <div className="mb-4">
-                  <label className="font-bold text-foreground mb-2 block">Where did you have this?</label>
-                  <input
-                    type="text"
-                    value={restaurantName}
-                    onChange={(e) => setRestaurantName(e.target.value)}
-                    placeholder="Restaurant name (optional)"
-                    className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-accent transition-colors"
-                  />
-                </div>
-
-                {/* Dish name if known */}
-                <div className="mb-4">
-                  <label className="font-bold text-foreground mb-2 block">Dish name (if you know it)</label>
-                  <input
-                    type="text"
-                    value={dishName}
-                    onChange={(e) => setDishName(e.target.value)}
-                    placeholder="E.g., Pad Thai, Caesar Salad..."
-                    className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-accent transition-colors"
-                  />
-                </div>
-
-                {/* Notes */}
-                <div className="mb-6">
-                  <label className="font-bold text-foreground mb-2 block">Any notes about the dish?</label>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="E.g., It was creamy, had lots of garlic, tasted smoky..."
-                    className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-accent transition-colors"
-                  />
-                </div>
-
-                {generateError && (
-                  <p className="text-sm text-center text-destructive mb-3 p-2 bg-destructive/10 rounded-lg">
-                    {generateError}
-                  </p>
-                )}
-
-                <Button
-                  onClick={handleGenerate}
-                  disabled={!dishName.trim()}
-                  className="w-full gradient-lime text-white font-bold text-lg py-6 shadow-playful-lime hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  Generate Recipe
-                </Button>
-
-                {!dishName.trim() && (
-                  <p className="text-xs text-center text-muted-foreground mt-3">
-                    Enter a dish name to generate a recipe
-                  </p>
-                )}
-              </>
-            )}
-          </>
-        ) : (
-          <>
-            {/* Generated Recipe View */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-2xl font-bold text-foreground">Recipe Generated!</h2>
-              <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">
-                ×
-              </button>
-            </div>
-
-            <div className="mb-4 p-4 bg-accent/10 rounded-2xl border-2 border-accent/30">
-              <div className="text-center mb-2">
-                <span className="text-4xl">🎉</span>
-              </div>
-              <h3 className="font-display text-xl font-bold text-foreground text-center mb-2">
-                {generatedRecipe.name}
-              </h3>
-              <p className="text-sm text-muted-foreground text-center">
-                {generatedRecipe.description}
-              </p>
-            </div>
-
-            {/* Quick stats */}
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              <div className="text-center p-2 bg-muted/30 rounded-lg">
-                <div className="text-lg">⏱️</div>
-                <div className="text-xs text-muted-foreground">Prep</div>
-                <div className="font-bold text-foreground">{generatedRecipe.prepTime}m</div>
-              </div>
-              <div className="text-center p-2 bg-muted/30 rounded-lg">
-                <div className="text-lg">🍳</div>
-                <div className="text-xs text-muted-foreground">Cook</div>
-                <div className="font-bold text-foreground">{generatedRecipe.cookTime}m</div>
-              </div>
-              <div className="text-center p-2 bg-muted/30 rounded-lg">
-                <div className="text-lg">👥</div>
-                <div className="text-xs text-muted-foreground">Serves</div>
-                <div className="font-bold text-foreground">{generatedRecipe.servings}</div>
-              </div>
-              <div className="text-center p-2 bg-muted/30 rounded-lg">
-                <div className="text-lg">🔥</div>
-                <div className="text-xs text-muted-foreground">Cal</div>
-                <div className="font-bold text-primary">{generatedRecipe.calories}</div>
-              </div>
-            </div>
-
-            {/* Ingredients preview */}
-            <div className="mb-4">
-              <h4 className="font-bold text-foreground mb-2">Ingredients ({generatedRecipe.ingredients.length})</h4>
-              <div className="bg-muted/20 rounded-xl p-3 max-h-32 overflow-y-auto">
-                <ul className="text-sm space-y-1">
-                  {generatedRecipe.ingredients.map((ing, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-accent rounded-full" />
-                      {ing}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Instructions preview */}
-            <div className="mb-6">
-              <h4 className="font-bold text-foreground mb-2">Instructions ({generatedRecipe.instructions.length} steps)</h4>
-              <div className="bg-muted/20 rounded-xl p-3 max-h-32 overflow-y-auto">
-                <ol className="text-sm space-y-2">
-                  {generatedRecipe.instructions.map((step, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="font-bold text-primary shrink-0">{i + 1}.</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setGeneratedRecipe(null)}
-                className="flex-1 border-2"
-              >
-                Try Again
-              </Button>
-              <Button
-                onClick={handleSaveRecipe}
-                className="flex-1 gradient-lime text-white font-bold"
-              >
-                Save & View Recipe
-              </Button>
-            </div>
-          </>
-        )}
-      </Card>
-    </div>
-  );
+function toDateKey(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
-// Meal Log Modal Component
-function MealLogModal({ onClose, plannedMeals }: { onClose: () => void; plannedMeals: Array<{ name: string; mealType: string }> }) {
-  const [mealPlanStatus, setMealPlanStatus] = useState<"planned" | "unplanned" | null>(null);
-  const [mealType, setMealType] = useState<string | null>(null);
-  const [hasPhoto, setHasPhoto] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState<{ name: string; mealType: string } | null>(null);
-  const [portionSize, setPortionSize] = useState<string>("Regular");
-  const [isLogging, setIsLogging] = useState(false);
-  const [logSuccess, setLogSuccess] = useState(false);
+const ACTUAL_MEALS_LS_KEY = "mahm_actual_meals_v1";
 
-  // Auto-set meal type when a planned meal is selected
-  const handleSelectPlannedMeal = (meal: { name: string; mealType: string }) => {
-    setSelectedMeal(meal);
-    // Auto-detect meal type from the planned meal
-    const typeMap: Record<string, string> = {
-      breakfast: "Breakfast",
-      lunch: "Lunch",
-      dinner: "Dinner",
-      snack: "Snack",
+function serializeActualMeals(
+  actualMeals: Record<string, Partial<Record<MealType, ActualMealEntry>>>
+) {
+  // localStorage cannot store object URLs reliably across reloads.
+  // We persist everything except photoUrl.
+  const out: Record<string, Partial<Record<MealType, Omit<ActualMealEntry, "photoUrl">>>> = {};
+  for (const [dateKey, day] of Object.entries(actualMeals)) {
+    const nextDay: Partial<Record<MealType, Omit<ActualMealEntry, "photoUrl">>> = {};
+    for (const [mealType, entry] of Object.entries(day) as Array<[MealType, ActualMealEntry | undefined]>) {
+      if (!entry) continue;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { photoUrl, ...rest } = entry;
+      nextDay[mealType] = rest;
+    }
+    if (Object.keys(nextDay).length) out[dateKey] = nextDay;
+  }
+  return out;
+}
+
+function safeParseActualMeals(raw: string | null) {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object") return null;
+
+    // light validation + coerce into expected shape; photoUrl will be undefined after restore
+    const out: Record<string, Partial<Record<MealType, ActualMealEntry>>> = {};
+    for (const [dateKey, day] of Object.entries(parsed as Record<string, any>)) {
+      if (typeof dateKey !== "string" || !day || typeof day !== "object") continue;
+
+      const nextDay: Partial<Record<MealType, ActualMealEntry>> = {};
+      for (const [mealType, entry] of Object.entries(day as Record<string, any>)) {
+        if (
+          mealType !== "breakfast" &&
+          mealType !== "lunch" &&
+          mealType !== "dinner" &&
+          mealType !== "snacks" &&
+          mealType !== "dessert"
+        ) {
+          continue;
+        }
+        if (!entry || typeof entry !== "object") continue;
+
+        // only pick fields we expect
+        const cleaned: ActualMealEntry = {
+          id: String(entry.id ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`),
+          dateKey,
+          mealType: mealType as MealType,
+          photoUrl: undefined, // cannot restore
+          dish_name: String(entry.dish_name ?? "Meal"),
+          calories_estimate: Number(entry.calories_estimate ?? 0),
+          confidence:
+            entry.confidence === "low" || entry.confidence === "medium" || entry.confidence === "high"
+              ? entry.confidence
+              : "medium",
+          notes: String(entry.notes ?? ""),
+          createdAt: String(entry.createdAt ?? new Date().toISOString()),
+        };
+
+        nextDay[mealType as MealType] = cleaned;
+      }
+
+      if (Object.keys(nextDay).length) out[dateKey] = nextDay;
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+function MealLogModal({
+  onClose,
+  onAnalyzed,
+  defaultTarget,
+}: {
+  onClose: () => void;
+  onAnalyzed: (args: {
+    file: File;
+    target: { dateKey: string; mealType: MealType };
+    result: {
+      dish_name: string;
+      calories_estimate: number;
+      confidence: "low" | "medium" | "high";
+      notes: string;
     };
-    setMealType(typeMap[meal.mealType] || null);
-  };
+  }) => void;
+  defaultTarget?: { dateKey: string; mealType: MealType } | null;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [runSignal, setRunSignal] = useState(0);
+  const [isLogging, setIsLogging] = useState(false);
+  const [targetDateKey, setTargetDateKey] = useState<string>(() => defaultTarget?.dateKey ?? toDateKey(new Date()));
+  const [mealType, setMealType] = useState<MealType>(defaultTarget?.mealType ?? "dinner");
 
-  const handleLogMeal = async () => {
-    setIsLogging(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLogging(false);
-    setLogSuccess(true);
-    // Close after showing success
-    setTimeout(() => {
-      onClose();
-    }, 1500);
-  };
-
-  // Determine if meal type is auto-detected (for planned meals)
-  const isMealTypeAutoDetected = mealPlanStatus === "planned" && selectedMeal !== null;
+  const mealTypeOptions: { type: MealType; label: string }[] = [
+    { type: "breakfast", label: "Breakfast" },
+    { type: "lunch", label: "Lunch" },
+    { type: "dinner", label: "Dinner" },
+    { type: "snacks", label: "Snacks" },
+    { type: "dessert", label: "Dessert" },
+  ];
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -380,236 +194,85 @@ function MealLogModal({ onClose, plannedMeals }: { onClose: () => void; plannedM
           </button>
         </div>
 
-        {/* Step 1: Was this on your meal plan? */}
-        <div className="mb-5">
-          <label className="font-bold text-foreground mb-3 block text-lg">Was this on your meal plan?</label>
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                setMealPlanStatus("planned");
-                setSelectedMeal(null);
-                setMealType(null);
-              }}
-              className={`flex-1 px-4 py-4 rounded-xl text-sm font-bold transition-all ${
-                mealPlanStatus === "planned"
-                  ? "bg-accent text-white shadow-playful-lime scale-105"
-                  : "bg-accent/10 text-foreground hover:bg-accent/20 border-2 border-accent/30"
-              }`}
-            >
-              <span className="text-2xl block mb-1">✓</span>
-              Yes, planned meal
-            </button>
-            <button
-              onClick={() => {
-                setMealPlanStatus("unplanned");
-                setSelectedMeal(null);
-                setMealType(null);
-              }}
-              className={`flex-1 px-4 py-4 rounded-xl text-sm font-bold transition-all ${
-                mealPlanStatus === "unplanned"
-                  ? "bg-amber-400 text-foreground shadow-playful-sunny scale-105"
-                  : "bg-amber-400/10 text-foreground hover:bg-amber-400/20 border-2 border-sunny/30"
-              }`}
-            >
-              <span className="text-2xl block mb-1">🍽️</span>
-              No, unplanned
-            </button>
-          </div>
+        <div className="mb-4">
+          <label className="text-sm font-bold text-foreground mb-1 block">Date</label>
+          <input
+            type="date"
+            value={targetDateKey}
+            onChange={(e) => setTargetDateKey(e.target.value)}
+            className="w-full p-2 border-2 border-border rounded-xl"
+          />
         </div>
 
-        {/* Step 2 for PLANNED: Select your planned meal (moved up!) */}
-        {mealPlanStatus === "planned" && (
-          <div className="mb-5 p-4 bg-accent/5 rounded-xl border-2 border-accent/20">
-            <label className="font-bold text-foreground mb-2 block text-sm">Select your planned meal</label>
-            <div className="space-y-2">
-              {plannedMeals.length > 0 ? (
-                plannedMeals.map((meal) => (
-                  <button
-                    key={`${meal.name}-${meal.mealType}`}
-                    onClick={() => handleSelectPlannedMeal(meal)}
-                    className={`w-full p-3 rounded-lg text-left text-sm font-medium transition-all ${
-                      selectedMeal?.name === meal.name && selectedMeal?.mealType === meal.mealType
-                        ? "bg-accent/20 border-2 border-accent text-foreground"
-                        : "bg-white hover:bg-accent/10 border-2 border-transparent hover:border-accent/30"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>
-                        {selectedMeal?.name === meal.name && selectedMeal?.mealType === meal.mealType && <span className="mr-2">✓</span>}
-                        {meal.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground capitalize">{meal.mealType}</span>
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-2">No meals planned for today</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Step 2 for UNPLANNED / Step 3 for PLANNED: Meal Type */}
-        <div className="mb-5">
-          <div className="flex items-center justify-between mb-2">
-            <label className="font-bold text-foreground">Meal type</label>
-            {isMealTypeAutoDetected && (
-              <span className="text-xs text-accent font-medium">Auto-detected from plan</span>
-            )}
-          </div>
+        <div className="mb-4">
+          <label className="text-sm font-bold text-foreground mb-2 block">Meal Type</label>
           <div className="flex flex-wrap gap-2">
-            {[
-              { type: "Breakfast", icon: "🌅" },
-              { type: "Lunch", icon: "☀️" },
-              { type: "Dinner", icon: "🌙" },
-              { type: "Snack", icon: "🍎" },
-            ].map(({ type, icon }) => (
+            {mealTypeOptions.map((m) => (
               <button
-                key={type}
-                onClick={() => setMealType(type)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  mealType === type
-                    ? "bg-primary text-white"
-                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                key={m.type}
+                onClick={() => setMealType(m.type)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                  mealType === m.type ? "bg-primary text-white" : "bg-primary/10 text-primary"
                 }`}
               >
-                {icon} {type}
+                {m.label}
               </button>
             ))}
           </div>
-          {mealPlanStatus === "planned" && (
-            <p className="text-xs text-muted-foreground mt-2">
-              {isMealTypeAutoDetected
-                ? "You can change this if needed"
-                : "Select a meal above to auto-detect, or choose manually"}
-            </p>
-          )}
         </div>
 
-        {/* Photo Upload - Required for unplanned, optional for planned */}
-        <div className="mb-5">
-          <div className="flex items-center justify-between mb-2">
-            <label className="font-bold text-foreground">
-              Photo of your meal
-              {mealPlanStatus === "planned" && (
-                <span className="text-muted-foreground font-normal text-sm ml-2">(optional)</span>
-              )}
-            </label>
-            {mealPlanStatus === "planned" && hasPhoto && (
-              <button
-                onClick={() => setHasPhoto(false)}
-                className="text-xs text-muted-foreground hover:text-primary"
-              >
-                Remove
-              </button>
-            )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+        />
+
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className="mb-4 border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer border-primary/40 hover:border-primary"
+        >
+          <div className="text-3xl mb-2">📷</div>
+          <p className="font-medium text-foreground">{photoFile ? photoFile.name : "Tap to upload meal photo"}</p>
+        </div>
+
+        {photoFile && (
+          <div className="mb-4">
+            <FoodPhotoTracker
+              file={photoFile}
+              runSignal={runSignal}
+              onResult={(r: any) => {
+                setIsLogging(false);
+                if (r && r.ok) {
+                  onAnalyzed({
+                    file: photoFile,
+                    target: { dateKey: targetDateKey, mealType },
+                    result: {
+                      dish_name: r.dish_name,
+                      calories_estimate: r.calories_estimate,
+                      confidence: r.confidence,
+                      notes: r.notes,
+                    },
+                  });
+                  onClose();
+                }
+              }}
+            />
           </div>
-
-          {!hasPhoto ? (
-            <div
-              onClick={() => setHasPhoto(true)}
-              className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-colors ${
-                mealPlanStatus === "unplanned"
-                  ? "border-primary/50 hover:border-primary bg-primary/5"
-                  : "border-border hover:border-primary/30"
-              }`}
-            >
-              <div className="text-4xl mb-2">📷</div>
-              <p className="font-bold text-foreground mb-1">Tap to upload a photo</p>
-              <p className="text-xs text-muted-foreground">
-                {mealPlanStatus === "unplanned"
-                  ? "Required for nutrition analysis"
-                  : "Optional - we already know your planned meal!"}
-              </p>
-            </div>
-          ) : (
-            <div className="bg-accent/10 border-2 border-accent rounded-2xl p-4 text-center">
-              <div className="text-4xl mb-2">✓</div>
-              <p className="font-bold text-accent">Photo uploaded!</p>
-            </div>
-          )}
-        </div>
-
-        {/* If unplanned - description field */}
-        {mealPlanStatus === "unplanned" && (
-          <>
-            <div className="mb-4">
-              <label className="font-bold text-foreground mb-2 block">Where did you eat?</label>
-              <input
-                type="text"
-                placeholder="Restaurant name or 'home-cooked'..."
-                className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-primary transition-colors"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="font-bold text-foreground mb-2 block">What did you eat?</label>
-              <textarea
-                placeholder="E.g., Chicken salad with avocado, grilled salmon..."
-                className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-primary transition-colors"
-              />
-            </div>
-          </>
         )}
-
-        {/* Portion Size */}
-        <div className="mb-6">
-          <label className="font-bold text-foreground mb-2 block">Portion size</label>
-          <div className="flex gap-2">
-            {["Small", "Regular", "Large", "XL"].map((size) => (
-              <button
-                key={size}
-                onClick={() => setPortionSize(size)}
-                className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  portionSize === size
-                    ? "bg-primary text-white"
-                    : "bg-muted/50 text-foreground hover:bg-primary/20"
-                }`}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <Button
-          onClick={handleLogMeal}
-          className={`w-full font-bold text-lg py-6 shadow-playful transition-transform ${
-            logSuccess
-              ? "bg-accent hover:bg-accent text-white"
-              : "gradient-coral text-white hover:scale-105"
-          }`}
-          disabled={
-            isLogging ||
-            logSuccess ||
-            !mealPlanStatus ||
-            !mealType ||
-            (mealPlanStatus === "planned" && !selectedMeal) ||
-            (mealPlanStatus === "unplanned" && !hasPhoto)
-          }
+          className="w-full gradient-coral text-white font-bold"
+          disabled={!photoFile || isLogging}
+          onClick={() => {
+            if (!photoFile) return;
+            setIsLogging(true);
+            setRunSignal((x) => x + 1);
+          }}
         >
-          {isLogging ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">⏳</span> Logging...
-            </span>
-          ) : logSuccess ? (
-            <span className="flex items-center justify-center gap-2">
-              <span>✓</span> Meal Logged!
-            </span>
-          ) : (
-            mealPlanStatus === "planned" ? "Log Meal" : "Analyze Meal"
-          )}
+          {isLogging ? "Analyzing..." : "Analyze & Log"}
         </Button>
-
-        {mealPlanStatus === "unplanned" && !hasPhoto && (
-          <p className="text-xs text-center text-primary mt-2">
-            Photo required for unplanned meals to estimate nutrition
-          </p>
-        )}
-        {mealPlanStatus === "planned" && !selectedMeal && (
-          <p className="text-xs text-center text-muted-foreground mt-2">
-            Please select a meal from your plan
-          </p>
-        )}
       </Card>
     </div>
   );
@@ -648,7 +311,6 @@ function HomeContent() {
   const [showRecipes, setShowRecipes] = useState(true);
   const [showMarketplace, setShowMarketplace] = useState(false);
   const [showMealLog, setShowMealLog] = useState(false);
-  const [showRecipeFromPhoto, setShowRecipeFromPhoto] = useState(false);
   const [showNutritionDashboard, setShowNutritionDashboard] = useState(false);
   const [marketplaceComparisons, setMarketplaceComparisons] = useState<GroceryComparisonType[]>([]);
   const [groceryListItems, setGroceryListItems] = useState<{ name: string; amount: string; category: string; estimatedPrice: number }[]>([]);
@@ -663,292 +325,343 @@ function HomeContent() {
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleAddToCalendar = (recipe: ChatRecipeFromApi) => {
-    setAddToCalendarModal({
-      recipe,
-      dayIndex: 0,
-      mealType: "dinner",
-    });
+  // ---------------------------
+  // Recent meal photos
+  // ---------------------------
+  type MealPhotoEntry = {
+    id: string;
+    imageUrl: string; // object URL
+    createdAt: Date;
+    dish_name: string;
+    calories_estimate: number;
+    confidence: "low" | "medium" | "high";
+    notes: string;
   };
 
-  const handleConfirmAddToCalendar = async () => {
-    if (!addToCalendarModal) return;
-    const { recipe, dayIndex, mealType } = addToCalendarModal;
-    const ingredients = extractIngredientNames(recipe.ingredients);
-    if (ingredients.length === 0) {
-      setAddToCalendarModal(null);
-      setActiveTab("calendar");
-      return;
-    }
+  const [recentMeals, setRecentMeals] = useState<MealPhotoEntry[]>([]);
+  const [selectedMeal, setSelectedMeal] = useState<MealPhotoEntry | null>(null);
 
-    setMarketplaceLoading(true);
-    const minimalRecipe: Recipe = {
-      id: recipe.id,
-      name: recipe.name,
-      description: "",
-      ingredients: ingredients.map((name) => ({ name, amount: 0, unit: "" })),
-      instructions: [],
-      prepTime: 0,
-      cookTime: recipe.cook_time_min ?? 0,
-      servings: 1,
-      nutrition: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 },
-      dietaryTags: recipe.dietary_tags ?? [],
-      cuisine: "",
-      difficulty: "easy",
-    };
-    const plannedMeal: PlannedMeal = { recipe: minimalRecipe, servings: 1 };
-    setMealPlan((prev) => {
-      const days = prev.days.map((d, i) =>
-        i === dayIndex
-          ? { ...d, meals: { ...d.meals, [mealType]: plannedMeal } }
-          : d
-      );
-      return { ...prev, days };
-    });
-    setGroceryListItems(ingredients.map((name) => ({ name, amount: "1", category: "other", estimatedPrice: 0 })));
-    setAddToCalendarModal(null);
-    setActiveTab("marketplace");
+  // Calendar “actual meals” keyed by dateKey + mealType
+  const [actualMeals, setActualMeals] = useState<Record<string, Partial<Record<MealType, ActualMealEntry>>>>({});
 
-    let zip = "94305";
-    if (user?.user_id) {
-      try {
-        const profile = await getProfile(user.user_id);
-        if (profile.zip?.trim()) zip = profile.zip.trim();
-      } catch {
-        /* use default */
-      }
-    }
-    try {
-      const comparisons = await comparePrices(zip, ingredients);
-      setMarketplaceComparisons(comparisons);
-    } catch (e) {
-      setMarketplaceError(e instanceof Error ? e.message : "Could not load prices");
-      setMarketplaceComparisons([]);
-    } finally {
-      setMarketplaceLoading(false);
-    }
-  };
+  // If calendar requests logging for a specific slot
+  const [mealLogTarget, setMealLogTarget] = useState<{ dateKey: string; mealType: MealType } | null>(null);
+  const initializedPlannedMealsRef = useRef(false);
 
-  // Calculate weekly nutrition summary from meal plan
-  const weeklyNutrition = useMemo(() => {
-    let totalCalories = 0;
-    let totalProtein = 0;
-    let totalCarbs = 0;
-    let totalFat = 0;
-    let totalFiber = 0;
-    let mealCount = 0;
-
-    mealPlan.days.forEach((day) => {
-      const meals = [day.meals.breakfast, day.meals.lunch, day.meals.dinner].filter(Boolean);
-      meals.forEach((meal) => {
-        if (meal?.recipe?.nutrition) {
-          totalCalories += meal.recipe.nutrition.calories || 0;
-          totalProtein += meal.recipe.nutrition.protein || 0;
-          totalCarbs += meal.recipe.nutrition.carbs || 0;
-          totalFat += meal.recipe.nutrition.fat || 0;
-          totalFiber += meal.recipe.nutrition.fiber || 0;
-          mealCount++;
-        }
-      });
-    });
-
-    const daysWithMeals = mealPlan.days.filter(
-      (d) => d.meals.breakfast || d.meals.lunch || d.meals.dinner
-    ).length || 1;
-
-    return {
-      avgDailyCalories: Math.round(totalCalories / daysWithMeals),
-      avgDailyProtein: Math.round(totalProtein / daysWithMeals),
-      avgDailyCarbs: Math.round(totalCarbs / daysWithMeals),
-      avgDailyFat: Math.round(totalFat / daysWithMeals),
-      avgDailyFiber: Math.round(totalFiber / daysWithMeals),
-      totalMeals: mealCount,
-      calorieProgress: Math.min(100, Math.round((totalCalories / daysWithMeals / 2000) * 100)),
-      proteinProgress: Math.min(100, Math.round((totalProtein / daysWithMeals / 60) * 100)),
-      fiberProgress: Math.min(100, Math.round((totalFiber / daysWithMeals / 30) * 100)),
-    };
-  }, [mealPlan]);
-
+  // ---- NEW: restore persisted actual meals once (metadata only; no photoUrl)
   useEffect(() => {
-    healthCheck().then(setBackendOk);
+    const restored = safeParseActualMeals(localStorage.getItem(ACTUAL_MEALS_LS_KEY));
+    if (restored) setActualMeals(restored);
   }, []);
 
-  // Load generated meals from localStorage and populate calendar + grocery list
+  // ---- NEW: persist actual meals on change (metadata only; no photoUrl)
   useEffect(() => {
-    const loadGeneratedMeals = async () => {
-      const storedMeals = localStorage.getItem("mahm_generated_meals");
-      if (!storedMeals) return;
+    try {
+      const payload = serializeActualMeals(actualMeals);
+      localStorage.setItem(ACTUAL_MEALS_LS_KEY, JSON.stringify(payload));
+    } catch {
+      // ignore quota / serialization issues
+    }
+  }, [actualMeals]);
 
-      try {
-        const meals: MealSuggestion[] = JSON.parse(storedMeals);
-        if (!Array.isArray(meals) || meals.length === 0) return;
+  // cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      for (const m of recentMeals) URL.revokeObjectURL(m.imageUrl);
+      for (const day of Object.values(actualMeals)) {
+        for (const a of Object.values(day)) {
+          if (a?.photoUrl) URL.revokeObjectURL(a.photoUrl);
+        }
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-        // Group meals by type
-        const breakfasts = meals.filter((m) => m.mealType === "breakfast");
-        const lunches = meals.filter((m) => m.mealType === "lunch");
-        const dinners = meals.filter((m) => m.mealType === "dinner");
+  const addRecentMeal = (
+    file: File,
+    r: { dish_name: string; calories_estimate: number; confidence: "low" | "medium" | "high"; notes: string }
+  ) => {
+    const url = URL.createObjectURL(file);
+    const entry: MealPhotoEntry = {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      imageUrl: url,
+      createdAt: new Date(),
+      dish_name: r.dish_name,
+      calories_estimate: r.calories_estimate,
+      confidence: r.confidence,
+      notes: r.notes,
+    };
+    setRecentMeals((prev) => [entry, ...prev].slice(0, 12));
+  };
 
-        // Collect all unique ingredients for grocery list
-        const allIngredients = new Set<string>();
-        meals.forEach((meal) => {
-          meal.ingredients?.forEach((ing) => {
-            // Extract just the ingredient name (remove amounts like "1 cup", "2 tbsp")
-            const cleanName = ing.replace(/^[\d\s\/½¼¾⅓⅔]+\s*(cup|tbsp|tsp|oz|lb|g|kg|ml|l|cloves?|inch|can|block|head|bunch)s?\s*/i, "").trim();
-            if (cleanName) allIngredients.add(cleanName);
-          });
+  const upsertActualMeal = (args: {
+    file: File;
+    target: { dateKey: string; mealType: MealType };
+    result: { dish_name: string; calories_estimate: number; confidence: "low" | "medium" | "high"; notes: string };
+  }) => {
+    const { file, target, result } = args;
+
+    const photoUrl = URL.createObjectURL(file);
+    const entry: ActualMealEntry = {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      dateKey: target.dateKey,
+      mealType: target.mealType,
+      photoUrl,
+      dish_name: result.dish_name,
+      calories_estimate: result.calories_estimate,
+      confidence: result.confidence,
+      notes: result.notes,
+      createdAt: new Date().toISOString(),
+    };
+
+    setActualMeals((prev) => {
+      const existingForDay = prev[target.dateKey] || {};
+      const existing = existingForDay[target.mealType];
+
+      // cleanup old URL if replacing
+      if (existing?.photoUrl) URL.revokeObjectURL(existing.photoUrl);
+
+      return {
+        ...prev,
+        [target.dateKey]: {
+          ...existingForDay,
+          [target.mealType]: entry,
+        },
+      };
+    });
+  };
+
+  const clearActualMeal = (args: { dateKey: string; mealType: MealType }) => {
+    setActualMeals((prev) => {
+      const day = prev[args.dateKey];
+      if (!day) return prev;
+
+      const existing = day[args.mealType];
+      if (existing?.photoUrl) URL.revokeObjectURL(existing.photoUrl);
+
+      const nextDay = { ...day };
+      delete nextDay[args.mealType];
+
+      const next = { ...prev };
+      if (Object.keys(nextDay).length === 0) delete next[args.dateKey];
+      else next[args.dateKey] = nextDay;
+
+      return next;
+    });
+  };
+
+  // onboarding check
+  // useEffect(() => {
+  //   healthCheck().then(setBackendOk);
+  // }, []);
+
+  // auto-scroll chat
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, isTyping]);
+
+  // Initialize planned meals for the calendar from onboarding preferences.
+  // Priority: localStorage cached meals -> generate fresh meals from saved profile.
+  useEffect(() => {
+    if (!user?.user_id || initializedPlannedMealsRef.current) return;
+    initializedPlannedMealsRef.current = true;
+
+    const buildMealPlanFromSuggestions = (meals: MealSuggestion[]) => {
+      if (!Array.isArray(meals) || meals.length === 0) return;
+
+      const normalizeMealType = (raw: unknown): "breakfast" | "lunch" | "dinner" | "snack" => {
+        const t = String(raw || "").toLowerCase().trim();
+        if (t.includes("break")) return "breakfast";
+        if (t.includes("lunch")) return "lunch";
+        if (t.includes("dinner") || t.includes("supper")) return "dinner";
+        return "snack";
+      };
+
+      const normalizedMeals = meals.map((m) => ({
+        ...m,
+        mealType: normalizeMealType(m.mealType),
+      }));
+
+      let breakfasts = normalizedMeals.filter((m) => m.mealType === "breakfast");
+      let lunches = normalizedMeals.filter((m) => m.mealType === "lunch");
+      let dinners = normalizedMeals.filter((m) => m.mealType === "dinner");
+
+      // If backend didn't label enough meals for a slot, fill from remaining meals.
+      const remaining = normalizedMeals.filter((m) => ![...breakfasts, ...lunches, ...dinners].includes(m));
+      if (!breakfasts.length) breakfasts = [...remaining];
+      if (!lunches.length) lunches = [...remaining];
+      if (!dinners.length) dinners = [...remaining];
+
+      if (!breakfasts.length) breakfasts = normalizedMeals;
+      if (!lunches.length) lunches = normalizedMeals;
+      if (!dinners.length) dinners = normalizedMeals;
+
+      const supplementPool = (primary: MealSuggestion[]) => {
+        if (primary.length >= 3) return primary;
+        const seen = new Set(primary.map((m) => m.id));
+        const extras = normalizedMeals.filter((m) => !seen.has(m.id)).slice(0, 3 - primary.length);
+        return [...primary, ...extras];
+      };
+      breakfasts = supplementPool(breakfasts);
+      lunches = supplementPool(lunches);
+      dinners = supplementPool(dinners);
+
+      if (breakfasts.length === 0 && lunches.length === 0 && dinners.length === 0) return;
+
+      const toPlannedMeal = (meal: MealSuggestion): PlannedMeal => {
+        const recipe: Recipe = {
+          id: meal.id,
+          name: meal.name,
+          description: meal.description,
+          ingredients: (meal.ingredients || []).map((name) => ({ name, amount: 1, unit: "" })),
+          instructions: meal.instructions || [],
+          prepTime: meal.prepTime || 0,
+          cookTime: meal.cookTime || 0,
+          servings: meal.servings || 1,
+          nutrition: meal.nutrition || { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 },
+          dietaryTags: meal.dietaryTags || [],
+          cuisine: "",
+          difficulty: "easy",
+        };
+        return { recipe, servings: meal.servings || 1 };
+      };
+
+      setMealPlan((prev) => {
+        const pickVaried = (arr: MealSuggestion[], idx: number, seed: number) => {
+          if (!arr.length) return undefined;
+          return arr[(idx * 2 + seed) % arr.length];
+        };
+
+        const days = prev.days.map((day, idx) => {
+          const breakfast = pickVaried(breakfasts, idx, 0);
+          const lunch = pickVaried(lunches, idx, 1);
+          const dinner = pickVaried(dinners, idx, 2);
+
+          const breakfastPm = breakfast ? toPlannedMeal(breakfast) : undefined;
+          const lunchPm = lunch ? toPlannedMeal(lunch) : undefined;
+          const dinnerPm = dinner ? toPlannedMeal(dinner) : undefined;
+
+          return {
+            ...day,
+            meals: {
+              ...day.meals,
+              breakfast: breakfastPm,
+              lunch: lunchPm,
+              dinner: dinnerPm,
+            },
+            dailyNutrition: {
+              calories:
+                (breakfastPm?.recipe.nutrition.calories || 0) +
+                (lunchPm?.recipe.nutrition.calories || 0) +
+                (dinnerPm?.recipe.nutrition.calories || 0),
+              protein:
+                (breakfastPm?.recipe.nutrition.protein || 0) +
+                (lunchPm?.recipe.nutrition.protein || 0) +
+                (dinnerPm?.recipe.nutrition.protein || 0),
+              carbs:
+                (breakfastPm?.recipe.nutrition.carbs || 0) +
+                (lunchPm?.recipe.nutrition.carbs || 0) +
+                (dinnerPm?.recipe.nutrition.carbs || 0),
+              fat:
+                (breakfastPm?.recipe.nutrition.fat || 0) +
+                (lunchPm?.recipe.nutrition.fat || 0) +
+                (dinnerPm?.recipe.nutrition.fat || 0),
+              fiber:
+                (breakfastPm?.recipe.nutrition.fiber || 0) +
+                (lunchPm?.recipe.nutrition.fiber || 0) +
+                (dinnerPm?.recipe.nutrition.fiber || 0),
+            },
+          };
         });
+        return { ...prev, days };
+      });
 
-        // Populate grocery list
-        const groceryItems = Array.from(allIngredients).map((name) => ({
+      const allIngredients = new Set<string>();
+      meals.forEach((meal) => {
+        extractIngredientNames(meal.ingredients).forEach((name) => {
+          if (name) allIngredients.add(name);
+        });
+      });
+
+      setGroceryListItems(
+        Array.from(allIngredients).map((name) => ({
           name,
           amount: "1",
           category: categorizeIngredient(name),
-          estimatedPrice: 3 + Math.random() * 5, // Placeholder price
-        }));
-        setGroceryListItems(groceryItems);
-
-        // Populate the meal plan
-        setMealPlan((prev) => {
-          const newDays = prev.days.map((day, idx) => {
-            const breakfast = breakfasts[idx % breakfasts.length];
-            const lunch = lunches[idx % lunches.length];
-            const dinner = dinners[idx % dinners.length];
-
-            const toPlannedMeal = (meal: MealSuggestion | undefined): PlannedMeal | undefined => {
-              if (!meal) return undefined;
-              const recipe: Recipe = {
-                id: meal.id,
-                name: meal.name,
-                description: meal.description,
-                ingredients: meal.ingredients.map((name) => ({ name, amount: 1, unit: "" })),
-                instructions: meal.instructions,
-                prepTime: meal.prepTime,
-                cookTime: meal.cookTime,
-                servings: meal.servings,
-                nutrition: meal.nutrition,
-                dietaryTags: meal.dietaryTags,
-                cuisine: "",
-                difficulty: "easy",
-              };
-              return { recipe, servings: meal.servings };
-            };
-
-            const dailyNutrition = {
-              calories: (breakfast?.nutrition.calories || 0) + (lunch?.nutrition.calories || 0) + (dinner?.nutrition.calories || 0),
-              protein: (breakfast?.nutrition.protein || 0) + (lunch?.nutrition.protein || 0) + (dinner?.nutrition.protein || 0),
-              carbs: (breakfast?.nutrition.carbs || 0) + (lunch?.nutrition.carbs || 0) + (dinner?.nutrition.carbs || 0),
-              fat: (breakfast?.nutrition.fat || 0) + (lunch?.nutrition.fat || 0) + (dinner?.nutrition.fat || 0),
-              fiber: (breakfast?.nutrition.fiber || 0) + (lunch?.nutrition.fiber || 0) + (dinner?.nutrition.fiber || 0),
-            };
-
-            return {
-              ...day,
-              meals: {
-                breakfast: toPlannedMeal(breakfast),
-                lunch: toPlannedMeal(lunch),
-                dinner: toPlannedMeal(dinner),
-              },
-              dailyNutrition,
-            };
-          });
-
-          return { ...prev, days: newDays };
-        });
-
-        // Fetch marketplace prices in background
-        const ingredientNames = Array.from(allIngredients).slice(0, 10); // Limit to first 10 for performance
-        if (ingredientNames.length > 0) {
-          let zip = "94305";
-          if (user?.user_id) {
-            try {
-              const profile = await getProfile(user.user_id);
-              if (profile.zip?.trim()) zip = profile.zip.trim();
-            } catch {
-              /* use default */
-            }
-          }
-          try {
-            const comparisons = await comparePrices(zip, ingredientNames);
-            setMarketplaceComparisons(comparisons);
-          } catch {
-            // Marketplace fetch failed, will show empty
-          }
-        }
-
-        // Optionally fetch updated nutrition from OpenAI for any meals missing nutrition
-        for (const meal of meals) {
-          if (!meal.nutrition || meal.nutrition.calories === 0) {
-            try {
-              const nutrition = await estimateNutrition(meal.name, meal.ingredients);
-              meal.nutrition = nutrition;
-            } catch {
-              // Keep existing nutrition
-            }
-          }
-        }
-        // Update localStorage with enhanced data
-        localStorage.setItem("mahm_generated_meals", JSON.stringify(meals));
-      } catch {
-        console.warn("Failed to load generated meals");
-      }
+          estimatedPrice: 3.99,
+        }))
+      );
     };
 
-    loadGeneratedMeals();
-  }, [user]);
+    const loadOrGenerate = async () => {
+      // Use built-in local dataset for stable variety (no API dependency).
+      const meals: MealSuggestion[] = getDefaultMeals();
+      if (meals.length) buildMealPlanFromSuggestions(meals);
+    };
 
-  // Add welcome message for logged in users
-  useEffect(() => {
-    if (user && messages.length === 0) {
-      const storedMeals = localStorage.getItem("mahm_generated_meals");
-      const userProfile = localStorage.getItem("mahm_user_profile");
+    void loadOrGenerate();
+  }, [user?.user_id]);
 
-      let welcomeText = `Hey ${user.name || "there"}! 👋 I'm **Mahm** — your AI nutritionist, meal planner, and grocery guru!\n\n` +
-        `I'm here to help you make delicious, healthy meals that would make your mom proud. Here's what I can do:\n\n` +
-        `🍳 **Find recipes** — "What can I make with chicken and rice?"\n` +
-        `🥗 **Get nutrition info** — "How many calories in a Caesar salad?"\n` +
-        `📅 **Plan your week** — "Create a meal plan for this week"\n` +
-        `🛒 **Compare prices** — "Find the cheapest groceries near me"\n\n` +
-        `**Try asking me something!** What are you in the mood for today?`;
+  const weeklyNutrition = useMemo(() => {
+    const days = mealPlan.days ?? [];
+    if (days.length === 0) {
+      return {
+        totalMeals: 0,
+        avgDailyCalories: 0,
+        avgDailyProtein: 0,
+        avgDailyFiber: 0,
+        calorieProgress: 0,
+        proteinProgress: 0,
+        fiberProgress: 0,
+      };
+    }
 
-      if (storedMeals && userProfile) {
-        try {
-          const meals: MealSuggestion[] = JSON.parse(storedMeals);
-          const profile = JSON.parse(userProfile);
-          const mealCount = meals.length;
-          const avgCalories = Math.round(meals.reduce((sum, m) => sum + (m.nutrition?.calories || 0), 0) / mealCount);
+    let totalCalories = 0;
+    let totalProtein = 0;
+    let totalFiber = 0;
+    let totalMeals = 0;
 
-          welcomeText = `Hey ${user.name || profile.name || "there"}! 👋 Welcome back to **Mahm**!\n\n` +
-            `I've got your personalized meal plan ready:\n\n` +
-            `📅 **${mealCount} meals** planned for the week\n` +
-            `🔥 **~${avgCalories} cal** per meal on average\n` +
-            `💰 Optimized for your **$${profile.budget || 100}/week** budget\n\n` +
-            `Check out your **Meal Calendar** tab, or ask me anything!\n\n` +
-            `**Quick actions:**\n` +
-            `• "Show me healthy dinner ideas"\n` +
-            `• "What's a good high-protein breakfast?"\n` +
-            `• "Find me a recipe under 30 minutes"`;
-        } catch {
-          // Use default welcome
-        }
+    for (const day of days) {
+      const dateKey = toDateKey(new Date(day.date));
+      const actualForDay = actualMeals[dateKey] ?? {};
+      const actualEntries = Object.values(actualForDay).filter(Boolean) as ActualMealEntry[];
+
+      const plannedMealsForDay = [day.meals.breakfast, day.meals.lunch, day.meals.dinner].filter(
+        Boolean
+      ) as PlannedMeal[];
+
+      if (actualEntries.length > 0) {
+        totalCalories += actualEntries.reduce((sum, m) => sum + (m.calories_estimate || 0), 0);
+        totalMeals += actualEntries.length;
+
+        // Actual logs do not yet store protein/fiber, so fall back to planned for those.
+        totalProtein += plannedMealsForDay.reduce((sum, m) => sum + (m.recipe.nutrition.protein || 0), 0);
+        totalFiber += plannedMealsForDay.reduce((sum, m) => sum + (m.recipe.nutrition.fiber || 0), 0);
+      } else {
+        totalCalories += plannedMealsForDay.reduce((sum, m) => sum + (m.recipe.nutrition.calories || 0), 0);
+        totalProtein += plannedMealsForDay.reduce((sum, m) => sum + (m.recipe.nutrition.protein || 0), 0);
+        totalFiber += plannedMealsForDay.reduce((sum, m) => sum + (m.recipe.nutrition.fiber || 0), 0);
+        totalMeals += plannedMealsForDay.length;
       }
-
-      setMessages([
-        {
-          id: "welcome-1",
-          role: "assistant",
-          content: welcomeText,
-          timestamp: new Date(),
-        },
-      ]);
     }
-  }, [user, messages.length]);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isTyping]);
+    const dayCount = days.length;
+    const avgDailyCalories = Math.round(totalCalories / dayCount);
+    const avgDailyProtein = Math.round(totalProtein / dayCount);
+    const avgDailyFiber = Math.round(totalFiber / dayCount);
+
+    const clamp = (n: number) => Math.max(0, Math.min(100, n));
+
+    return {
+      totalMeals,
+      avgDailyCalories,
+      avgDailyProtein,
+      avgDailyFiber,
+      calorieProgress: clamp((avgDailyCalories / 2000) * 100),
+      proteinProgress: clamp((avgDailyProtein / 80) * 100),
+      fiberProgress: clamp((avgDailyFiber / 25) * 100),
+    };
+  }, [mealPlan.days, actualMeals]);
 
   // Show loading state while checking auth
   if (authLoading) {
@@ -966,29 +679,20 @@ function HomeContent() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background relative overflow-hidden">
-        {/* Warm background elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute top-1/4 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-x-1/2" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-amber-400/15 rounded-full blur-3xl translate-y-1/2" />
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-accent-light/30 rounded-full blur-3xl" />
-
         <div className="relative min-h-screen flex flex-col">
-          {/* Header */}
           <header className="p-6">
             <MahmLogo size="md" />
           </header>
 
-          {/* Main Content */}
           <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 text-center">
             <div className="mb-8 animate-float">
               <MahmLogo size="xl" showText={false} />
             </div>
 
-            <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-4">
-              <span className="text-primary">M</span>ade{" "}
-              <span className="text-primary">A</span>t{" "}
-              <span className="text-primary">H</span>ome...{" "}
-              <span className="text-accent">M</span>mmm
+            <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6">
+              Like having a <span className="text-primary">mom</span>
+              <br />
+              who&apos;s also a <span className="text-accent">nutritionist</span>
             </h1>
             <p className="text-2xl md:text-3xl font-display text-muted-foreground mb-6">
               Make something your <span className="text-primary font-bold">mom</span> would be proud of
@@ -999,20 +703,6 @@ function HomeContent() {
               budget, and cravings — she&apos;ll handle the rest.
             </p>
 
-            {/* Feature Pills */}
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <div className="px-6 py-3 bg-primary/15 rounded-full font-semibold text-primary shadow-warm">
-                Personalized nutrition
-              </div>
-              <div className="px-6 py-3 bg-accent/15 rounded-full font-semibold text-foreground shadow-warm">
-                Real local prices
-              </div>
-              <div className="px-6 py-3 bg-amber-400/20 rounded-full font-semibold text-foreground shadow-warm">
-                Weekly meal plans
-              </div>
-            </div>
-
-            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 onClick={() => router.push("/onboarding")}
@@ -1030,39 +720,6 @@ function HomeContent() {
             </div>
           </main>
 
-          {/* Features Section */}
-          <section className="px-4 py-16 bg-background/50">
-            <div className="max-w-5xl mx-auto">
-              <h2 className="font-display text-3xl font-bold text-foreground text-center mb-12">
-                Everything you need to eat well
-              </h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                <Card className="p-6 border border-primary/20 shadow-warm text-center card-hover">
-                  <div className="text-5xl mb-4">💬</div>
-                  <h3 className="font-display font-bold text-xl text-foreground mb-2">Chat with Mahm</h3>
-                  <p className="text-muted-foreground">
-                    Get personalized meal recommendations based on your preferences, goals, and what&apos;s in your fridge.
-                  </p>
-                </Card>
-                <Card className="p-6 border border-accent/30 shadow-warm text-center card-hover">
-                  <div className="text-5xl mb-4">🛒</div>
-                  <h3 className="font-display font-bold text-xl text-foreground mb-2">Smart Marketplace</h3>
-                  <p className="text-muted-foreground">
-                    Compare prices across local stores and find the best deals for your grocery list.
-                  </p>
-                </Card>
-                <Card className="p-6 border border-amber-400/30 shadow-warm text-center card-hover">
-                  <div className="text-5xl mb-4">📅</div>
-                  <h3 className="font-display font-bold text-xl text-foreground mb-2">Meal Calendar</h3>
-                  <p className="text-muted-foreground">
-                    Plan your whole week with auto-generated grocery lists and nutrition tracking.
-                  </p>
-                </Card>
-              </div>
-            </div>
-          </section>
-
-          {/* Footer */}
           <footer className="py-6 text-center border-t border-border/50">
             <p className="text-muted-foreground">
               Made with <span className="text-primary">♥</span> at TreeHacks 2026
@@ -1128,10 +785,107 @@ function HomeContent() {
     }
   };
 
+  const getDefaultMealType = (): "breakfast" | "lunch" | "dinner" => {
+    const hour = new Date().getHours();
+    if (hour < 11) return "breakfast";
+    if (hour < 16) return "lunch";
+    return "dinner";
+  };
+
+  const getTodayDayIndex = () => {
+    const today = new Date().toDateString();
+    const idx = mealPlan.days.findIndex((d) => new Date(d.date).toDateString() === today);
+    return idx >= 0 ? idx : 0;
+  };
+
+  const mapChatRecipeToPlannedMeal = (chatRecipe: ChatRecipeFromApi): PlannedMeal => {
+    const recipe: Recipe = {
+      id: chatRecipe.id,
+      name: chatRecipe.name,
+      description: "Added from chat recommendations",
+      ingredients: (chatRecipe.ingredients ?? []).map((name) => ({
+        name,
+        amount: 1,
+        unit: "",
+      })),
+      instructions: ["Open the recipe details for full instructions."],
+      prepTime: 10,
+      cookTime: chatRecipe.cook_time_min ?? 20,
+      servings: 1,
+      nutrition: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 },
+      dietaryTags: chatRecipe.dietary_tags ?? [],
+      cuisine: "",
+      difficulty: "easy",
+      imageUrl: chatRecipe.image_link ?? undefined,
+    };
+
+    return { recipe, servings: 1 };
+  };
+
+  const handleAddToCalendar = (recipe: ChatRecipeFromApi) => {
+    setAddToCalendarModal({
+      recipe,
+      dayIndex: getTodayDayIndex(),
+      mealType: getDefaultMealType(),
+    });
+  };
+
+  const handleConfirmAddToCalendar = () => {
+    if (!addToCalendarModal) return;
+
+    const { recipe, dayIndex, mealType } = addToCalendarModal;
+    const plannedMeal = mapChatRecipeToPlannedMeal(recipe);
+
+    setMealPlan((prev) => {
+      if (dayIndex < 0 || dayIndex >= prev.days.length) return prev;
+
+      const days = prev.days.map((day, idx) => {
+        if (idx !== dayIndex) return day;
+
+        const meals = { ...day.meals, [mealType]: plannedMeal };
+
+        const mealList = [meals.breakfast, meals.lunch, meals.dinner].filter(Boolean) as PlannedMeal[];
+        const dailyNutrition = {
+          calories: mealList.reduce((s, m) => s + (m.recipe.nutrition.calories || 0), 0),
+          protein: mealList.reduce((s, m) => s + (m.recipe.nutrition.protein || 0), 0),
+          carbs: mealList.reduce((s, m) => s + (m.recipe.nutrition.carbs || 0), 0),
+          fat: mealList.reduce((s, m) => s + (m.recipe.nutrition.fat || 0), 0),
+          fiber: mealList.reduce((s, m) => s + (m.recipe.nutrition.fiber || 0), 0),
+        };
+
+        return { ...day, meals, dailyNutrition };
+      });
+
+      return { ...prev, days };
+    });
+
+    // Optionally add ingredients to grocery list
+    if (recipe.ingredients?.length) {
+      setGroceryListItems((prev) => {
+        const seen = new Set(prev.map((i) => i.name.toLowerCase()));
+        const additions = recipe.ingredients!
+          .map((n) => n.trim())
+          .filter((n) => n && !seen.has(n.toLowerCase()))
+          .map((name) => ({
+            name,
+            amount: "1",
+            category: categorizeIngredient(name),
+            estimatedPrice: 3.99,
+          }));
+
+        return additions.length ? [...prev, ...additions] : prev;
+      });
+    }
+
+    setAddToCalendarModal(null);
+    setActiveTab("calendar");
+  };
+
+
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
       {/* Compact Header */}
-      <header className="gradient-hero border-b border-border/50 relative overflow-hidden shrink-0">
+      <header className="gradient-hero border-b border-border/50 relative overflow-visible shrink-0 z-[120]">
         {/* Decorative blobs - smaller */}
         <div className="absolute top-0 left-0 w-20 h-20 bg-primary/10 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute top-0 right-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2" />
@@ -1145,12 +899,16 @@ function HomeContent() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowMealLog(true)}
+                onClick={() => {
+                  setMealLogTarget(null);
+                  setShowMealLog(true);
+                }}
                 className="text-muted-foreground hover:text-primary hover:bg-primary/10 font-semibold"
               >
                 <span className="mr-1">📸</span>
                 <span className="hidden sm:inline">Log Meal</span>
               </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -1170,7 +928,7 @@ function HomeContent() {
                 <span className="sm:hidden text-lg">⚙</span>
               </Button>
               {user ? (
-                <div className="relative">
+                <div className="relative z-[130]">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="w-9 h-9 rounded-full gradient-coral text-white flex items-center justify-center text-sm font-bold cursor-pointer shadow-playful hover:scale-105 transition-transform"
@@ -1180,11 +938,11 @@ function HomeContent() {
                   {showUserMenu && (
                     <>
                       <div
-                        className="fixed inset-0 z-40"
+                        className="fixed inset-0 z-[120]"
                         onClick={() => setShowUserMenu(false)}
                         aria-hidden="true"
                       />
-                      <div className="absolute right-0 top-full mt-2 w-48 py-2 bg-white rounded-xl border-2 border-border shadow-lg z-50">
+                      <div className="absolute right-0 top-full mt-2 w-48 py-2 bg-white rounded-xl border-2 border-border shadow-lg z-[140]">
                         <button
                           onClick={() => {
                             setShowUserMenu(false);
@@ -1279,11 +1037,9 @@ function HomeContent() {
             </TabsList>
           </div>
 
-          {/* Chat Tab */}
-          <TabsContent value="chat" className="flex-1 flex flex-col mt-0 min-h-0 overflow-hidden data-[state=inactive]:hidden">
-            <div className="flex-1 flex gap-4 p-4 min-h-0 overflow-hidden">
-              {/* Chat Messages */}
-              <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
+          <TabsContent value="chat" className="flex-1 min-h-0 flex flex-col mt-0 data-[state=inactive]:hidden">
+            <div className="flex-1 min-h-0 flex gap-4 p-4 overflow-hidden">
+              <div className="flex-1 min-h-0 flex flex-col min-w-0">
                 <div
                   ref={scrollRef}
                   className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
@@ -1310,7 +1066,6 @@ function HomeContent() {
                 </div>
               </div>
 
-              {/* Side Panel - Recipes */}
               {showRecipes && (
                 <div className="hidden lg:block w-80 shrink-0 overflow-y-auto">
                   <div className="sticky top-0 bg-background pb-2">
@@ -1340,7 +1095,6 @@ function HomeContent() {
               )}
             </div>
 
-            {/* Inline Marketplace Results */}
             {showMarketplace && activeTab === "chat" && (
               <div className="shrink-0 px-4 pb-4">
                 <GroceryComparison
@@ -1351,7 +1105,6 @@ function HomeContent() {
             )}
           </TabsContent>
 
-          {/* Marketplace Tab */}
           <TabsContent value="marketplace" className="flex-1 p-4 mt-0 overflow-auto">
             <div className="max-w-4xl mx-auto">
               <div className="mb-6">
@@ -1403,15 +1156,12 @@ function HomeContent() {
             </div>
           </TabsContent>
 
-          {/* Calendar Tab */}
           <TabsContent value="calendar" className="flex-1 p-4 mt-0 overflow-auto">
             <div className="max-w-6xl mx-auto space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="font-display text-3xl font-bold text-foreground mb-2">Your Meal Plan</h2>
-                  <p className="text-muted-foreground">
-                    Personalized weekly meals optimized for your goals
-                  </p>
+                  <p className="text-muted-foreground">Planned suggestions + real meals you logged</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Button variant="outline" className="border-2 border-primary text-primary hover:bg-primary/10 font-bold">
@@ -1423,12 +1173,19 @@ function HomeContent() {
                 </div>
               </div>
 
-              <MealCalendar mealPlan={mealPlan} />
+              <MealCalendar
+                mealPlan={mealPlan}
+                actualMeals={actualMeals}
+                onRequestLogMeal={({ dateKey, mealType }) => {
+                  setMealLogTarget({ dateKey, mealType });
+                  setShowMealLog(true);
+                }}
+                onRequestClearMeal={({ dateKey, mealType }) => clearActualMeal({ dateKey, mealType })}
+              />
 
               <div className="grid md:grid-cols-2 gap-6">
                 <GroceryList items={groceryListItems} totalCost={73} />
 
-                {/* Nutrition Summary */}
                 <div className="bg-white rounded-2xl border-2 border-accent/30 p-4 shadow-playful-lime">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-display font-bold text-foreground flex items-center gap-2">
@@ -1506,7 +1263,6 @@ function HomeContent() {
             </div>
           </TabsContent>
 
-          {/* Photo Log Tab */}
           <TabsContent value="photos" className="flex-1 p-4 mt-0 overflow-auto">
             <div className="max-w-4xl mx-auto space-y-6">
               <div className="mb-6">
@@ -1516,105 +1272,65 @@ function HomeContent() {
                 </p>
               </div>
 
-              {/* Upload Options */}
               <div className="grid md:grid-cols-2 gap-4">
-                {/* Log a Meal */}
-                <Card className="p-6 border-2 border-primary/30 hover:border-primary transition-colors cursor-pointer group" onClick={() => setShowMealLog(true)}>
+                <Card
+                  className="p-6 border-2 border-primary/30 hover:border-primary transition-colors cursor-pointer group"
+                  onClick={() => {
+                    setMealLogTarget(null);
+                    setShowMealLog(true);
+                  }}
+                >
                   <div className="text-center">
                     <div className="w-20 h-20 mx-auto mb-4 rounded-full gradient-coral flex items-center justify-center text-4xl shadow-playful group-hover:scale-110 transition-transform">
                       📸
                     </div>
                     <h3 className="font-display font-bold text-xl text-foreground mb-2">Log a Meal</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Snap a photo of what you ate - whether home-cooked or eating out. We&apos;ll estimate the nutrition!
-                    </p>
+                    <p className="text-muted-foreground text-sm">Snap a photo - we&apos;ll estimate the nutrition!</p>
                   </div>
                 </Card>
 
-                {/* Generate Recipe from Photo */}
-                <Card className="p-6 border-2 border-accent/30 hover:border-accent transition-colors cursor-pointer group" onClick={() => setShowRecipeFromPhoto(true)}>
-                  <div className="text-center">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full gradient-lime flex items-center justify-center text-4xl shadow-playful-lime group-hover:scale-110 transition-transform">
-                      🍳
-                    </div>
-                    <h3 className="font-display font-bold text-xl text-foreground mb-2">Recipe from Photo</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Loved a dish at a restaurant? Upload a photo and we&apos;ll generate a recipe so you can make it at home!
-                    </p>
-                  </div>
-                </Card>
               </div>
 
-              {/* Recent Photos */}
               <div className="mt-8">
                 <h3 className="font-display font-bold text-xl text-foreground mb-4">Recent Meal Photos</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {/* Placeholder photos */}
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <Card key={i} className="aspect-square overflow-hidden group cursor-pointer">
-                      <div className="w-full h-full bg-gradient-to-br from-coral/10 to-lime/10 flex items-center justify-center relative">
-                        <div className="text-center p-4">
-                          <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">
-                            {["🍜", "🥗", "🍝", "🥑", "🍛", "🥘"][i - 1]}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {["Yesterday", "2 days ago", "3 days ago", "Last week", "Last week", "2 weeks ago"][i - 1]}
-                          </div>
-                        </div>
-                        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="bg-white/90 rounded-lg p-2 text-center">
-                            <div className="text-xs font-bold text-primary">~450 cal</div>
-                            <div className="text-xs text-muted-foreground">tap to view</div>
+
+                {recentMeals.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No photos yet — log your first meal 📸</div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {recentMeals.map((m) => (
+                      <Card key={m.id} className="aspect-square overflow-hidden group cursor-pointer" onClick={() => setSelectedMeal(m)}>
+                        <div className="w-full h-full relative">
+                          <img src={m.imageUrl} alt={m.dish_name} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="bg-white/90 rounded-lg p-2 text-center">
+                              <div className="text-xs font-bold text-primary">~{m.calories_estimate} cal</div>
+                              <div className="text-xs text-muted-foreground">tap to view</div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
         </Tabs>
       </main>
 
-      {/* Log Meal Modal */}
       {showMealLog && (
         <MealLogModal
           onClose={() => setShowMealLog(false)}
-          plannedMeals={
-            // Get today's planned meals from the meal plan
-            (() => {
-              const today = new Date();
-              const todayDay = mealPlan.days.find(
-                (d) => d.date.toDateString() === today.toDateString()
-              );
-              if (!todayDay) return [];
-              const meals: Array<{ name: string; mealType: string }> = [];
-              if (todayDay.meals.breakfast?.recipe) {
-                meals.push({ name: todayDay.meals.breakfast.recipe.name, mealType: "breakfast" });
-              }
-              if (todayDay.meals.lunch?.recipe) {
-                meals.push({ name: todayDay.meals.lunch.recipe.name, mealType: "lunch" });
-              }
-              if (todayDay.meals.dinner?.recipe) {
-                meals.push({ name: todayDay.meals.dinner.recipe.name, mealType: "dinner" });
-              }
-              return meals;
-            })()
-          }
-        />
-      )}
-
-      {/* Recipe from Photo Modal */}
-      {showRecipeFromPhoto && (
-        <RecipeFromPhotoModal
-          onClose={() => setShowRecipeFromPhoto(false)}
-          onRecipeGenerated={(recipeId) => {
-            setShowRecipeFromPhoto(false);
-            router.push(`/recipe/${recipeId}`);
+          defaultTarget={mealLogTarget}
+          onAnalyzed={({ file, target, result }) => {
+            addRecentMeal(file, result);
+            upsertActualMeal({ file, target, result });
           }}
         />
       )}
+
 
       {/* Login Modal */}
       {showLoginModal && (
@@ -1694,10 +1410,7 @@ function HomeContent() {
               <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
                 <span>📊</span> Nutrition Dashboard
               </h2>
-              <button
-                onClick={() => setShowNutritionDashboard(false)}
-                className="text-muted-foreground hover:text-foreground text-2xl"
-              >
+              <button onClick={() => setShowNutritionDashboard(false)} className="text-muted-foreground hover:text-foreground text-2xl">
                 ×
               </button>
             </div>
@@ -1710,23 +1423,14 @@ function HomeContent() {
               todayFiber={28}
               targetCalories={2000}
               targetProtein={80}
-              weeklyAvg={{
-                calories: 1395,
-                protein: 52,
-                carbs: 170,
-                fat: 48,
-              }}
+              weeklyAvg={{ calories: 1395, protein: 52, carbs: 170, fat: 48 }}
               mealsLogged={3}
               streak={5}
               goals={["weight-loss", "muscle", "save-money"]}
             />
 
             <div className="mt-4 pt-4 border-t border-border/50">
-              <Button
-                variant="outline"
-                onClick={() => setShowNutritionDashboard(false)}
-                className="w-full border-2"
-              >
+              <Button variant="outline" onClick={() => setShowNutritionDashboard(false)} className="w-full border-2">
                 Close
               </Button>
             </div>
@@ -1734,14 +1438,32 @@ function HomeContent() {
         </div>
       )}
 
-      {/* Footer */}
       <footer className="border-t border-border/50 py-4 px-4 text-center bg-background/50">
         <p className="text-sm text-muted-foreground">
           Made with <span className="text-primary">♥</span> at TreeHacks 2026 |{" "}
-          <span className="font-display font-bold text-foreground">Mahm</span>{" "}
-          — Made At Home Mmmm
+          <span className="font-display font-bold text-foreground">Mahm</span> — Make something your Mahm would be proud of
         </p>
       </footer>
+
+      {selectedMeal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedMeal(null)}>
+          <Card className="w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="font-display font-bold text-foreground">Meal Details</div>
+              <button className="text-muted-foreground hover:text-foreground text-2xl" onClick={() => setSelectedMeal(null)}>
+                ×
+              </button>
+            </div>
+            <img src={selectedMeal.imageUrl} className="w-full h-56 object-cover rounded-xl" alt={selectedMeal.dish_name} />
+            <div className="mt-3 text-sm">
+              <div><span className="font-medium">Dish:</span> {selectedMeal.dish_name}</div>
+              <div><span className="font-medium">Calories:</span> {selectedMeal.calories_estimate} kcal</div>
+              <div><span className="font-medium">Confidence:</span> {selectedMeal.confidence}</div>
+              <div className="mt-2 text-muted-foreground">{selectedMeal.notes}</div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
@@ -1761,3 +1483,4 @@ export default function Home() {
     </Suspense>
   );
 }
+
