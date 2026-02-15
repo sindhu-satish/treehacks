@@ -62,7 +62,15 @@ export default function ProfilePage() {
     if (savedProfile) {
       try {
         const parsed = JSON.parse(savedProfile);
-        setProfile(parsed);
+        // Merge with default profile to ensure all required fields exist
+        setProfile({
+          ...dummyUserProfile,
+          ...parsed,
+          preferences: {
+            ...dummyUserProfile.preferences,
+            ...(parsed.preferences || {}),
+          },
+        });
       } catch (e) {
         console.error("Failed to parse saved profile:", e);
       }

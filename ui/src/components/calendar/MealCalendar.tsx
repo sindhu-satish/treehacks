@@ -44,8 +44,10 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
   const [eatingOutMeals, setEatingOutMeals] = useState<Set<string>>(new Set());
   const [showEatingOutModal, setShowEatingOutModal] = useState<{ dayIndex: number; mealType: string } | null>(null);
   const [showSwapModal, setShowSwapModal] = useState<{ dayIndex: number; mealType: string; currentRecipe: PlannedMeal } | null>(null);
+  const [showAddMealModal, setShowAddMealModal] = useState<{ dayIndex: number; mealType: string } | null>(null);
   const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
   const [swappedMeals, setSwappedMeals] = useState<Record<string, { name: string; calories: number; time: number; image: string }>>({});
+  const [addedMeals, setAddedMeals] = useState<Record<string, { name: string; calories: number; time: number; image: string }>>({});
 
   // Calculate the displayed week based on offset
   const getWeekDates = (offset: number) => {
@@ -164,6 +166,44 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
     { id: "alt8", name: "Greek Salad Bowl", calories: 320, time: 15, image: "🥙" },
   ];
 
+  // Snack suggestions
+  const snackSuggestions = [
+    { id: "snack1", name: "Apple with Almond Butter", calories: 180, time: 2, image: "🍎" },
+    { id: "snack2", name: "Greek Yogurt & Berries", calories: 150, time: 2, image: "🫐" },
+    { id: "snack3", name: "Trail Mix", calories: 200, time: 1, image: "🥜" },
+    { id: "snack4", name: "Hummus & Veggies", calories: 160, time: 5, image: "🥕" },
+    { id: "snack5", name: "Energy Balls", calories: 120, time: 1, image: "🟤" },
+    { id: "snack6", name: "Cheese & Crackers", calories: 220, time: 2, image: "🧀" },
+  ];
+
+  // Dessert suggestions
+  const dessertSuggestions = [
+    { id: "dessert1", name: "Dark Chocolate Square", calories: 80, time: 1, image: "🍫" },
+    { id: "dessert2", name: "Fruit Sorbet", calories: 120, time: 5, image: "🍨" },
+    { id: "dessert3", name: "Chia Pudding", calories: 180, time: 5, image: "🥄" },
+    { id: "dessert4", name: "Baked Apple", calories: 150, time: 20, image: "🍏" },
+    { id: "dessert5", name: "Banana Nice Cream", calories: 140, time: 5, image: "🍌" },
+    { id: "dessert6", name: "Coconut Date Bites", calories: 100, time: 2, image: "🥥" },
+  ];
+
+  const handleAddMeal = (dayIndex: number, mealType: string, meal: { name: string; calories: number; time: number; image: string }) => {
+    const key = `${dayIndex}-${mealType}`;
+    setAddedMeals(prev => ({
+      ...prev,
+      [key]: meal
+    }));
+    setShowAddMealModal(null);
+  };
+
+  const handleRemoveAddedMeal = (dayIndex: number, mealType: string) => {
+    const key = `${dayIndex}-${mealType}`;
+    setAddedMeals(prev => {
+      const newMeals = { ...prev };
+      delete newMeals[key];
+      return newMeals;
+    });
+  };
+
   const handleRegenerateMeal = async (dayIndex: number, mealType: string) => {
     const key = `${dayIndex}-${mealType}`;
     setIsRegenerating(key);
@@ -197,17 +237,29 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
   const getDisplayMeal = (dayIndex: number, mealType: string, originalMeal: PlannedMeal | undefined) => {
     const key = `${dayIndex}-${mealType}`;
     const swapped = swappedMeals[key];
+    const added = addedMeals[key];
     if (swapped) {
       return {
         isSwapped: true,
+        isAdded: false,
         name: swapped.name,
         calories: swapped.calories,
         image: swapped.image
       };
     }
+    if (added) {
+      return {
+        isSwapped: false,
+        isAdded: true,
+        name: added.name,
+        calories: added.calories,
+        image: added.image
+      };
+    }
     if (originalMeal) {
       return {
         isSwapped: false,
+        isAdded: false,
         name: originalMeal.recipe.name,
         calories: originalMeal.recipe.nutrition.calories,
         cost: originalMeal.recipe.estimatedCost ? (originalMeal.recipe.estimatedCost / originalMeal.recipe.servings * originalMeal.servings) : undefined
@@ -371,10 +423,10 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                         if (displayMeal && !isRemoved) {
                           return (
                             <div
-                              onClick={() => !displayMeal.isSwapped && mealData && handleMealClick(mealData, idx, mealType)}
+                              onClick={() => !displayMeal.isSwapped && !displayMeal.isAdded && mealData && handleMealClick(mealData, idx, mealType)}
                               className="cursor-pointer hover:bg-primary/5 rounded-lg p-1 -m-1 transition-colors"
                             >
-                              {displayMeal.isSwapped && (
+                              {(displayMeal.isSwapped || displayMeal.isAdded) && (
                                 <div className="text-lg mb-1">{(displayMeal as { image?: string }).image}</div>
                               )}
                               <div className="text-xs font-medium text-foreground line-clamp-2 hover:text-primary transition-colors">
@@ -382,11 +434,14 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                                 {displayMeal.isSwapped && (
                                   <Badge className="ml-1 text-[10px] bg-violet-500/20 text-violet-500 border-0">New</Badge>
                                 )}
+                                {displayMeal.isAdded && (
+                                  <Badge className="ml-1 text-[10px] bg-accent/20 text-accent border-0">Added</Badge>
+                                )}
                               </div>
                               <div className="text-xs text-muted-foreground mt-1">
                                 {displayMeal.calories} cal
                               </div>
-                              {!displayMeal.isSwapped && (displayMeal as { cost?: number }).cost && (
+                              {!displayMeal.isSwapped && !displayMeal.isAdded && (displayMeal as { cost?: number }).cost && (
                                 <div className="text-xs text-accent mt-0.5 font-medium">
                                   ${((displayMeal as { cost?: number }).cost || 0).toFixed(2)}
                                 </div>
@@ -404,7 +459,10 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                         }
 
                         return (
-                          <div className="text-xs text-muted-foreground italic">
+                          <div
+                            onClick={() => setShowAddMealModal({ dayIndex: idx, mealType })}
+                            className="text-xs text-muted-foreground italic cursor-pointer hover:text-primary transition-colors"
+                          >
                             {mealType === "snacks" || mealType === "dessert" ? "Add..." : "No meal"}
                           </div>
                         );
@@ -421,42 +479,50 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                       )}
 
                       {/* Swap / Regenerate / Eating out / Remove buttons */}
-                      {mealData && !isOut && !isRegenerating && (
+                      {(mealData || addedMeals[`${idx}-${mealType}`]) && !isOut && !isRegenerating && (
                         <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {mealData && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSwapMeal(idx, mealType, mealData);
+                                }}
+                                className="w-5 h-5 rounded-full text-xs bg-violet-500/30 text-foreground hover:bg-violet-500/50"
+                                title="Swap meal"
+                              >
+                                🔄
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRegenerateMeal(idx, mealType);
+                                }}
+                                className="w-5 h-5 rounded-full text-xs bg-accent/30 text-foreground hover:bg-accent/50"
+                                title="Generate new meal"
+                              >
+                                ✨
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleEatingOut(idx, mealType);
+                                }}
+                                className="w-5 h-5 rounded-full text-xs bg-amber-400/30 text-foreground hover:bg-amber-400/50"
+                                title="Mark as eating out"
+                              >
+                                🍽️
+                              </button>
+                            </>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleSwapMeal(idx, mealType, mealData);
-                            }}
-                            className="w-5 h-5 rounded-full text-xs bg-violet-500/30 text-foreground hover:bg-violet-500/50"
-                            title="Swap meal"
-                          >
-                            🔄
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRegenerateMeal(idx, mealType);
-                            }}
-                            className="w-5 h-5 rounded-full text-xs bg-accent/30 text-foreground hover:bg-accent/50"
-                            title="Generate new meal"
-                          >
-                            ✨
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleEatingOut(idx, mealType);
-                            }}
-                            className="w-5 h-5 rounded-full text-xs bg-amber-400/30 text-foreground hover:bg-amber-400/50"
-                            title="Mark as eating out"
-                          >
-                            🍽️
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleMealRemoved(idx, mealType);
+                              if (addedMeals[`${idx}-${mealType}`]) {
+                                handleRemoveAddedMeal(idx, mealType);
+                              } else {
+                                toggleMealRemoved(idx, mealType);
+                              }
                             }}
                             className={`w-5 h-5 rounded-full text-xs ${
                               isRemoved
@@ -470,8 +536,9 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                       )}
 
                       {/* Add meal button for empty slots */}
-                      {!mealData && !isRemoved && (
+                      {!mealData && !addedMeals[`${idx}-${mealType}`] && !isRemoved && (
                         <button
+                          onClick={() => setShowAddMealModal({ dayIndex: idx, mealType })}
                           className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg hover:bg-primary/20 transition-colors">
@@ -662,6 +729,80 @@ export function MealCalendar({ mealPlan }: MealCalendarProps) {
                 className="w-full border-2"
               >
                 Keep Current Meal
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Add Meal Modal */}
+      {showAddMealModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-bold text-foreground">
+                Add {mealTypeLabels[showAddMealModal.mealType].icon} {mealTypeLabels[showAddMealModal.mealType].label}
+              </h2>
+              <button
+                onClick={() => setShowAddMealModal(null)}
+                className="text-muted-foreground hover:text-foreground text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="text-sm text-muted-foreground mb-4">
+              {weekDates[showAddMealModal.dayIndex]?.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+            </div>
+
+            {/* Suggestions based on meal type */}
+            <div className="mb-4">
+              <div className="text-sm font-bold text-foreground mb-3">Quick picks:</div>
+              <div className="space-y-2">
+                {(showAddMealModal.mealType === "snacks" ? snackSuggestions :
+                  showAddMealModal.mealType === "dessert" ? dessertSuggestions :
+                  alternativeMeals.slice(0, 6)).map((suggestion) => (
+                  <button
+                    key={suggestion.id}
+                    onClick={() => handleAddMeal(showAddMealModal.dayIndex, showAddMealModal.mealType, suggestion)}
+                    className="w-full p-3 bg-muted/30 rounded-xl text-left hover:bg-accent/10 hover:border-accent border-2 border-transparent transition-all flex items-center gap-3"
+                  >
+                    <span className="text-3xl">{suggestion.image}</span>
+                    <div className="flex-1">
+                      <div className="font-bold text-foreground">{suggestion.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {suggestion.calories} cal • {suggestion.time} min
+                      </div>
+                    </div>
+                    <span className="text-accent text-lg">+</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom option */}
+            <button
+              onClick={() => {
+                handleAddMeal(showAddMealModal.dayIndex, showAddMealModal.mealType, {
+                  name: "Custom " + mealTypeLabels[showAddMealModal.mealType].label,
+                  calories: 200,
+                  time: 10,
+                  image: mealTypeLabels[showAddMealModal.mealType].icon
+                });
+              }}
+              className="w-full p-3 border-2 border-dashed border-primary/30 rounded-xl text-center hover:bg-primary/10 transition-colors"
+            >
+              <span className="text-lg mr-2">✏️</span>
+              <span className="font-bold text-primary">Add custom item</span>
+            </button>
+
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <Button
+                variant="outline"
+                onClick={() => setShowAddMealModal(null)}
+                className="w-full border-2"
+              >
+                Cancel
               </Button>
             </div>
           </Card>
