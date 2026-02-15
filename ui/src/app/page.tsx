@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChatMessage, DateSeparator } from "@/components/chat/ChatMessage";
@@ -19,7 +18,6 @@ import { NutritionDashboard } from "@/components/nutrition/NutritionDashboard";
 import {
   dummyRecipes,
   dummyGroceryComparison,
-  dummyChatHistory,
 } from "@/lib/dummy-data";
 
 function createEmptyMealPlan(): MealPlan {
@@ -46,7 +44,7 @@ function createEmptyMealPlan(): MealPlan {
     groceryList: [],
   };
 }
-import { comparePrices, healthCheck, sendChatMessage } from "@/lib/api";
+import { healthCheck, sendChatMessage } from "@/lib/api";
 import {
   ChatMessage as ChatMessageType,
   GroceryComparison as GroceryComparisonType,
@@ -581,7 +579,7 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
 export default function Home() {
   const router = useRouter();
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
-  const [messages, setMessages] = useState<ChatMessageType[]>(dummyChatHistory);
+  const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
   const [showRecipes, setShowRecipes] = useState(true);
@@ -589,11 +587,8 @@ export default function Home() {
   const [showMealLog, setShowMealLog] = useState(false);
   const [showRecipeFromPhoto, setShowRecipeFromPhoto] = useState(false);
   const [showNutritionDashboard, setShowNutritionDashboard] = useState(false);
-  const [findingStores, setFindingStores] = useState(false);
-  const [storesFound, setStoresFound] = useState(false);
   const [marketplaceComparisons, setMarketplaceComparisons] = useState<GroceryComparisonType[]>(dummyGroceryComparison);
   const [marketplaceError, setMarketplaceError] = useState<string | null>(null);
-  const [lastFetchedZip, setLastFetchedZip] = useState<string>("94305");
   const [backendOk, setBackendOk] = useState<boolean | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlan>(createEmptyMealPlan);
   const [addToCalendarModal, setAddToCalendarModal] = useState<{
@@ -601,7 +596,6 @@ export default function Home() {
     dayIndex: number;
     mealType: "breakfast" | "lunch" | "dinner";
   } | null>(null);
-  const zipInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleAddToCalendar = (recipe: ChatRecipeFromApi) => {
@@ -831,28 +825,6 @@ export default function Home() {
     }
   };
 
-  const handleFindStores = async () => {
-    const zip = zipInputRef.current?.value?.trim() || "94305";
-    const ingredients = groceryListItems.map((item) => item.name);
-    if (!zip || ingredients.length === 0) {
-      setMarketplaceError("Enter a zip code and ensure you have ingredients (e.g. from your grocery list).");
-      return;
-    }
-    setFindingStores(true);
-    setMarketplaceError(null);
-    try {
-      const comparisons = await comparePrices(zip, ingredients);
-      setMarketplaceComparisons(comparisons.length > 0 ? comparisons : dummyGroceryComparison);
-      setLastFetchedZip(zip);
-      setStoresFound(true);
-    } catch (e) {
-      setMarketplaceError(e instanceof Error ? e.message : "Could not load prices. Is the backend running on port 5000?");
-      setMarketplaceComparisons(dummyGroceryComparison);
-    } finally {
-      setFindingStores(false);
-    }
-  };
-
   const groceryListItems = [
     { name: "Red lentils", amount: "2 cups", category: "grains", estimatedPrice: 2.99 },
     { name: "Coconut milk", amount: "2 cans", category: "canned", estimatedPrice: 3.98 },
@@ -880,7 +852,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-screen flex flex-col overflow-hidden bg-background">
       {/* Hero Header */}
       <header className="gradient-hero border-b border-border/50 relative overflow-hidden">
         {/* Decorative blobs */}
@@ -930,8 +902,8 @@ export default function Home() {
             </nav>
           </div>
 
-          {/* Tagline - only show on landing */}
-          {messages.length <= 1 && (
+          {/* Tagline - only show on Chat tab when landing */}
+          {messages.length <= 1 && activeTab === "chat" && (
             <div className="mt-10 mb-6 text-center relative">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 animate-float">
                 <MahmLogo size="xl" showText={false} />
@@ -964,8 +936,8 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col max-w-6xl mx-auto w-full">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+      <main className="flex-1 min-h-0 flex flex-col overflow-hidden max-w-6xl mx-auto w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col overflow-hidden">
           <div className="border-b border-border/50 px-4 bg-white/50">
             <TabsList className="bg-transparent h-auto p-0 gap-2 md:gap-6">
               <TabsTrigger
@@ -996,11 +968,14 @@ export default function Home() {
           </div>
 
           {/* Chat Tab */}
-          <TabsContent value="chat" className="flex-1 flex flex-col mt-0 data-[state=inactive]:hidden">
-            <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+          <TabsContent value="chat" className="flex-1 flex flex-col mt-0 min-h-0 overflow-hidden data-[state=inactive]:hidden">
+            <div className="flex-1 flex gap-4 p-4 min-h-0 overflow-hidden">
               {/* Chat Messages */}
-              <div className="flex-1 flex flex-col min-w-0">
-                <ScrollArea className="flex-1" ref={scrollRef}>
+              <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
+                <div
+                  ref={scrollRef}
+                  className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+                >
                   <div className="pb-4">
                     {messages.map((message, index) => {
                       const currentDate = new Date(message.timestamp).toDateString();
@@ -1016,7 +991,11 @@ export default function Home() {
                     })}
                     {isTyping && <TypingIndicator />}
                   </div>
-                </ScrollArea>
+                </div>
+                {/* Chat input fixed at bottom of chat area */}
+                <div className="shrink-0 pt-2">
+                  <ChatInput onSend={handleSendMessage} disabled={isTyping} />
+                </div>
               </div>
 
               {/* Side Panel - Recipes */}
@@ -1051,15 +1030,13 @@ export default function Home() {
 
             {/* Inline Marketplace Results */}
             {showMarketplace && activeTab === "chat" && (
-              <div className="px-4 pb-4">
+              <div className="shrink-0 px-4 pb-4">
                 <GroceryComparison
                   comparisons={marketplaceComparisons}
                   groceryListItems={groceryListItems.map(item => item.name)}
                 />
               </div>
             )}
-
-            <ChatInput onSend={handleSendMessage} disabled={isTyping} />
           </TabsContent>
 
           {/* Marketplace Tab */}
@@ -1081,68 +1058,11 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Location Input */}
-              <div className="flex items-center gap-3 mb-6 p-4 bg-white rounded-2xl border-2 border-primary/20 shadow-playful">
-                <span className="text-2xl animate-bounce-subtle">📍</span>
-                <input
-                  ref={zipInputRef}
-                  type="text"
-                  placeholder="Enter your zip code"
-                  defaultValue="94305"
-                  className="flex-1 bg-transparent focus:outline-none text-foreground font-medium text-lg"
-                />
-                <Button
-                  onClick={handleFindStores}
-                  disabled={findingStores}
-                  className="gradient-coral text-white font-bold px-6 shadow-playful hover:scale-105 transition-transform disabled:opacity-70 disabled:hover:scale-100"
-                >
-                  {findingStores ? (
-                    <span className="flex items-center gap-2">
-                      <span className="animate-spin">🔍</span>
-                      Finding...
-                    </span>
-                  ) : storesFound ? (
-                    <span className="flex items-center gap-2">
-                      <span>✓</span>
-                      Refresh stores
-                    </span>
-                  ) : (
-                    "Find stores"
-                  )}
-                </Button>
-              </div>
-
-              {/* Loading state */}
-              {findingStores && (
-                <div className="mb-6 p-6 bg-white rounded-2xl border-2 border-accent/30 text-center">
-                  <div className="text-4xl mb-4 animate-bounce">🏪</div>
-                  <div className="space-y-2">
-                    <p className="font-bold text-foreground">Finding stores near you...</p>
-                    <div className="flex justify-center gap-1">
-                      <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                      <span className="w-2 h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
-                      <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
-                    </div>
-                    <p className="text-sm text-muted-foreground">Checking prices at Trader Joe&apos;s, Safeway, Whole Foods...</p>
-                  </div>
-                </div>
-              )}
-
               {/* Error from backend */}
-              {marketplaceError && !findingStores && (
+              {marketplaceError && (
                 <div className="mb-4 p-3 bg-destructive/10 rounded-xl border border-destructive/30 flex items-center gap-2">
                   <span className="text-lg">⚠</span>
                   <span className="text-sm font-medium text-foreground">{marketplaceError}</span>
-                </div>
-              )}
-
-              {/* Stores found message */}
-              {storesFound && !findingStores && !marketplaceError && (
-                <div className="mb-4 p-3 bg-accent/10 rounded-xl border border-accent/30 flex items-center gap-2">
-                  <span className="text-lg">✓</span>
-                  <span className="text-sm font-medium text-foreground">
-                    Prices loaded from backend for zip {lastFetchedZip}.
-                  </span>
                 </div>
               )}
 
