@@ -1,10 +1,21 @@
 // Chat types
+export interface ChatRecipeFromApi {
+  id: string;
+  name: string;
+  cook_time_min?: number | null;
+  ingredients?: string[];
+  dietary_tags?: string[];
+  image_link?: string | null;
+}
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
   toolCalls?: ToolCall[];
+  /** Recipes from search_recipes tool (shown as cards in chat) */
+  recipes?: ChatRecipeFromApi[];
 }
 
 export interface ToolCall {

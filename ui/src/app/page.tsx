@@ -19,10 +19,43 @@ import { NutritionDashboard } from "@/components/nutrition/NutritionDashboard";
 import {
   dummyRecipes,
   dummyGroceryComparison,
-  dummyMealPlan,
   dummyChatHistory,
 } from "@/lib/dummy-data";
-import { ChatMessage as ChatMessageType } from "@/types";
+
+function createEmptyMealPlan(): MealPlan {
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  const days: MealDay[] = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(startOfWeek);
+    date.setDate(startOfWeek.getDate() + i);
+    return {
+      date,
+      meals: { breakfast: undefined, lunch: undefined, dinner: undefined },
+      dailyNutrition: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 },
+    };
+  });
+  return {
+    id: "meal-plan-1",
+    startDate: startOfWeek,
+    endDate: endOfWeek,
+    days,
+    totalCost: 0,
+    groceryList: [],
+  };
+}
+import { comparePrices, healthCheck, sendChatMessage } from "@/lib/api";
+import {
+  ChatMessage as ChatMessageType,
+  GroceryComparison as GroceryComparisonType,
+  MealPlan,
+  MealDay,
+  PlannedMeal,
+  Recipe,
+  ChatRecipeFromApi,
+} from "@/types";
 
 // Recipe from Photo Modal Component
 function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => void; onRecipeGenerated: (recipeId: string) => void }) {
@@ -312,6 +345,22 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
   const [mealPlanStatus, setMealPlanStatus] = useState<"planned" | "unplanned" | null>(null);
   const [mealType, setMealType] = useState<string | null>(null);
   const [hasPhoto, setHasPhoto] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
+  const [portionSize, setPortionSize] = useState<string>("Regular");
+  const [isLogging, setIsLogging] = useState(false);
+  const [logSuccess, setLogSuccess] = useState(false);
+
+  const handleLogMeal = async () => {
+    setIsLogging(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsLogging(false);
+    setLogSuccess(true);
+    // Close after showing success
+    setTimeout(() => {
+      onClose();
+    }, 1500);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -429,8 +478,14 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
               {["Creamy Lentil Dal", "Chickpea Tikka Masala", "Black Bean Tacos"].map((meal) => (
                 <button
                   key={meal}
-                  className="w-full p-3 rounded-lg text-left text-sm font-medium bg-white hover:bg-accent/10 border-2 border-transparent hover:border-accent/30 transition-all"
+                  onClick={() => setSelectedMeal(meal)}
+                  className={`w-full p-3 rounded-lg text-left text-sm font-medium transition-all ${
+                    selectedMeal === meal
+                      ? "bg-accent/20 border-2 border-accent text-foreground"
+                      : "bg-white hover:bg-accent/10 border-2 border-transparent hover:border-accent/30"
+                  }`}
                 >
+                  {selectedMeal === meal && <span className="mr-2">✓</span>}
                   {meal}
                 </button>
               ))}
@@ -466,7 +521,12 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
             {["Small", "Regular", "Large", "XL"].map((size) => (
               <button
                 key={size}
-                className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-muted/50 text-foreground hover:bg-primary/20 transition-colors"
+                onClick={() => setPortionSize(size)}
+                className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  portionSize === size
+                    ? "bg-primary text-white"
+                    : "bg-muted/50 text-foreground hover:bg-primary/20"
+                }`}
               >
                 {size}
               </button>
@@ -475,15 +535,42 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <Button
-          className="w-full gradient-coral text-white font-bold text-lg py-6 shadow-playful hover:scale-105 transition-transform"
-          disabled={!mealPlanStatus || !mealType || (mealPlanStatus === "unplanned" && !hasPhoto)}
+          onClick={handleLogMeal}
+          className={`w-full font-bold text-lg py-6 shadow-playful transition-transform ${
+            logSuccess
+              ? "bg-accent hover:bg-accent text-white"
+              : "gradient-coral text-white hover:scale-105"
+          }`}
+          disabled={
+            isLogging ||
+            logSuccess ||
+            !mealPlanStatus ||
+            !mealType ||
+            (mealPlanStatus === "planned" && !selectedMeal) ||
+            (mealPlanStatus === "unplanned" && !hasPhoto)
+          }
         >
-          {mealPlanStatus === "planned" ? "Log Meal" : "Analyze Meal"}
+          {isLogging ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="animate-spin">⏳</span> Logging...
+            </span>
+          ) : logSuccess ? (
+            <span className="flex items-center justify-center gap-2">
+              <span>✓</span> Meal Logged!
+            </span>
+          ) : (
+            mealPlanStatus === "planned" ? "Log Meal" : "Analyze Meal"
+          )}
         </Button>
 
         {mealPlanStatus === "unplanned" && !hasPhoto && (
           <p className="text-xs text-center text-primary mt-2">
             Photo required for unplanned meals to estimate nutrition
+          </p>
+        )}
+        {mealPlanStatus === "planned" && !selectedMeal && (
+          <p className="text-xs text-center text-muted-foreground mt-2">
+            Please select a meal from your plan
           </p>
         )}
       </Card>
@@ -504,7 +591,60 @@ export default function Home() {
   const [showNutritionDashboard, setShowNutritionDashboard] = useState(false);
   const [findingStores, setFindingStores] = useState(false);
   const [storesFound, setStoresFound] = useState(false);
+  const [marketplaceComparisons, setMarketplaceComparisons] = useState<GroceryComparisonType[]>(dummyGroceryComparison);
+  const [marketplaceError, setMarketplaceError] = useState<string | null>(null);
+  const [lastFetchedZip, setLastFetchedZip] = useState<string>("94305");
+  const [backendOk, setBackendOk] = useState<boolean | null>(null);
+  const [mealPlan, setMealPlan] = useState<MealPlan>(createEmptyMealPlan);
+  const [addToCalendarModal, setAddToCalendarModal] = useState<{
+    recipe: ChatRecipeFromApi;
+    dayIndex: number;
+    mealType: "breakfast" | "lunch" | "dinner";
+  } | null>(null);
+  const zipInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleAddToCalendar = (recipe: ChatRecipeFromApi) => {
+    setAddToCalendarModal({
+      recipe,
+      dayIndex: 0,
+      mealType: "dinner",
+    });
+  };
+
+  const handleConfirmAddToCalendar = () => {
+    if (!addToCalendarModal) return;
+    const { recipe, dayIndex, mealType } = addToCalendarModal;
+    const minimalRecipe: Recipe = {
+      id: recipe.id,
+      name: recipe.name,
+      description: "",
+      ingredients: (recipe.ingredients ?? []).map((name) => ({ name, amount: 0, unit: "" })),
+      instructions: [],
+      prepTime: 0,
+      cookTime: recipe.cook_time_min ?? 0,
+      servings: 1,
+      nutrition: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 },
+      dietaryTags: recipe.dietary_tags ?? [],
+      cuisine: "",
+      difficulty: "easy",
+    };
+    const plannedMeal: PlannedMeal = { recipe: minimalRecipe, servings: 1 };
+    setMealPlan((prev) => {
+      const days = prev.days.map((d, i) =>
+        i === dayIndex
+          ? { ...d, meals: { ...d.meals, [mealType]: plannedMeal } }
+          : d
+      );
+      return { ...prev, days };
+    });
+    setAddToCalendarModal(null);
+    setActiveTab("calendar");
+  };
+
+  useEffect(() => {
+    healthCheck().then(setBackendOk);
+  }, []);
 
   // Check if user has completed onboarding
   useEffect(() => {
@@ -645,7 +785,6 @@ export default function Home() {
   }
 
   const handleSendMessage = async (content: string) => {
-    // Add user message
     const userMessage: ChatMessageType = {
       id: Date.now().toString(),
       role: "user",
@@ -655,69 +794,63 @@ export default function Home() {
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const lowerContent = content.toLowerCase();
-      let response: ChatMessageType;
+    try {
+      const apiMessages = [...messages, userMessage].map((m) => ({ role: m.role, content: m.content }));
+      const { text, toolCalls, recipes } = await sendChatMessage(apiMessages);
 
-      if (lowerContent.includes("where") && (lowerContent.includes("buy") || lowerContent.includes("ingredient") || lowerContent.includes("store"))) {
-        // Marketplace response
-        response = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Great question! I found the ingredients for Creamy Lentil Dal at 3 stores near you. Here's the price breakdown:\n\n**Best deals:**\n- Red lentils are cheapest at **Trader Joe's** ($2.99)\n- Coconut milk is also best at **Trader Joe's** ($1.99)\n- Spinach is cheapest at **Safeway** ($2.29)\n\nYou could save about $3.50 by shopping at Trader Joe's for most items! Want me to plan your whole week so you can do one efficient shopping trip?",
-          timestamp: new Date(),
-          toolCalls: [
-            { id: "tc1", name: "find_stores", status: "complete" },
-          ],
-        };
-        setShowMarketplace(true);
-      } else if (lowerContent.includes("plan") && (lowerContent.includes("week") || lowerContent.includes("meal"))) {
-        // Meal plan response
-        response = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "I've put together a week of delicious meals for you! Here's what I came up with:\n\n**Your 7-day plan includes:**\n- 21 meals (breakfast, lunch, dinner)\n- All vegetarian & dairy-free\n- Average 1,400 cal/day (great for weight loss)\n- High protein to keep you full\n- No tofu anywhere!\n\n**Total grocery cost: $73** (under your $80 budget!)\n\nI've also synced this to your Google Calendar with prep reminders. The grocery list has 23 items - I'd recommend doing your shopping Sunday morning.\n\nWhat do you think? Want me to swap anything out?",
-          timestamp: new Date(),
-          toolCalls: [
-            { id: "tc1", name: "generate_meal_plan", status: "complete" },
-            { id: "tc2", name: "find_stores", status: "complete" },
-          ],
-        };
-        setActiveTab("calendar");
-      } else if (lowerContent.includes("love") || lowerContent.includes("great") || lowerContent.includes("perfect") || lowerContent.includes("sounds good")) {
-        response = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Yay! So glad you like it!\n\nA few tips for your cooking journey:\n\n1. **Start with the dal** - it's super forgiving and makes great leftovers\n2. **Prep your spices** in advance - makes weeknight cooking way faster\n3. **Don't skip the spinach** in the dal - it adds iron, which is important since you mentioned feeling tired\n\nNeed me to find where to buy ingredients, or want to see your full week plan?",
-          timestamp: new Date(),
-        };
-      } else {
-        // Default recipe recommendation response
-        response = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Based on what you've told me, I think you'll love these options! Each one is:\n\n- Vegetarian & dairy-free\n- Under 30 minutes\n- Beginner-friendly (no fancy techniques)\n- High in protein for weight loss\n- Budget-friendly\n\nTake a look and let me know which catches your eye - I can find the ingredients at stores near you, or plan out your whole week!",
-          timestamp: new Date(),
-          toolCalls: [
-            { id: "tc1", name: "search_recipes", status: "complete" },
-            { id: "tc2", name: "get_nutrition", status: "complete" },
-          ],
-        };
-        setShowRecipes(true);
-      }
+      const assistantMessage: ChatMessageType = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: text,
+        timestamp: new Date(),
+        toolCalls: (toolCalls ?? []).map((tc, i) => ({
+          id: `tc${i + 1}`,
+          name: tc.name as "search_recipes" | "get_nutrition" | "find_stores" | "generate_meal_plan",
+          status: "complete" as const,
+        })),
+        recipes,
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
 
-      setMessages((prev) => [...prev, response]);
+      if ((toolCalls ?? []).some((tc) => tc.name === "search_recipes")) setShowRecipes(true);
+      if ((toolCalls ?? []).some((tc) => tc.name === "find_stores")) setShowMarketplace(true);
+      if ((toolCalls ?? []).some((tc) => tc.name === "generate_meal_plan")) setActiveTab("calendar");
+    } catch (err) {
+      const errorContent = err instanceof Error ? err.message : "Something went wrong. Is the Mahm chat server running?";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: `Sorry, I couldn’t complete that: ${errorContent}`,
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleFindStores = async () => {
+    const zip = zipInputRef.current?.value?.trim() || "94305";
+    const ingredients = groceryListItems.map((item) => item.name);
+    if (!zip || ingredients.length === 0) {
+      setMarketplaceError("Enter a zip code and ensure you have ingredients (e.g. from your grocery list).");
+      return;
+    }
     setFindingStores(true);
-    // Simulate finding stores (will be replaced with BrightData integration)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setFindingStores(false);
-    setStoresFound(true);
+    setMarketplaceError(null);
+    try {
+      const comparisons = await comparePrices(zip, ingredients);
+      setMarketplaceComparisons(comparisons.length > 0 ? comparisons : dummyGroceryComparison);
+      setLastFetchedZip(zip);
+      setStoresFound(true);
+    } catch (e) {
+      setMarketplaceError(e instanceof Error ? e.message : "Could not load prices. Is the backend running on port 5000?");
+      setMarketplaceComparisons(dummyGroceryComparison);
+    } finally {
+      setFindingStores(false);
+    }
   };
 
   const groceryListItems = [
@@ -877,7 +1010,7 @@ export default function Home() {
                       return (
                         <div key={message.id}>
                           {showDateSeparator && <DateSeparator date={message.timestamp} />}
-                          <ChatMessage message={message} />
+                          <ChatMessage message={message} onAddToCalendar={handleAddToCalendar} />
                         </div>
                       );
                     })}
@@ -920,7 +1053,7 @@ export default function Home() {
             {showMarketplace && activeTab === "chat" && (
               <div className="px-4 pb-4">
                 <GroceryComparison
-                  comparisons={dummyGroceryComparison}
+                  comparisons={marketplaceComparisons}
                   groceryListItems={groceryListItems.map(item => item.name)}
                 />
               </div>
@@ -937,12 +1070,22 @@ export default function Home() {
                 <p className="text-muted-foreground">
                   Find the best prices for your ingredients at stores near you
                 </p>
+                {backendOk !== null && (
+                  <p className="text-xs mt-1 text-muted-foreground">
+                    {backendOk ? (
+                      <span className="text-green-600">● Backend connected</span>
+                    ) : (
+                      <span className="text-amber-600">○ Backend unavailable — start backend (python run.py) for live prices</span>
+                    )}
+                  </p>
+                )}
               </div>
 
               {/* Location Input */}
               <div className="flex items-center gap-3 mb-6 p-4 bg-white rounded-2xl border-2 border-primary/20 shadow-playful">
                 <span className="text-2xl animate-bounce-subtle">📍</span>
                 <input
+                  ref={zipInputRef}
                   type="text"
                   placeholder="Enter your zip code"
                   defaultValue="94305"
@@ -985,16 +1128,26 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Error from backend */}
+              {marketplaceError && !findingStores && (
+                <div className="mb-4 p-3 bg-destructive/10 rounded-xl border border-destructive/30 flex items-center gap-2">
+                  <span className="text-lg">⚠</span>
+                  <span className="text-sm font-medium text-foreground">{marketplaceError}</span>
+                </div>
+              )}
+
               {/* Stores found message */}
-              {storesFound && !findingStores && (
+              {storesFound && !findingStores && !marketplaceError && (
                 <div className="mb-4 p-3 bg-accent/10 rounded-xl border border-accent/30 flex items-center gap-2">
                   <span className="text-lg">✓</span>
-                  <span className="text-sm font-medium text-foreground">Found 3 stores near 94305 with competitive prices!</span>
+                  <span className="text-sm font-medium text-foreground">
+                    Prices loaded from backend for zip {lastFetchedZip}.
+                  </span>
                 </div>
               )}
 
               <GroceryComparison
-                comparisons={dummyGroceryComparison}
+                comparisons={marketplaceComparisons}
                 groceryListItems={groceryListItems.map(item => item.name)}
               />
             </div>
@@ -1020,7 +1173,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <MealCalendar mealPlan={dummyMealPlan} />
+              <MealCalendar mealPlan={mealPlan} />
 
               <div className="grid md:grid-cols-2 gap-6">
                 <GroceryList items={groceryListItems} totalCost={73} />
@@ -1170,6 +1323,68 @@ export default function Home() {
             router.push(`/recipe/${recipeId}`);
           }}
         />
+      )}
+
+      {/* Add to Meal Calendar Modal */}
+      {addToCalendarModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-bold text-foreground">Add to meal calendar</h2>
+              <button
+                onClick={() => setAddToCalendarModal(null)}
+                className="text-muted-foreground hover:text-foreground text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">{addToCalendarModal.recipe.name}</p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-foreground mb-2">Day</label>
+                <select
+                  className="w-full p-2 border-2 border-border rounded-xl"
+                  value={addToCalendarModal.dayIndex}
+                  onChange={(e) =>
+                    setAddToCalendarModal((prev) =>
+                      prev ? { ...prev, dayIndex: Number(e.target.value) } : null
+                    )
+                  }
+                >
+                  {mealPlan.days.map((day, i) => (
+                    <option key={i} value={i}>
+                      {day.date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-foreground mb-2">Meal</label>
+                <select
+                  className="w-full p-2 border-2 border-border rounded-xl"
+                  value={addToCalendarModal.mealType}
+                  onChange={(e) =>
+                    setAddToCalendarModal((prev) =>
+                      prev ? { ...prev, mealType: e.target.value as "breakfast" | "lunch" | "dinner" } : null
+                    )
+                  }
+                >
+                  <option value="breakfast">Breakfast</option>
+                  <option value="lunch">Lunch</option>
+                  <option value="dinner">Dinner</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button variant="outline" className="flex-1" onClick={() => setAddToCalendarModal(null)}>
+                Cancel
+              </Button>
+              <Button className="flex-1 gradient-coral text-white font-bold" onClick={handleConfirmAddToCalendar}>
+                Add to calendar
+              </Button>
+            </div>
+          </Card>
+        </div>
       )}
 
       {/* Nutrition Dashboard Modal */}

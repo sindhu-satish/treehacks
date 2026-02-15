@@ -17,7 +17,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 FLASK_SECRET_KEY=your-secret-for-sessions
 CACHE_TTL_SECONDS=1800
 MARKETPLACE_PROVIDER=dev   # or "brightdata" for live scraping
-SCRAPER_SERVICE_URL=http://localhost:3000  # multiagents URL when using Bright Data MCP
+BRIGHTDATA_API_KEY=        # optional; when set, backend uses requests for Walmart/Target (no scraper service)
+SCRAPER_SERVICE_URL=http://localhost:3000  # fallback when BRIGHTDATA_API_KEY not set (e.g. multiagents /api/scrape-ingredient)
 CORS_ORIGINS=http://localhost:3000
 ```
 

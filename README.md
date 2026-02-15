@@ -44,24 +44,24 @@ Open [http://localhost:3000](http://localhost:3000). Chat with Mahm; use **Load 
 
 ### Full flow (real recipes + marketplace)
 
-Run all three services so `search_recipes` and `find_stores` use real data:
+Run all three services (in separate terminals):
 
-1. **data-apis** (port 3001) — needs Supabase env vars in `data-apis/.env.local`:
-   ```bash
-   cd data-apis && npm install && npm run dev -- -p 3001
-   ```
+```bash
+# Terminal 1 — multiagents (port 3000)
+cd multiagents && npm run dev
+```
 
-2. **backend** (port 5000):
-   ```bash
-   cd backend && pip install -r ../requirements.txt && python run.py
-   ```
+```bash
+# Terminal 2 — data-apis (port 3001); needs Supabase env in data-apis/.env
+cd data-apis && npm run dev -- -p 3001
+```
 
-3. **multiagents** (port 3000):
-   ```bash
-   cd multiagents && npm run dev
-   ```
+```bash
+# Terminal 3 — backend (port 5000)
+cd backend && python run.py
+```
 
-In `multiagents/.env.local`, set:
+In `multiagents/.env`, set:
 - `DATA_APIS_URL=http://localhost:3001`
 - `BACKEND_URL=http://localhost:5000`
 
