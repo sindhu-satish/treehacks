@@ -99,11 +99,24 @@ export async function getStores(): Promise<Store[]> {
  * Returns UI GroceryComparison[].
  */
 export async function comparePrices(zip: string, ingredients: string[]): Promise<GroceryComparison[]> {
-  const res = await fetch(`${BACKEND_URL}/api/marketplace/compare-prices`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ zip: zip.trim(), ingredients }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 180_000); // 3 min max (many ingredients = slow)
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/api/marketplace/compare-prices`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ zip: zip.trim(), ingredients }),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    clearTimeout(timeoutId);
+    if (e instanceof Error && e.name === "AbortError") {
+      throw new Error("Price lookup timed out. Try fewer ingredients.");
+    }
+    throw e;
+  }
+  clearTimeout(timeoutId);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { message?: string }).message || `Compare prices failed: ${res.status}`);
@@ -111,12 +124,28 @@ export async function comparePrices(zip: string, ingredients: string[]): Promise
   const data = await res.json();
   if (!Array.isArray(data)) return [];
 
-  return data.map((row: { ingredient?: string; stores?: Array<{ store?: unknown; price?: number; inStock?: boolean; isCheapest?: boolean }> }) => {
-    const stores = (row.stores || []).map((s: { store?: unknown; price?: number; inStock?: boolean; isCheapest?: boolean }) => ({
+  return data.map((row: {
+    ingredient?: string;
+    stores?: Array<{
+      store?: unknown;
+      price?: number;
+      inStock?: boolean;
+      isCheapest?: boolean;
+      productName?: string | null;
+      image?: string | null;
+      linePriceDisplay?: string | null;
+      unitPrice?: string | null;
+    }>;
+  }) => {
+    const stores = (row.stores || []).map((s) => ({
       store: mapBackendStore((s.store || {}) as Parameters<typeof mapBackendStore>[0]),
       price: typeof s.price === "number" ? s.price : 0,
       inStock: s.inStock !== false,
       isCheapest: s.isCheapest === true,
+      productName: s.productName ?? null,
+      image: s.image ?? null,
+      linePriceDisplay: s.linePriceDisplay ?? null,
+      unitPrice: s.unitPrice ?? null,
     }));
     return { ingredient: row.ingredient || "", stores };
   });

@@ -51,13 +51,15 @@ async function ensureIndex() {
   console.log(`✅ Created index: ${ELASTIC_INDEX}`);
 }
 
+const INGREDIENT_DELIMITER = " | ";
+
 function toIngredientsText(ingredients_list) {
   try {
     if (Array.isArray(ingredients_list)) {
       return ingredients_list
         .map((x) => (typeof x === "string" ? x : x?.name))
         .filter(Boolean)
-        .join(" ");
+        .join(INGREDIENT_DELIMITER);
     }
     if (typeof ingredients_list === "string") {
       // could be a plain string OR JSON
@@ -67,7 +69,7 @@ function toIngredientsText(ingredients_list) {
           return parsed
             .map((x) => (typeof x === "string" ? x : x?.name))
             .filter(Boolean)
-            .join(" ");
+            .join(INGREDIENT_DELIMITER);
         }
       } catch {
         return ingredients_list;

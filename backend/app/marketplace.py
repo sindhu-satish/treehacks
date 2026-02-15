@@ -2,10 +2,11 @@
 Phase 4: Marketplace and stores.
 GET /api/stores, POST /api/marketplace, POST /api/marketplace/compare-prices.
 """
-from flask import Blueprint, request, jsonify, current_app
+import os
 import time
+from flask import Blueprint, request, jsonify, current_app
 
-from .marketplace_utils import quote_marketplace, stores_from_config, unlocker_get
+from .marketplace_utils import quote_marketplace, stores_from_config, unlocker_get, compare_prices_via_request_api
 from .parsing_utils import extract_top_instore_items
 
 marketplace_bp = Blueprint("marketplace", __name__)
@@ -45,10 +46,11 @@ def marketplace_quote():
 
 @marketplace_bp.post("/marketplace/compare-prices")
 def compare_prices():
-    """Compare ingredient prices across stores for UI GroceryComparison."""
-    sb = _get_supabase()
-    ttl = current_app.config.get("CACHE_TTL_SECONDS", 1800)
-
+    """Compare ingredient prices across stores for UI GroceryComparison.
+    Uses Bright Data Request API + Walmart HTML extraction when BRIGHTDATA_API_KEY is set:
+    fetches HTML per ingredient, extracts top 2 items — first=Walmart, second=Target.
+    """
+    import json as _json
     payload = request.get_json(force=True) or {}
     zip_code = (payload.get("zip") or "").strip()
     ingredients = payload.get("ingredients") or []
@@ -58,6 +60,18 @@ def compare_prices():
     if not isinstance(ingredients, list) or len(ingredients) == 0:
         return jsonify({"error": "ingredients_required", "message": "ingredients must be a non-empty list"}), 400
 
+    print(f"[compare-prices] START zip={zip_code} ingredients={len(ingredients)}: {ingredients[:5]}{'...' if len(ingredients) > 5 else ''}")
+
+    # Prefer Bright Data Request API pipeline (download HTML + extract first 2 items)
+    if (os.environ.get("BRIGHTDATA_API_KEY") or "").strip():
+        grocery_comparison = compare_prices_via_request_api(ingredients, zip_code)
+        print(f"[compare-prices] DONE pipeline=request_api results={len(grocery_comparison)}")
+        print(_json.dumps({"zip": zip_code, "grocery_comparison": grocery_comparison}, indent=2, default=str))
+        return jsonify(grocery_comparison)
+
+    # Fallback to quote_marketplace (unlocker/scraper)
+    sb = _get_supabase()
+    ttl = current_app.config.get("CACHE_TTL_SECONDS", 1800)
     scraper_url = current_app.config.get("SCRAPER_SERVICE_URL")
     stores = _get_stores()
     if not stores:
@@ -102,6 +116,7 @@ def compare_prices():
 
         grocery_comparison.append({"ingredient": ing, "stores": stores_list})
 
+    print(f"[compare-prices] DONE pipeline=quote_marketplace results={len(grocery_comparison)}")
     return jsonify(grocery_comparison)
 
 @marketplace_bp.get("/unlocker/test")
@@ -134,8 +149,5 @@ def unlocker_test():
     return jsonify({
         "ok": True,
         "url": url,
-        "ms": ms,
-        "bytes": len(html),
-        "snippet": html,
         "items": items,
     }), 200

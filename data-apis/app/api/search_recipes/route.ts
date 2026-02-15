@@ -107,7 +107,9 @@ export async function POST(req: Request) {
         cook_time_min: s.cooking_time ?? null,
         servings: s.servings ?? null,
         allergens: s.allergens ?? [],
-        ingredients: s.ingredients_text ? s.ingredients_text.split(" ").slice(0, 40) : [],
+        ingredients: s.ingredients_text
+          ? s.ingredients_text.split(/\s*\|\s*/).map((x: string) => x.trim()).filter(Boolean).slice(0, 40)
+          : [],
         score: h._score ?? 0,
         image_link: s.image_link ?? null,
       };

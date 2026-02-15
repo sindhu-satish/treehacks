@@ -100,6 +100,14 @@ export interface GroceryComparison {
     price: number;
     inStock: boolean;
     isCheapest: boolean;
+    /** Product name from store (e.g. "Chobani Greek Yogurt") */
+    productName?: string | null;
+    /** Product image URL */
+    image?: string | null;
+    /** Display price string (e.g. "$4.67") */
+    linePriceDisplay?: string | null;
+    /** Unit price (e.g. "22.0 ¢/oz") */
+    unitPrice?: string | null;
   }[];
 }
 

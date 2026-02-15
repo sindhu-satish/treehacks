@@ -9,9 +9,11 @@ import time
 from typing import Any, Dict, List, Optional
 import requests
 
-from .parsing_utils import extract_top_instore_items
+from .parsing_utils import extract_top_instore_items, walmart_extract_top_instore_items
 
 import requests
+
+REQUEST_API_URL = "https://api.brightdata.com/request"
 
 DEFAULT_STORE = "walmart"
 DEFAULT_STORE_NAME = "Walmart"
@@ -171,6 +173,179 @@ def unlocker_get(url: str, timeout=(5.0, 25.0)) -> str:
     r = requests.get(url, headers=headers, proxies=proxies, timeout=timeout)
     r.raise_for_status()
     return r.text
+
+
+# Safety limit if __NEXT_DATA__ not found
+_MAX_HTML_BYTES = 1_500_000
+
+
+def _find_complete_next_data_end(html: str) -> int:
+    """Return index of char after </script> of __NEXT_DATA__, or -1 if incomplete."""
+    m = re.search(r'<script[^>]*\bid="__NEXT_DATA__"[^>]*>', html, re.IGNORECASE)
+    if not m:
+        return -1
+    start = m.end()
+    depth = 0
+    in_str = False
+    esc = False
+    i = start
+    while i < len(html):
+        c = html[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+        else:
+            if c == '"':
+                in_str = True
+            elif c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    rest = html[i + 1 :]
+                    j = rest.find("</script>")
+                    if j == -1:
+                        return -1
+                    return i + 1 + j + len("</script>")
+        i += 1
+    return -1
+
+
+def _fetch_via_brightdata_request(url: str) -> Optional[str]:
+    """Fetch URL via Bright Data Request API. Streams and stops once the complete
+    __NEXT_DATA__ script (with product data) is received. Reduces download time."""
+    api_key = (os.getenv("BRIGHTDATA_API_KEY") or "").strip()
+    zone = (os.getenv("BRIGHTDATA_REQUEST_ZONE") or os.getenv("BRIGHTDATA_ZONE") or "mcp_unlocker").strip()
+    cookie = (os.getenv("BRIGHTDATA_COOKIE") or "").strip()
+    if not api_key:
+        return None
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    if cookie:
+        headers["Cookie"] = cookie
+    payload = {"zone": zone, "url": url, "format": "raw", "method": "GET", "country": "US"}
+    try:
+        resp = requests.post(
+            f"{REQUEST_API_URL}?async=false",
+            headers=headers,
+            json=payload,
+            timeout=60,
+            stream=True,
+        )
+        resp.raise_for_status()
+        chunks = []
+        total = 0
+        for chunk in resp.iter_content(chunk_size=16384, decode_unicode=False):
+            if chunk:
+                chunks.append(chunk)
+                total += len(chunk)
+                html = b"".join(chunks).decode("utf-8", errors="replace")
+                end = _find_complete_next_data_end(html)
+                if end >= 0:
+                    resp.close()
+                    return html[:end]
+                if total >= _MAX_HTML_BYTES:
+                    resp.close()
+                    return html
+        return b"".join(chunks).decode("utf-8", errors="replace")
+    except requests.RequestException as e:
+        import sys
+
+        print(f"[brightdata] Request API error: {e}", file=sys.stderr)
+        return None
+
+
+def _item_to_store_price(store: Dict[str, Any], item: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """Convert parsed item to grocery comparison store entry."""
+    if not item:
+        return {
+            "store": store,
+            "price": 0,
+            "inStock": False,
+            "productName": None,
+            "image": None,
+            "linePriceDisplay": None,
+            "unitPrice": None,
+        }
+    price = None
+    if item.get("price") is not None:
+        try:
+            price = float(item["price"])
+        except (TypeError, ValueError):
+            pass
+    avail = (item.get("availability") or "").strip().upper()
+    in_stock = avail == "IN_STOCK"
+    return {
+        "store": store,
+        "price": price if price is not None else 0,
+        "inStock": in_stock,
+        "productName": item.get("name"),
+        "image": item.get("image"),
+        "linePriceDisplay": item.get("linePriceDisplay"),
+        "unitPrice": item.get("unitPrice"),
+    }
+
+
+def compare_prices_via_request_api(ingredients: List[Any], zip_code: str) -> List[Dict[str, Any]]:
+    """
+    For each ingredient: fetch Walmart HTML via Bright Data Request API,
+    extract top 2 items via walmart_extract_top_instore_items.
+    First item = Walmart, second = Target (placeholder until Target parsing).
+    """
+    import urllib.parse
+
+    stores = [
+        {"id": "walmart", "name": "Walmart", "distance_miles": None, "address": None},
+        {"id": "target", "name": "Target", "distance_miles": None, "address": None},
+    ]
+    grocery_comparison: List[Dict[str, Any]] = []
+
+    for idx, ing in enumerate(ingredients[:3]):
+        if idx > 0:
+            time.sleep(2)  # Avoid rate limiting / timeouts from back-to-back requests
+        display, query = normalize_ingredient_to_query(ing)
+        if not query:
+            continue
+        print(f"[compare-prices] ingredient {idx + 1}/{len(ingredients)}: {query!r}")
+        url = f"https://www.walmart.com/search?q={urllib.parse.quote(query)}"
+        html = _fetch_via_brightdata_request(url)
+        if not html and idx > 0:
+            time.sleep(3)
+            html = _fetch_via_brightdata_request(url)  # Retry once on timeout
+        print(f"[compare-prices]   -> html len={len(html) if html else 0}")
+        items: List[Dict[str, Any]] = []
+        if html:
+            try:
+                items = walmart_extract_top_instore_items(html, top_n=2)
+            except Exception:
+                pass
+
+        walmart_item = items[0] if len(items) >= 1 else None
+        target_item = items[1] if len(items) >= 2 else None
+
+        stores_list = [
+            _item_to_store_price(stores[0], walmart_item),
+            _item_to_store_price(stores[1], target_item),
+        ]
+        min_price = None
+        for s in stores_list:
+            p = s.get("price")
+            if p is not None and p > 0:
+                if min_price is None or p < min_price:
+                    min_price = p
+        for s in stores_list:
+            s["isCheapest"] = min_price is not None and s.get("price") == min_price and s.get("price", 0) > 0
+        grocery_comparison.append({"ingredient": display, "stores": stores_list})
+
+    return grocery_comparison
+
 
 def scrape_one_item(
     store: str,

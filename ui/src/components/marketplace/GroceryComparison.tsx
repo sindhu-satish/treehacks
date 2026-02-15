@@ -193,44 +193,58 @@ export function GroceryComparison({ comparisons, groceryListItems = [] }: Grocer
                     </Button>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {comparison.stores.map((storePrice, sIdx) => {
                     const isSelected = selectedStoreId === storePrice.store.id;
                     const isDisabled = !storePrice.inStock;
+                    const priceStr = storePrice.linePriceDisplay ?? (storePrice.price != null && storePrice.price > 0 ? `$${storePrice.price.toFixed(2)}` : null);
 
                     return (
                       <button
                         key={sIdx}
                         onClick={() => !isDisabled && selectStore(comparison.ingredient, storePrice.store.id)}
                         disabled={isDisabled}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+                        className={`flex items-stretch gap-3 rounded-xl border-2 p-3 text-left transition-all w-full max-w-sm ${
                           isSelected
-                            ? "bg-primary text-white ring-2 ring-primary ring-offset-2"
+                            ? "border-primary bg-primary/10 ring-2 ring-primary ring-offset-2"
                             : storePrice.isCheapest
-                            ? "bg-accent/20 border border-accent/30 hover:bg-accent/30"
-                            : "bg-muted/50 hover:bg-muted"
+                            ? "border-accent/50 bg-accent/10 hover:bg-accent/20"
+                            : "border-border bg-muted/30 hover:bg-muted/50"
                         } ${isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                       >
-                        <span className={`font-medium ${isSelected ? "text-white" : ""}`}>
-                          {storePrice.store.name}
-                        </span>
-                        <span
-                          className={`font-bold ${
-                            isSelected ? "text-white" : storePrice.isCheapest ? "text-accent" : "text-foreground"
-                          }`}
-                        >
-                          ${storePrice.price.toFixed(2)}
-                        </span>
-                        {storePrice.isCheapest && !isSelected && (
-                          <Badge className="bg-accent text-white text-xs px-1.5 py-0">
-                            Best
-                          </Badge>
+                        {storePrice.image && (
+                          <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-muted">
+                            <img src={storePrice.image} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          </div>
                         )}
-                        {!storePrice.inStock && (
-                          <Badge variant="outline" className="text-xs text-muted-foreground">
-                            Out
-                          </Badge>
-                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`font-bold ${isSelected ? "text-primary" : ""}`}>
+                              {storePrice.store.name}
+                            </span>
+                            {storePrice.isCheapest && !isSelected && (
+                              <Badge className="bg-accent text-white text-xs">Best</Badge>
+                            )}
+                            {!storePrice.inStock && (
+                              <Badge variant="outline" className="text-xs text-muted-foreground">Out</Badge>
+                            )}
+                          </div>
+                          {storePrice.productName && (
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                              {storePrice.productName}
+                            </p>
+                          )}
+                          <div className="flex items-baseline gap-2 mt-1.5 flex-wrap">
+                            {priceStr && (
+                              <span className={`font-bold text-lg ${isSelected ? "text-primary" : storePrice.isCheapest ? "text-accent" : "text-foreground"}`}>
+                                {priceStr}
+                              </span>
+                            )}
+                            {storePrice.unitPrice && (
+                              <span className="text-xs text-muted-foreground">{storePrice.unitPrice}</span>
+                            )}
+                          </div>
+                        </div>
                       </button>
                     );
                   })}
