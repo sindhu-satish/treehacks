@@ -44,6 +44,7 @@ def create_app():
     from .cart import cart_bp
     from .recipes import recipes_bp
     from .meal_logs import meal_logs_bp
+    from .nutrition import nutrition_bp
 
     app.register_blueprint(health, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
@@ -53,5 +54,6 @@ def create_app():
     app.register_blueprint(cart_bp, url_prefix="/api")
     app.register_blueprint(recipes_bp, url_prefix="/api")
     app.register_blueprint(meal_logs_bp, url_prefix="/api")
+    app.register_blueprint(nutrition_bp, url_prefix="/api")
 
     return app
