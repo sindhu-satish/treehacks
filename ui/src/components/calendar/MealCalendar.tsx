@@ -141,19 +141,6 @@ export function MealCalendar({ mealPlan, actualMeals, onRequestLogMeal, onReques
   };
 
   const isEatingOut = (dayIndex: number, mealType: MealType) => eatingOutMeals.has(`${dayIndex}-${mealType}`);
-
-  // totals (planned-only; actual logs are “after the fact”)
-  const activeMeals = mealPlan.days.flatMap((day, dayIndex) =>
-    Object.entries(day.meals)
-      .filter(([type]) => enabledMeals[type as MealType] && !isMealRemoved(dayIndex, type as MealType))
-      .flatMap(([, meal]) => (Array.isArray(meal) ? meal : meal ? [meal] : []))
-  ) as PlannedMeal[];
-
-  const totalCost = activeMeals.reduce(
-    (sum, meal) => sum + ((meal.recipe.estimatedCost || 0) / (meal.recipe.servings || 1)) * (meal.servings || 1),
-    0
-  );
-
   const alternativeMeals = [
     { id: "alt1", name: "Quinoa Buddha Bowl", calories: 420, time: 25, image: "🥗" },
     { id: "alt2", name: "Veggie Stir Fry", calories: 380, time: 20, image: "🥘" },
@@ -244,10 +231,6 @@ export function MealCalendar({ mealPlan, actualMeals, onRequestLogMeal, onReques
               <span>📅</span> Your Weekly Meal Plan
             </h3>
             <p className="text-sm text-muted-foreground mt-1">Planned meals vs what you actually ate • Hover to log 📸</p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">${totalCost.toFixed(0)}</div>
-            <div className="text-xs text-muted-foreground">estimated total</div>
           </div>
         </div>
 
@@ -730,6 +713,7 @@ export function MealCalendar({ mealPlan, actualMeals, onRequestLogMeal, onReques
     </div>
   );
 }
+
 
 
 

@@ -292,6 +292,36 @@ function categorizeIngredient(name: string): string {
   return "other";
 }
 
+// Deterministic per-ingredient price estimate so the grocery list looks realistic.
+function estimateIngredientPrice(name: string): number {
+  const lower = name.toLowerCase().trim();
+  const category = categorizeIngredient(lower);
+
+  let min = 1.5;
+  let max = 4.5;
+
+  if (category === "produce") { min = 0.9; max = 3.2; }
+  else if (category === "dairy") { min = 2.2; max = 5.8; }
+  else if (category === "grains") { min = 1.8; max = 4.8; }
+  else if (category === "protein") { min = 4.5; max = 12.5; }
+  else if (category === "spices") { min = 1.2; max = 6.5; }
+  else if (category === "canned") { min = 1.5; max = 3.8; }
+  else if (category === "pantry") { min = 2.0; max = 7.5; }
+
+  // Ingredient-specific nudges for common high/low price items.
+  if (/salmon|shrimp|steak|beef/.test(lower)) { min = 8.5; max = 16.0; }
+  else if (/chicken/.test(lower)) { min = 5.5; max = 10.5; }
+  else if (/avocado|berries/.test(lower)) { min = 2.8; max = 6.8; }
+  else if (/rice|oats|pasta/.test(lower)) { min = 1.8; max = 4.2; }
+  else if (/salt|pepper/.test(lower)) { min = 1.0; max = 3.2; }
+
+  // Stable hash -> stable pseudo-random within range.
+  const hash = lower.split("").reduce((acc, ch) => ((acc * 31 + ch.charCodeAt(0)) >>> 0), 7);
+  const ratio = (hash % 1000) / 999;
+  const value = min + ratio * (max - min);
+  return Math.round(value * 100) / 100;
+}
+
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -588,7 +618,7 @@ function HomeContent() {
           name,
           amount: "1",
           category: categorizeIngredient(name),
-          estimatedPrice: 3.99,
+          estimatedPrice: estimateIngredientPrice(name),
         }))
       );
     };
@@ -870,7 +900,7 @@ function HomeContent() {
             name,
             amount: "1",
             category: categorizeIngredient(name),
-            estimatedPrice: 3.99,
+            estimatedPrice: estimateIngredientPrice(name),
           }));
 
         return additions.length ? [...prev, ...additions] : prev;
@@ -1164,12 +1194,6 @@ function HomeContent() {
                   <p className="text-muted-foreground">Planned suggestions + real meals you logged</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Button variant="outline" className="border-2 border-primary text-primary hover:bg-primary/10 font-bold">
-                    Sync to Calendar
-                  </Button>
-                  <Button className="gradient-coral text-white font-bold shadow-playful hover:scale-105 transition-transform">
-                    Regenerate Plan
-                  </Button>
                 </div>
               </div>
 
