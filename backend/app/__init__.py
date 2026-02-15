@@ -45,7 +45,7 @@ def create_app():
     from .recipes import recipes_bp
     from .meal_logs import meal_logs_bp
 
-    app.register_blueprint(health)
+    app.register_blueprint(health, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(user_bp, url_prefix="/api")
     app.register_blueprint(meal_plans_bp, url_prefix="/api")

@@ -1,12 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChatMessage as ChatMessageType } from "@/types";
+import { ChatMessage as ChatMessageType, ChatRecipeFromApi } from "@/types";
 import { ToolBadge } from "./ToolBadge";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface ChatMessageProps {
   message: ChatMessageType;
   showTimestamp?: boolean;
+  onAddToCalendar?: (recipe: ChatRecipeFromApi) => void;
 }
 
 function formatTime(date: Date): string {
@@ -17,7 +21,7 @@ function formatTime(date: Date): string {
   });
 }
 
-export function ChatMessage({ message, showTimestamp = true }: ChatMessageProps) {
+export function ChatMessage({ message, showTimestamp = true, onAddToCalendar }: ChatMessageProps) {
   const isUser = message.role === "user";
 
   return (
@@ -42,7 +46,7 @@ export function ChatMessage({ message, showTimestamp = true }: ChatMessageProps)
       {/* Message content */}
       <div
         className={cn(
-          "max-w-[75%] flex flex-col gap-1",
+          "max-w-[85%] flex flex-col gap-1",
           isUser ? "items-end" : "items-start"
         )}
       >
@@ -56,7 +60,6 @@ export function ChatMessage({ message, showTimestamp = true }: ChatMessageProps)
         >
           <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
             {message.content.split('\n').map((line, i) => {
-              // Handle bold text
               const parts = line.split(/(\*\*.*?\*\*)/g);
               return (
                 <p key={i} className={i > 0 ? "mt-2" : ""}>
@@ -71,6 +74,19 @@ export function ChatMessage({ message, showTimestamp = true }: ChatMessageProps)
             })}
           </div>
         </div>
+
+        {/* Recipe cards (from search_recipes) */}
+        {!isUser && message.recipes && message.recipes.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 w-full max-w-2xl">
+            {message.recipes.map((recipe) => (
+              <ChatRecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                onAddToCalendar={onAddToCalendar}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Tool badges */}
         {message.toolCalls && message.toolCalls.length > 0 && (
@@ -92,6 +108,56 @@ export function ChatMessage({ message, showTimestamp = true }: ChatMessageProps)
         )}
       </div>
     </div>
+  );
+}
+
+function ChatRecipeCard({
+  recipe,
+  onAddToCalendar,
+}: {
+  recipe: ChatRecipeFromApi;
+  onAddToCalendar?: (recipe: ChatRecipeFromApi) => void;
+}) {
+  const imageUrl = recipe.image_link && recipe.image_link.trim() ? recipe.image_link.trim() : null;
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = imageUrl && !imageFailed;
+  return (
+    <Card className="overflow-hidden border border-border/50 hover:shadow-md transition-all flex flex-col">
+      <div className="aspect-[4/3] bg-muted/40 flex items-center justify-center overflow-hidden">
+        {showImage ? (
+          <img
+            src={imageUrl}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <span className="text-5xl">🍳</span>
+        )}
+      </div>
+      <div className="p-3 flex flex-col gap-2">
+        <h4 className="font-bold text-foreground text-sm line-clamp-2">{recipe.name}</h4>
+        <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
+          {recipe.cook_time_min != null && (
+            <span>⏱️ {recipe.cook_time_min} min</span>
+          )}
+          {recipe.dietary_tags && recipe.dietary_tags.length > 0 && (
+            <span className="truncate">{recipe.dietary_tags.slice(0, 3).join(", ")}</span>
+          )}
+        </div>
+        {onAddToCalendar && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-auto border-2 border-primary text-primary hover:bg-primary/10 font-bold text-xs"
+            onClick={() => onAddToCalendar(recipe)}
+          >
+            📅 Add to meal calendar
+          </Button>
+        )}
+      </div>
+    </Card>
   );
 }
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MahmLogo } from "@/components/brand/MahmLogo";
+import { useAuth } from "@/contexts/AuthContext";
 
 const steps = [
   { id: 1, title: "Welcome", icon: "👋" },
@@ -64,7 +65,10 @@ const commonPantryItems = [
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { register: registerUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     dietary: [] as string[],
@@ -96,14 +100,25 @@ export default function OnboardingPage() {
     }));
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Save to localStorage and redirect
-      localStorage.setItem("mahm_user_profile", JSON.stringify(formData));
-      localStorage.setItem("mahm_onboarded", "true");
-      router.push("/");
+      setSubmitting(true);
+      setSubmitError(null);
+      try {
+        await registerUser(formData.name.trim() || "Guest", formData.email?.trim() || undefined);
+        localStorage.setItem("mahm_user_profile", JSON.stringify(formData));
+        localStorage.setItem("mahm_onboarded", "true");
+        router.push("/");
+      } catch (e) {
+        setSubmitError(e instanceof Error ? e.message : "Could not create account. Using app locally.");
+        localStorage.setItem("mahm_user_profile", JSON.stringify(formData));
+        localStorage.setItem("mahm_onboarded", "true");
+        router.push("/");
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -465,6 +480,9 @@ export default function OnboardingPage() {
             </div>
           )}
 
+          {submitError && (
+            <p className="mt-4 text-sm text-amber-600 bg-amber-50 p-2 rounded-lg">{submitError}</p>
+          )}
           {/* Navigation Buttons */}
           <div className="flex gap-4 mt-8">
             {currentStep > 1 && (
@@ -478,11 +496,12 @@ export default function OnboardingPage() {
             )}
             <Button
               onClick={nextStep}
+              disabled={submitting}
               className={`flex-1 font-display font-bold text-lg py-6 shadow-warm hover:shadow-warm-lg transition-all ${
                 currentStep === steps.length ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
               }`}
             >
-              {currentStep === steps.length ? "Let's Cook! 🍳" : "Continue →"}
+              {submitting ? "Setting up…" : currentStep === steps.length ? "Let's Cook! 🍳" : "Continue →"}
             </Button>
           </div>
         </Card>
