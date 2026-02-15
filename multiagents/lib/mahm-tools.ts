@@ -1,8 +1,9 @@
 /**
  * Mahm agent tools: search_recipes, get_nutrition, find_stores, generate_meal_plan.
- * Calls Person A/C APIs when available; otherwise uses structured mocks.
+ * search_recipes calls data-apis Elasticsearch (POST /api/search_recipes).
  */
 
+const DATA_APIS_URL = process.env.DATA_APIS_URL || "http://localhost:3001";
 const BASE = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 async function safeFetch<T>(url: string, fallback: T): Promise<T> {
@@ -15,11 +16,13 @@ async function safeFetch<T>(url: string, fallback: T): Promise<T> {
   }
 }
 
-// --- search_recipes ---
+// --- search_recipes (Elasticsearch via data-apis) ---
 export type SearchRecipesInput = {
   query: string;
   dietary_filters?: string[];
   max_results?: number;
+  exclude_allergens?: string[];
+  max_cook_time?: number;
 };
 
 const MOCK_RECIPES = [
@@ -70,28 +73,59 @@ const MOCK_RECIPES = [
   },
 ];
 
+/** Map data-apis Elasticsearch recipe shape to agent-friendly shape */
+function mapDataApisRecipe(r: Record<string, unknown>): Record<string, unknown> {
+  const ingredients = Array.isArray(r.ingredients) ? r.ingredients : [];
+  return {
+    id: r.id,
+    name: r.title ?? r.name,
+    title: r.title,
+    ingredients,
+    cook_time_min: r.cook_time_min ?? null,
+    servings: r.servings ?? null,
+    dietary_tags: r.dietary_tags ?? [],
+    score: r.score ?? 0,
+    image_link: r.image_link ?? null,
+  };
+}
+
 export async function runSearchRecipes(input: SearchRecipesInput): Promise<string> {
-  const params = new URLSearchParams({
-    query: input.query,
-    max_results: String(input.max_results ?? 5),
-  });
-  if (input.dietary_filters?.length) {
-    params.set("dietary_filters", JSON.stringify(input.dietary_filters));
+  const url = `${DATA_APIS_URL}/api/search_recipes`;
+  const body: Record<string, unknown> = {
+    query: input.query.trim() || "recipe",
+    max_results: Math.min(input.max_results ?? 5, 25),
+    dietary_filters: input.dietary_filters ?? [],
+  };
+  if (input.exclude_allergens?.length) body.exclude_allergens = input.exclude_allergens;
+  if (input.max_cook_time != null && !Number.isNaN(input.max_cook_time)) body.max_cook_time = input.max_cook_time;
+
+  let apiRecipes: unknown[] = [];
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { recipes?: unknown[] };
+      apiRecipes = Array.isArray(data?.recipes) ? data.recipes : [];
+    }
+  } catch {
+    // fall through to mock
   }
-  const apiRecipes = await safeFetch<unknown[]>(
-    `${BASE}/api/recipes?${params.toString()}`,
-    []
-  );
-  const recipes = Array.isArray(apiRecipes) && apiRecipes.length > 0
-    ? apiRecipes
-    : MOCK_RECIPES.filter((r) => {
-        const q = input.query.toLowerCase();
-        const matchName = r.name.toLowerCase().includes(q);
-        const matchTags = (input.dietary_filters ?? []).every((f) =>
-          r.dietary_tags.some((t) => t.toLowerCase().includes(f.toLowerCase()))
-        );
-        return matchName || (input.dietary_filters?.length ? matchTags : true);
-      }).slice(0, input.max_results ?? 5);
+
+  const recipes =
+    apiRecipes.length > 0
+      ? apiRecipes.map((r) => mapDataApisRecipe(r as Record<string, unknown>))
+      : MOCK_RECIPES.filter((r) => {
+          const q = (input.query || "").toLowerCase();
+          const matchName = q ? r.name.toLowerCase().includes(q) : true;
+          const matchTags = (input.dietary_filters ?? []).every((f) =>
+            r.dietary_tags.some((t) => t.toLowerCase().includes(f.toLowerCase()))
+          );
+          return matchName && (input.dietary_filters?.length ? matchTags : true);
+        }).slice(0, input.max_results ?? 5);
 
   return JSON.stringify(recipes, null, 2);
 }

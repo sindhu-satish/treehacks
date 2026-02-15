@@ -109,6 +109,7 @@ export async function POST(req: Request) {
         allergens: s.allergens ?? [],
         ingredients: s.ingredients_text ? s.ingredients_text.split(" ").slice(0, 40) : [],
         score: h._score ?? 0,
+        image_link: s.image_link ?? null,
       };
     });
 

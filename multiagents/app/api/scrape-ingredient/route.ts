@@ -45,6 +45,7 @@ const STORE_CONFIGS: Record<string, StoreConfig> = {
       keywords: query,
       zipcode: zipCode || "",
     }),
+    
   },
 };
 

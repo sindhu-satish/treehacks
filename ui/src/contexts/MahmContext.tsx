@@ -1,7 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { CartItem, Recipe, NutritionInfo } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { getCart, addToCart as apiAddToCart, updateCartItem as apiUpdateCartItem, removeFromCart as apiRemoveFromCart } from "@/lib/api";
 
 interface MealLogEntry {
   id: string;
@@ -101,6 +103,8 @@ interface MahmContextType {
 const MahmContext = createContext<MahmContextType | undefined>(undefined);
 
 export function MahmProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const userId = user?.user_id ?? null;
   const [cart, setCart] = useState<CartItem[]>([]);
   const [groceryList, setGroceryListState] = useState<GroceryListItem[]>([]);
   const [pantryItems, setPantryItems] = useState<string[]>([]);
@@ -109,8 +113,9 @@ export function MahmProvider({ children }: { children: ReactNode }) {
   const [nutritionSummary, setNutritionSummary] = useState<NutritionSummary[]>([]);
   const [pendingFeedbackReminders, setPendingFeedbackReminders] = useState<{ mealLogId: string; scheduledTime: Date }[]>([]);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (only when not logged in)
   useEffect(() => {
+    if (userId) return;
     const savedCart = localStorage.getItem("mahm_cart");
     const savedPantry = localStorage.getItem("mahm_pantry");
     const savedMealLogs = localStorage.getItem("mahm_meal_logs");
@@ -120,12 +125,20 @@ export function MahmProvider({ children }: { children: ReactNode }) {
     if (savedPantry) setPantryItems(JSON.parse(savedPantry));
     if (savedMealLogs) setMealLogs(JSON.parse(savedMealLogs));
     if (savedGroceryList) setGroceryListState(JSON.parse(savedGroceryList));
-  }, []);
+  }, [userId]);
 
-  // Save to localStorage on change
+  // Sync cart from backend when user is logged in
   useEffect(() => {
-    localStorage.setItem("mahm_cart", JSON.stringify(cart));
-  }, [cart]);
+    if (!userId) return;
+    getCart(userId)
+      .then(({ items }) => setCart(items))
+      .catch(() => setCart([]));
+  }, [userId]);
+
+  // Save cart to localStorage only when not logged in (logged-in cart is in backend)
+  useEffect(() => {
+    if (!userId) localStorage.setItem("mahm_cart", JSON.stringify(cart));
+  }, [cart, userId]);
 
   useEffect(() => {
     localStorage.setItem("mahm_pantry", JSON.stringify(pantryItems));
@@ -196,27 +209,61 @@ export function MahmProvider({ children }: { children: ReactNode }) {
     };
   })();
 
-  const addToCart = (item: CartItem) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.id === item.id);
-      if (existing) {
-        return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i);
+  const addToCart = useCallback(
+    (item: CartItem) => {
+      if (userId) {
+        apiAddToCart(userId, {
+          ingredient: item.ingredient,
+          storeId: item.storeId,
+          storeName: item.storeName,
+          price: item.price,
+          quantity: item.quantity,
+          unit: item.unit,
+          recipeId: item.recipeId,
+          recipeName: item.recipeName,
+        })
+          .then(({ items }) => setCart(items))
+          .catch(() => {});
+        return;
       }
-      return [...prev, item];
-    });
-  };
+      setCart(prev => {
+        const existing = prev.find(i => i.id === item.id);
+        if (existing) {
+          return prev.map(i => (i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i));
+        }
+        return [...prev, item];
+      });
+    },
+    [userId]
+  );
 
-  const removeFromCart = (itemId: string) => {
-    setCart(prev => prev.filter(item => item.id !== itemId));
-  };
+  const removeFromCart = useCallback(
+    (itemId: string) => {
+      if (userId) {
+        apiRemoveFromCart(userId, itemId)
+          .then(({ items }) => setCart(items))
+          .catch(() => {});
+        return;
+      }
+      setCart(prev => prev.filter(item => item.id !== itemId));
+    },
+    [userId]
+  );
 
-  const updateCartQuantity = (itemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(itemId);
-    } else {
-      setCart(prev => prev.map(item => item.id === itemId ? { ...item, quantity } : item));
-    }
-  };
+  const updateCartQuantity = useCallback(
+    (itemId: string, quantity: number) => {
+      if (quantity <= 0) {
+        removeFromCart(itemId);
+      } else if (userId) {
+        apiUpdateCartItem(userId, itemId, quantity)
+          .then(({ items }) => setCart(items))
+          .catch(() => {});
+      } else {
+        setCart(prev => prev.map(item => (item.id === itemId ? { ...item, quantity } : item)));
+      }
+    },
+    [userId, removeFromCart]
+  );
 
   const clearCart = () => setCart([]);
 
