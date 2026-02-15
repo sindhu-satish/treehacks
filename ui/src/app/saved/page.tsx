@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeCard } from "@/components/recipe/RecipeCard";
 import { MahmLogo } from "@/components/brand/MahmLogo";
 import { dummyRecipes, dummyJournalEntries, dummyShortFormContent } from "@/lib/dummy-data";
+import { extractRecipe, type ExtractedRecipe } from "@/lib/api";
 
 // Extract Recipe Modal
 function ExtractRecipeModal({
@@ -22,55 +23,89 @@ function ExtractRecipeModal({
 }) {
   const router = useRouter();
   const [url, setUrl] = useState(initialUrl);
+  const [dishName, setDishName] = useState("");
+  const [notes, setNotes] = useState("");
   const [isExtracting, setIsExtracting] = useState(false);
-  const [extractedRecipe, setExtractedRecipe] = useState<{
-    name: string;
-    description: string;
-    creator: string;
-    ingredients: string[];
-    instructions: string[];
-    calories: number;
-  } | null>(null);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [extractedRecipe, setExtractedRecipe] = useState<(ExtractedRecipe & { creator?: string }) | null>(null);
 
   const handleExtract = async () => {
-    if (!url.trim()) return;
+    if (!dishName.trim()) {
+      setExtractError("Please describe the dish from the video");
+      return;
+    }
+
     setIsExtracting(true);
+    setExtractError(null);
 
-    // Simulate extraction
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // Use OpenAI to generate the recipe based on description
+      const videoContext = url ? `This recipe is from a viral video: ${url}` : "";
+      const recipe = await extractRecipe(
+        dishName,
+        "Social Media Video Recipe",
+        `${videoContext} ${notes}`.trim()
+      );
 
-    setExtractedRecipe({
-      name: "Creamy Garlic Tuscan Shrimp",
-      description: "A viral TikTok recipe that's incredibly easy and restaurant-quality delicious!",
-      creator: "@healthyeats",
-      ingredients: [
-        "1 lb large shrimp, peeled and deveined",
-        "4 cloves garlic, minced",
-        "1 cup heavy cream",
-        "1/2 cup parmesan cheese, grated",
-        "1 cup sun-dried tomatoes",
-        "2 cups fresh spinach",
-        "Italian seasoning to taste",
-        "Salt and pepper",
-      ],
-      instructions: [
-        "Season shrimp with salt, pepper, and Italian seasoning",
-        "Cook shrimp in olive oil for 2 minutes per side, set aside",
-        "Sauté garlic until fragrant (30 seconds)",
-        "Add heavy cream and bring to a simmer",
-        "Stir in parmesan until melted",
-        "Add sun-dried tomatoes and spinach",
-        "Return shrimp to pan and coat with sauce",
-        "Serve over pasta or rice!",
-      ],
-      calories: 380,
-    });
-    setIsExtracting(false);
+      // Extract creator from URL if possible
+      let creator = "@chef";
+      if (url.includes("tiktok")) creator = "@tiktok_chef";
+      else if (url.includes("instagram")) creator = "@insta_foodie";
+      else if (url.includes("youtube")) creator = "@youtube_cook";
+
+      setExtractedRecipe({ ...recipe, creator });
+    } catch (error) {
+      console.error("Recipe extraction failed:", error);
+      setExtractError("Failed to extract recipe. Please try again.");
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   const handleSave = () => {
-    // In real app, would save to database
-    router.push("/recipe/extracted-1");
+    if (!extractedRecipe) return;
+
+    // Generate unique ID
+    const recipeId = `extracted-${Date.now()}`;
+
+    // Create full recipe object to save
+    const recipeToSave = {
+      id: recipeId,
+      name: extractedRecipe.name,
+      description: extractedRecipe.description,
+      prepTime: extractedRecipe.prepTime,
+      cookTime: extractedRecipe.cookTime,
+      servings: extractedRecipe.servings,
+      cuisine: "Homestyle",
+      difficulty: "Medium" as const,
+      dietaryTags: [] as string[],
+      nutrition: {
+        calories: extractedRecipe.calories,
+        protein: 25,
+        carbs: 30,
+        fat: 15,
+        fiber: 5,
+      },
+      ingredients: extractedRecipe.ingredients.map((ing, idx) => ({
+        name: ing,
+        amount: 1,
+        unit: "portion",
+        price: 2.99,
+      })),
+      instructions: extractedRecipe.instructions,
+      estimatedCost: extractedRecipe.ingredients.length * 2.99,
+      isSaved: true,
+      creator: extractedRecipe.creator,
+      source: "extracted",
+    };
+
+    // Save to localStorage
+    const existingRecipes = JSON.parse(localStorage.getItem("mahm_extracted_recipes") || "[]");
+    existingRecipes.push(recipeToSave);
+    localStorage.setItem("mahm_extracted_recipes", JSON.stringify(existingRecipes));
+
+    // Navigate to the recipe page
+    router.push(`/recipe/${recipeId}`);
     onClose();
   };
 
@@ -96,56 +131,88 @@ function ExtractRecipeModal({
                 <div className="space-y-3">
                   <div className="flex items-center justify-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                    <span className="text-muted-foreground">Fetching video content...</span>
+                    <span className="text-muted-foreground">Reading video description...</span>
                   </div>
                   <div className="flex items-center justify-center gap-2">
                     <span className="w-2 h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
-                    <span className="text-muted-foreground">Analyzing ingredients...</span>
+                    <span className="text-muted-foreground">Identifying ingredients...</span>
                   </div>
                   <div className="flex items-center justify-center gap-2">
                     <span className="w-2 h-2 bg-sunny rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
-                    <span className="text-muted-foreground">Generating recipe...</span>
+                    <span className="text-muted-foreground">Cooking up the recipe...</span>
                   </div>
                 </div>
               </div>
             ) : (
               <>
-                <div className="mb-6">
-                  <label className="font-bold text-foreground mb-2 block">Paste video URL</label>
+                <div className="mb-4">
+                  <label className="font-bold text-foreground mb-2 block">Video URL (optional)</label>
                   <input
                     type="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://tiktok.com/... or instagram.com/reel/..."
-                    className="w-full p-4 border-2 border-border rounded-xl focus:outline-none focus:border-primary transition-colors"
+                    className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-primary transition-colors"
                   />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Supports TikTok, Instagram Reels, and YouTube Shorts
-                  </p>
                 </div>
 
                 <div className="flex gap-3 mb-4">
-                  <div className="flex-1 p-3 bg-muted/30 rounded-xl text-center">
-                    <div className="text-2xl mb-1">🎵</div>
+                  <div className="flex-1 p-2 bg-muted/30 rounded-xl text-center">
+                    <div className="text-xl mb-1">🎵</div>
                     <div className="text-xs text-muted-foreground">TikTok</div>
                   </div>
-                  <div className="flex-1 p-3 bg-muted/30 rounded-xl text-center">
-                    <div className="text-2xl mb-1">📷</div>
+                  <div className="flex-1 p-2 bg-muted/30 rounded-xl text-center">
+                    <div className="text-xl mb-1">📷</div>
                     <div className="text-xs text-muted-foreground">Instagram</div>
                   </div>
-                  <div className="flex-1 p-3 bg-muted/30 rounded-xl text-center">
-                    <div className="text-2xl mb-1">▶️</div>
+                  <div className="flex-1 p-2 bg-muted/30 rounded-xl text-center">
+                    <div className="text-xl mb-1">▶️</div>
                     <div className="text-xs text-muted-foreground">YouTube</div>
                   </div>
                 </div>
 
+                <div className="mb-4">
+                  <label className="font-bold text-foreground mb-2 block">
+                    What dish is in the video? <span className="text-primary">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={dishName}
+                    onChange={(e) => setDishName(e.target.value)}
+                    placeholder="E.g., Creamy Garlic Tuscan Shrimp, Birria Tacos..."
+                    className="w-full p-3 border-2 border-border rounded-xl focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="font-bold text-foreground mb-2 block">Any details you remember?</label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="E.g., They used sun-dried tomatoes, it had a creamy sauce..."
+                    className="w-full p-3 border-2 border-border rounded-xl resize-none h-20 focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+
+                {extractError && (
+                  <p className="text-sm text-center text-destructive mb-3 p-2 bg-destructive/10 rounded-lg">
+                    {extractError}
+                  </p>
+                )}
+
                 <Button
                   onClick={handleExtract}
-                  disabled={!url.trim()}
+                  disabled={!dishName.trim()}
                   className="w-full gradient-coral text-white font-bold text-lg py-6 disabled:opacity-50"
                 >
                   Extract Recipe
                 </Button>
+
+                {!dishName.trim() && (
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Tell us what dish is in the video to generate the recipe
+                  </p>
+                )}
               </>
             )}
           </>
@@ -165,12 +232,38 @@ function ExtractRecipeModal({
               <h3 className="font-display text-xl font-bold text-foreground text-center mb-1">
                 {extractedRecipe.name}
               </h3>
-              <p className="text-xs text-muted-foreground text-center">
-                by {extractedRecipe.creator}
-              </p>
+              {extractedRecipe.creator && (
+                <p className="text-xs text-muted-foreground text-center">
+                  inspired by {extractedRecipe.creator}
+                </p>
+              )}
               <p className="text-sm text-muted-foreground text-center mt-2">
                 {extractedRecipe.description}
               </p>
+            </div>
+
+            {/* Quick stats */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              <div className="text-center p-2 bg-muted/30 rounded-lg">
+                <div className="text-lg">⏱️</div>
+                <div className="text-xs text-muted-foreground">Prep</div>
+                <div className="font-bold text-foreground">{extractedRecipe.prepTime}m</div>
+              </div>
+              <div className="text-center p-2 bg-muted/30 rounded-lg">
+                <div className="text-lg">🍳</div>
+                <div className="text-xs text-muted-foreground">Cook</div>
+                <div className="font-bold text-foreground">{extractedRecipe.cookTime}m</div>
+              </div>
+              <div className="text-center p-2 bg-muted/30 rounded-lg">
+                <div className="text-lg">👥</div>
+                <div className="text-xs text-muted-foreground">Serves</div>
+                <div className="font-bold text-foreground">{extractedRecipe.servings}</div>
+              </div>
+              <div className="text-center p-2 bg-muted/30 rounded-lg">
+                <div className="text-lg">🔥</div>
+                <div className="text-xs text-muted-foreground">Cal</div>
+                <div className="font-bold text-primary">{extractedRecipe.calories}</div>
+              </div>
             </div>
 
             <div className="mb-4">
@@ -226,10 +319,60 @@ function PhotoRecipeModal({ onClose }: { onClose: () => void }) {
 
   const handleGenerate = async () => {
     setIsGenerating(true);
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    // In real app, would generate recipe
-    router.push("/recipe/photo-generated-1");
-    onClose();
+
+    try {
+      // Use OpenAI to generate the recipe based on photo description
+      const recipe = await extractRecipe(
+        dishName || "Homemade dish from photo",
+        "Photo Upload",
+        notes
+      );
+
+      // Generate unique ID
+      const recipeId = `photo-${Date.now()}`;
+
+      // Create full recipe object to save
+      const recipeToSave = {
+        id: recipeId,
+        name: recipe.name,
+        description: recipe.description,
+        prepTime: recipe.prepTime,
+        cookTime: recipe.cookTime,
+        servings: recipe.servings,
+        cuisine: "Homestyle",
+        difficulty: "Medium" as const,
+        dietaryTags: [] as string[],
+        nutrition: {
+          calories: recipe.calories,
+          protein: 25,
+          carbs: 30,
+          fat: 15,
+          fiber: 5,
+        },
+        ingredients: recipe.ingredients.map((ing) => ({
+          name: ing,
+          amount: 1,
+          unit: "portion",
+          price: 2.99,
+        })),
+        instructions: recipe.instructions,
+        estimatedCost: recipe.ingredients.length * 2.99,
+        isSaved: true,
+        source: "photo",
+      };
+
+      // Save to localStorage
+      const existingRecipes = JSON.parse(localStorage.getItem("mahm_extracted_recipes") || "[]");
+      existingRecipes.push(recipeToSave);
+      localStorage.setItem("mahm_extracted_recipes", JSON.stringify(existingRecipes));
+
+      // Navigate to the recipe page
+      router.push(`/recipe/${recipeId}`);
+      onClose();
+    } catch (error) {
+      console.error("Failed to generate recipe:", error);
+      setIsGenerating(false);
+    }
   };
 
   return (

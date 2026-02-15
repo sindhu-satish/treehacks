@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -58,7 +58,7 @@ function createEmptyMealPlan(): MealPlan {
     groceryList: [],
   };
 }
-import { healthCheck, sendChatMessage, comparePrices, getProfile } from "@/lib/api";
+import { healthCheck, sendChatMessage, comparePrices, getProfile, estimateNutrition, extractRecipe, type MealSuggestion, type ExtractedRecipe } from "@/lib/api";
 import {
   ChatMessage as ChatMessageType,
   GroceryComparison as GroceryComparisonType,
@@ -76,54 +76,28 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
   const [dishName, setDishName] = useState("");
   const [notes, setNotes] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedRecipe, setGeneratedRecipe] = useState<{
-    name: string;
-    description: string;
-    prepTime: number;
-    cookTime: number;
-    servings: number;
-    calories: number;
-    ingredients: string[];
-    instructions: string[];
-  } | null>(null);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  const [generatedRecipe, setGeneratedRecipe] = useState<ExtractedRecipe | null>(null);
 
   const handleGenerate = async () => {
+    if (!dishName.trim()) {
+      setGenerateError("Please enter a dish name");
+      return;
+    }
+
     setIsGenerating(true);
-    // Simulate AI generation
-    await new Promise(resolve => setTimeout(resolve, 2500));
+    setGenerateError(null);
 
-    // Generate a mock recipe based on the dish name
-    const mockRecipe = {
-      name: dishName || "Mystery Dish",
-      description: `A delicious homemade version of ${dishName || "this amazing dish"}${restaurantName ? ` inspired by ${restaurantName}` : ""}.${notes ? ` ${notes}` : ""}`,
-      prepTime: 15,
-      cookTime: 25,
-      servings: 4,
-      calories: 420,
-      ingredients: [
-        "2 cups main ingredient",
-        "1 tbsp olive oil",
-        "3 cloves garlic, minced",
-        "1 onion, diced",
-        "Salt and pepper to taste",
-        "Fresh herbs for garnish",
-        "1 cup sauce or broth",
-        "Optional: protein of choice",
-      ],
-      instructions: [
-        "Prep all ingredients by washing and chopping as needed.",
-        "Heat olive oil in a large pan over medium-high heat.",
-        "Sauté garlic and onion until fragrant, about 2 minutes.",
-        "Add main ingredients and cook until tender.",
-        "Season with salt, pepper, and your favorite spices.",
-        "Add sauce or broth and simmer for 10-15 minutes.",
-        "Adjust seasoning to taste and garnish with fresh herbs.",
-        "Serve hot and enjoy your homemade creation!",
-      ],
-    };
-
-    setGeneratedRecipe(mockRecipe);
-    setIsGenerating(false);
+    try {
+      // Call the real OpenAI-powered API
+      const recipe = await extractRecipe(dishName, restaurantName, notes);
+      setGeneratedRecipe(recipe);
+    } catch (error) {
+      console.error("Recipe generation failed:", error);
+      setGenerateError("Failed to generate recipe. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSaveRecipe = () => {
@@ -238,17 +212,23 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
                   />
                 </div>
 
+                {generateError && (
+                  <p className="text-sm text-center text-destructive mb-3 p-2 bg-destructive/10 rounded-lg">
+                    {generateError}
+                  </p>
+                )}
+
                 <Button
                   onClick={handleGenerate}
-                  disabled={!hasPhoto}
+                  disabled={!dishName.trim()}
                   className="w-full gradient-lime text-white font-bold text-lg py-6 shadow-playful-lime hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   Generate Recipe
                 </Button>
 
-                {!hasPhoto && (
-                  <p className="text-xs text-center text-primary mt-3">
-                    Please upload a photo to generate a recipe
+                {!dishName.trim() && (
+                  <p className="text-xs text-center text-muted-foreground mt-3">
+                    Enter a dish name to generate a recipe
                   </p>
                 )}
               </>
@@ -353,14 +333,27 @@ function RecipeFromPhotoModal({ onClose, onRecipeGenerated }: { onClose: () => v
 }
 
 // Meal Log Modal Component
-function MealLogModal({ onClose }: { onClose: () => void }) {
+function MealLogModal({ onClose, plannedMeals }: { onClose: () => void; plannedMeals: Array<{ name: string; mealType: string }> }) {
   const [mealPlanStatus, setMealPlanStatus] = useState<"planned" | "unplanned" | null>(null);
   const [mealType, setMealType] = useState<string | null>(null);
   const [hasPhoto, setHasPhoto] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
+  const [selectedMeal, setSelectedMeal] = useState<{ name: string; mealType: string } | null>(null);
   const [portionSize, setPortionSize] = useState<string>("Regular");
   const [isLogging, setIsLogging] = useState(false);
   const [logSuccess, setLogSuccess] = useState(false);
+
+  // Auto-set meal type when a planned meal is selected
+  const handleSelectPlannedMeal = (meal: { name: string; mealType: string }) => {
+    setSelectedMeal(meal);
+    // Auto-detect meal type from the planned meal
+    const typeMap: Record<string, string> = {
+      breakfast: "Breakfast",
+      lunch: "Lunch",
+      dinner: "Dinner",
+      snack: "Snack",
+    };
+    setMealType(typeMap[meal.mealType] || null);
+  };
 
   const handleLogMeal = async () => {
     setIsLogging(true);
@@ -373,6 +366,9 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
       onClose();
     }, 1500);
   };
+
+  // Determine if meal type is auto-detected (for planned meals)
+  const isMealTypeAutoDetected = mealPlanStatus === "planned" && selectedMeal !== null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -389,7 +385,11 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
           <label className="font-bold text-foreground mb-3 block text-lg">Was this on your meal plan?</label>
           <div className="flex gap-3">
             <button
-              onClick={() => setMealPlanStatus("planned")}
+              onClick={() => {
+                setMealPlanStatus("planned");
+                setSelectedMeal(null);
+                setMealType(null);
+              }}
               className={`flex-1 px-4 py-4 rounded-xl text-sm font-bold transition-all ${
                 mealPlanStatus === "planned"
                   ? "bg-accent text-white shadow-playful-lime scale-105"
@@ -400,7 +400,11 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
               Yes, planned meal
             </button>
             <button
-              onClick={() => setMealPlanStatus("unplanned")}
+              onClick={() => {
+                setMealPlanStatus("unplanned");
+                setSelectedMeal(null);
+                setMealType(null);
+              }}
               className={`flex-1 px-4 py-4 rounded-xl text-sm font-bold transition-all ${
                 mealPlanStatus === "unplanned"
                   ? "bg-amber-400 text-foreground shadow-playful-sunny scale-105"
@@ -413,9 +417,46 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* Step 2: Meal Type */}
+        {/* Step 2 for PLANNED: Select your planned meal (moved up!) */}
+        {mealPlanStatus === "planned" && (
+          <div className="mb-5 p-4 bg-accent/5 rounded-xl border-2 border-accent/20">
+            <label className="font-bold text-foreground mb-2 block text-sm">Select your planned meal</label>
+            <div className="space-y-2">
+              {plannedMeals.length > 0 ? (
+                plannedMeals.map((meal) => (
+                  <button
+                    key={`${meal.name}-${meal.mealType}`}
+                    onClick={() => handleSelectPlannedMeal(meal)}
+                    className={`w-full p-3 rounded-lg text-left text-sm font-medium transition-all ${
+                      selectedMeal?.name === meal.name && selectedMeal?.mealType === meal.mealType
+                        ? "bg-accent/20 border-2 border-accent text-foreground"
+                        : "bg-white hover:bg-accent/10 border-2 border-transparent hover:border-accent/30"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>
+                        {selectedMeal?.name === meal.name && selectedMeal?.mealType === meal.mealType && <span className="mr-2">✓</span>}
+                        {meal.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground capitalize">{meal.mealType}</span>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-2">No meals planned for today</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2 for UNPLANNED / Step 3 for PLANNED: Meal Type */}
         <div className="mb-5">
-          <label className="font-bold text-foreground mb-2 block">Meal type</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="font-bold text-foreground">Meal type</label>
+            {isMealTypeAutoDetected && (
+              <span className="text-xs text-accent font-medium">Auto-detected from plan</span>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
             {[
               { type: "Breakfast", icon: "🌅" },
@@ -436,9 +477,16 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
               </button>
             ))}
           </div>
+          {mealPlanStatus === "planned" && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {isMealTypeAutoDetected
+                ? "You can change this if needed"
+                : "Select a meal above to auto-detect, or choose manually"}
+            </p>
+          )}
         </div>
 
-        {/* Step 3: Photo Upload - Required for unplanned, optional for planned */}
+        {/* Photo Upload - Required for unplanned, optional for planned */}
         <div className="mb-5">
           <div className="flex items-center justify-between mb-2">
             <label className="font-bold text-foreground">
@@ -481,29 +529,6 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
             </div>
           )}
         </div>
-
-        {/* If planned meal - show which recipe */}
-        {mealPlanStatus === "planned" && (
-          <div className="mb-5 p-4 bg-accent/5 rounded-xl border-2 border-accent/20">
-            <label className="font-bold text-foreground mb-2 block text-sm">Select your planned meal</label>
-            <div className="space-y-2">
-              {["Creamy Lentil Dal", "Chickpea Tikka Masala", "Black Bean Tacos"].map((meal) => (
-                <button
-                  key={meal}
-                  onClick={() => setSelectedMeal(meal)}
-                  className={`w-full p-3 rounded-lg text-left text-sm font-medium transition-all ${
-                    selectedMeal === meal
-                      ? "bg-accent/20 border-2 border-accent text-foreground"
-                      : "bg-white hover:bg-accent/10 border-2 border-transparent hover:border-accent/30"
-                  }`}
-                >
-                  {selectedMeal === meal && <span className="mr-2">✓</span>}
-                  {meal}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* If unplanned - description field */}
         {mealPlanStatus === "unplanned" && (
@@ -590,12 +615,33 @@ function MealLogModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-export default function Home() {
+// Helper function to categorize ingredients for grocery list
+function categorizeIngredient(name: string): string {
+  const lowerName = name.toLowerCase();
+  if (/chicken|beef|pork|fish|salmon|tofu|egg|shrimp/.test(lowerName)) return "protein";
+  if (/milk|cheese|yogurt|cream|butter/.test(lowerName)) return "dairy";
+  if (/apple|banana|berry|lemon|lime|orange|fruit/.test(lowerName)) return "produce";
+  if (/spinach|lettuce|tomato|onion|garlic|pepper|cucumber|carrot|broccoli|vegetable/.test(lowerName)) return "produce";
+  if (/rice|pasta|bread|flour|oat|quinoa|grain/.test(lowerName)) return "grains";
+  if (/oil|vinegar|sauce|soy|honey|maple|sugar/.test(lowerName)) return "pantry";
+  if (/salt|pepper|cumin|paprika|oregano|basil|spice|herb/.test(lowerName)) return "spices";
+  if (/bean|chickpea|lentil|can/.test(lowerName)) return "canned";
+  return "other";
+}
+
+function HomeContent() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const searchParams = useSearchParams();
+  const { user, isLoading: authLoading, logout } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Auto-open login modal if ?login=true
+  useEffect(() => {
+    if (searchParams.get("login") === "true" && !user) {
+      setShowLoginModal(true);
+    }
+  }, [searchParams, user]);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
@@ -683,15 +729,219 @@ export default function Home() {
     }
   };
 
+  // Calculate weekly nutrition summary from meal plan
+  const weeklyNutrition = useMemo(() => {
+    let totalCalories = 0;
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFat = 0;
+    let totalFiber = 0;
+    let mealCount = 0;
+
+    mealPlan.days.forEach((day) => {
+      const meals = [day.meals.breakfast, day.meals.lunch, day.meals.dinner].filter(Boolean);
+      meals.forEach((meal) => {
+        if (meal?.recipe?.nutrition) {
+          totalCalories += meal.recipe.nutrition.calories || 0;
+          totalProtein += meal.recipe.nutrition.protein || 0;
+          totalCarbs += meal.recipe.nutrition.carbs || 0;
+          totalFat += meal.recipe.nutrition.fat || 0;
+          totalFiber += meal.recipe.nutrition.fiber || 0;
+          mealCount++;
+        }
+      });
+    });
+
+    const daysWithMeals = mealPlan.days.filter(
+      (d) => d.meals.breakfast || d.meals.lunch || d.meals.dinner
+    ).length || 1;
+
+    return {
+      avgDailyCalories: Math.round(totalCalories / daysWithMeals),
+      avgDailyProtein: Math.round(totalProtein / daysWithMeals),
+      avgDailyCarbs: Math.round(totalCarbs / daysWithMeals),
+      avgDailyFat: Math.round(totalFat / daysWithMeals),
+      avgDailyFiber: Math.round(totalFiber / daysWithMeals),
+      totalMeals: mealCount,
+      calorieProgress: Math.min(100, Math.round((totalCalories / daysWithMeals / 2000) * 100)),
+      proteinProgress: Math.min(100, Math.round((totalProtein / daysWithMeals / 60) * 100)),
+      fiberProgress: Math.min(100, Math.round((totalFiber / daysWithMeals / 30) * 100)),
+    };
+  }, [mealPlan]);
+
   useEffect(() => {
     healthCheck().then(setBackendOk);
   }, []);
 
-  // Check if user has completed onboarding
+  // Load generated meals from localStorage and populate calendar + grocery list
   useEffect(() => {
-    const onboarded = localStorage.getItem("mahm_onboarded");
-    setIsOnboarded(onboarded === "true");
-  }, []);
+    const loadGeneratedMeals = async () => {
+      const storedMeals = localStorage.getItem("mahm_generated_meals");
+      if (!storedMeals) return;
+
+      try {
+        const meals: MealSuggestion[] = JSON.parse(storedMeals);
+        if (!Array.isArray(meals) || meals.length === 0) return;
+
+        // Group meals by type
+        const breakfasts = meals.filter((m) => m.mealType === "breakfast");
+        const lunches = meals.filter((m) => m.mealType === "lunch");
+        const dinners = meals.filter((m) => m.mealType === "dinner");
+
+        // Collect all unique ingredients for grocery list
+        const allIngredients = new Set<string>();
+        meals.forEach((meal) => {
+          meal.ingredients?.forEach((ing) => {
+            // Extract just the ingredient name (remove amounts like "1 cup", "2 tbsp")
+            const cleanName = ing.replace(/^[\d\s\/½¼¾⅓⅔]+\s*(cup|tbsp|tsp|oz|lb|g|kg|ml|l|cloves?|inch|can|block|head|bunch)s?\s*/i, "").trim();
+            if (cleanName) allIngredients.add(cleanName);
+          });
+        });
+
+        // Populate grocery list
+        const groceryItems = Array.from(allIngredients).map((name) => ({
+          name,
+          amount: "1",
+          category: categorizeIngredient(name),
+          estimatedPrice: 3 + Math.random() * 5, // Placeholder price
+        }));
+        setGroceryListItems(groceryItems);
+
+        // Populate the meal plan
+        setMealPlan((prev) => {
+          const newDays = prev.days.map((day, idx) => {
+            const breakfast = breakfasts[idx % breakfasts.length];
+            const lunch = lunches[idx % lunches.length];
+            const dinner = dinners[idx % dinners.length];
+
+            const toPlannedMeal = (meal: MealSuggestion | undefined): PlannedMeal | undefined => {
+              if (!meal) return undefined;
+              const recipe: Recipe = {
+                id: meal.id,
+                name: meal.name,
+                description: meal.description,
+                ingredients: meal.ingredients.map((name) => ({ name, amount: 1, unit: "" })),
+                instructions: meal.instructions,
+                prepTime: meal.prepTime,
+                cookTime: meal.cookTime,
+                servings: meal.servings,
+                nutrition: meal.nutrition,
+                dietaryTags: meal.dietaryTags,
+                cuisine: "",
+                difficulty: "easy",
+              };
+              return { recipe, servings: meal.servings };
+            };
+
+            const dailyNutrition = {
+              calories: (breakfast?.nutrition.calories || 0) + (lunch?.nutrition.calories || 0) + (dinner?.nutrition.calories || 0),
+              protein: (breakfast?.nutrition.protein || 0) + (lunch?.nutrition.protein || 0) + (dinner?.nutrition.protein || 0),
+              carbs: (breakfast?.nutrition.carbs || 0) + (lunch?.nutrition.carbs || 0) + (dinner?.nutrition.carbs || 0),
+              fat: (breakfast?.nutrition.fat || 0) + (lunch?.nutrition.fat || 0) + (dinner?.nutrition.fat || 0),
+              fiber: (breakfast?.nutrition.fiber || 0) + (lunch?.nutrition.fiber || 0) + (dinner?.nutrition.fiber || 0),
+            };
+
+            return {
+              ...day,
+              meals: {
+                breakfast: toPlannedMeal(breakfast),
+                lunch: toPlannedMeal(lunch),
+                dinner: toPlannedMeal(dinner),
+              },
+              dailyNutrition,
+            };
+          });
+
+          return { ...prev, days: newDays };
+        });
+
+        // Fetch marketplace prices in background
+        const ingredientNames = Array.from(allIngredients).slice(0, 10); // Limit to first 10 for performance
+        if (ingredientNames.length > 0) {
+          let zip = "94305";
+          if (user?.user_id) {
+            try {
+              const profile = await getProfile(user.user_id);
+              if (profile.zip?.trim()) zip = profile.zip.trim();
+            } catch {
+              /* use default */
+            }
+          }
+          try {
+            const comparisons = await comparePrices(zip, ingredientNames);
+            setMarketplaceComparisons(comparisons);
+          } catch {
+            // Marketplace fetch failed, will show empty
+          }
+        }
+
+        // Optionally fetch updated nutrition from OpenAI for any meals missing nutrition
+        for (const meal of meals) {
+          if (!meal.nutrition || meal.nutrition.calories === 0) {
+            try {
+              const nutrition = await estimateNutrition(meal.name, meal.ingredients);
+              meal.nutrition = nutrition;
+            } catch {
+              // Keep existing nutrition
+            }
+          }
+        }
+        // Update localStorage with enhanced data
+        localStorage.setItem("mahm_generated_meals", JSON.stringify(meals));
+      } catch {
+        console.warn("Failed to load generated meals");
+      }
+    };
+
+    loadGeneratedMeals();
+  }, [user]);
+
+  // Add welcome message for logged in users
+  useEffect(() => {
+    if (user && messages.length === 0) {
+      const storedMeals = localStorage.getItem("mahm_generated_meals");
+      const userProfile = localStorage.getItem("mahm_user_profile");
+
+      let welcomeText = `Hey ${user.name || "there"}! 👋 I'm **Mahm** — your AI nutritionist, meal planner, and grocery guru!\n\n` +
+        `I'm here to help you make delicious, healthy meals that would make your mom proud. Here's what I can do:\n\n` +
+        `🍳 **Find recipes** — "What can I make with chicken and rice?"\n` +
+        `🥗 **Get nutrition info** — "How many calories in a Caesar salad?"\n` +
+        `📅 **Plan your week** — "Create a meal plan for this week"\n` +
+        `🛒 **Compare prices** — "Find the cheapest groceries near me"\n\n` +
+        `**Try asking me something!** What are you in the mood for today?`;
+
+      if (storedMeals && userProfile) {
+        try {
+          const meals: MealSuggestion[] = JSON.parse(storedMeals);
+          const profile = JSON.parse(userProfile);
+          const mealCount = meals.length;
+          const avgCalories = Math.round(meals.reduce((sum, m) => sum + (m.nutrition?.calories || 0), 0) / mealCount);
+
+          welcomeText = `Hey ${user.name || profile.name || "there"}! 👋 Welcome back to **Mahm**!\n\n` +
+            `I've got your personalized meal plan ready:\n\n` +
+            `📅 **${mealCount} meals** planned for the week\n` +
+            `🔥 **~${avgCalories} cal** per meal on average\n` +
+            `💰 Optimized for your **$${profile.budget || 100}/week** budget\n\n` +
+            `Check out your **Meal Calendar** tab, or ask me anything!\n\n` +
+            `**Quick actions:**\n` +
+            `• "Show me healthy dinner ideas"\n` +
+            `• "What's a good high-protein breakfast?"\n` +
+            `• "Find me a recipe under 30 minutes"`;
+        } catch {
+          // Use default welcome
+        }
+      }
+
+      setMessages([
+        {
+          id: "welcome-1",
+          role: "assistant",
+          content: welcomeText,
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }, [user, messages.length]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -700,8 +950,8 @@ export default function Home() {
     }
   }, [messages, isTyping]);
 
-  // Show loading state while checking onboarding
-  if (isOnboarded === null) {
+  // Show loading state while checking auth
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -712,8 +962,8 @@ export default function Home() {
     );
   }
 
-  // Show landing page if not onboarded
-  if (!isOnboarded) {
+  // Show landing page if not logged in
+  if (!user) {
     return (
       <div className="min-h-screen bg-background relative overflow-hidden">
         {/* Warm background elements */}
@@ -734,17 +984,19 @@ export default function Home() {
               <MahmLogo size="xl" showText={false} />
             </div>
 
-            <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6">
-              Like having a{" "}
-              <span className="text-primary">mom</span>
-              <br />
-              who&apos;s also a{" "}
-              <span className="text-accent">nutritionist</span>
+            <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mb-4">
+              <span className="text-primary">M</span>ade{" "}
+              <span className="text-primary">A</span>t{" "}
+              <span className="text-primary">H</span>ome...{" "}
+              <span className="text-accent">M</span>mmm
             </h1>
+            <p className="text-2xl md:text-3xl font-display text-muted-foreground mb-6">
+              Make something your <span className="text-primary font-bold">mom</span> would be proud of
+            </p>
 
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mb-10">
-              Tell Mahm your dietary needs, budget, and cravings. She&apos;ll recommend meals,
-              find the cheapest local ingredients, and plan your whole week.
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10">
+              Your AI nutritionist, meal planner, and grocery guru. Tell Mahm your dietary needs,
+              budget, and cravings — she&apos;ll handle the rest.
             </p>
 
             {/* Feature Pills */}
@@ -770,14 +1022,10 @@ export default function Home() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => {
-                  // Demo mode - set onboarded and reload
-                  localStorage.setItem("mahm_onboarded", "true");
-                  setIsOnboarded(true);
-                }}
+                onClick={() => setShowLoginModal(true)}
                 className="border-2 border-primary text-primary font-display font-bold text-xl px-10 py-7 rounded-xl hover:bg-primary/10"
               >
-                Try Demo
+                Log In
               </Button>
             </div>
           </main>
@@ -821,6 +1069,14 @@ export default function Home() {
             </p>
           </footer>
         </div>
+
+        {/* Login Modal */}
+        {showLoginModal && (
+          <LoginModal
+            onClose={() => setShowLoginModal(false)}
+            onSuccess={() => setShowLoginModal(false)}
+          />
+        )}
       </div>
     );
   }
@@ -874,14 +1130,13 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
-      {/* Hero Header */}
-      <header className="gradient-hero border-b border-border/50 relative overflow-hidden">
-        {/* Decorative blobs */}
-        <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute top-0 right-0 w-40 h-40 bg-accent/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-1/4 w-24 h-24 bg-amber-400/20 rounded-full blur-2xl translate-y-1/2" />
+      {/* Compact Header */}
+      <header className="gradient-hero border-b border-border/50 relative overflow-hidden shrink-0">
+        {/* Decorative blobs - smaller */}
+        <div className="absolute top-0 left-0 w-20 h-20 bg-primary/10 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl translate-x-1/2 -translate-y-1/2" />
 
-        <div className="max-w-6xl mx-auto px-4 py-4 relative">
+        <div className="max-w-6xl mx-auto px-4 py-3 relative">
           <div className="flex items-center justify-between">
             <div className="cursor-pointer" onClick={() => router.push("/")}>
               <MahmLogo size="md" />
@@ -964,33 +1219,28 @@ export default function Home() {
             </nav>
           </div>
 
-          {/* Tagline - only show on Chat tab when landing */}
-          {messages.length <= 1 && activeTab === "chat" && (
-            <div className="mt-10 mb-6 text-center relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 animate-float">
-                <MahmLogo size="xl" showText={false} />
-              </div>
-              <div className="pt-24">
-                <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-                  Like having a{" "}
-                  <span className="text-primary squiggly">mom</span> who&apos;s also a{" "}
-                  <span className="text-accent">nutritionist</span>
-                </h2>
-                <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-                  Tell Mahm your dietary needs, budget, and cravings. She&apos;ll recommend meals,
-                  find the cheapest local ingredients, and plan your whole week.
-                </p>
-                <div className="flex flex-wrap justify-center gap-3 mt-8">
-                  <span className="px-5 py-2.5 bg-primary/15 rounded-full text-sm font-semibold text-primary shadow-warm">
-                    Personalized nutrition
-                  </span>
-                  <span className="px-5 py-2.5 bg-accent/15 rounded-full text-sm font-semibold text-foreground shadow-warm">
-                    Real local prices
-                  </span>
-                  <span className="px-5 py-2.5 bg-amber-400/20 rounded-full text-sm font-semibold text-foreground shadow-warm">
-                    Weekly meal plans
-                  </span>
-                </div>
+          {/* Compact tagline - only show on Chat tab when no messages */}
+          {messages.length === 0 && activeTab === "chat" && (
+            <div className="mt-4 mb-4 text-center">
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
+                <span className="text-primary">M</span>ade{" "}
+                <span className="text-primary">A</span>t{" "}
+                <span className="text-primary">H</span>ome...{" "}
+                <span className="text-accent">M</span>mmm
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+                Make something your <span className="text-primary font-bold">mom</span> would be proud of.
+              </p>
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                <span className="px-3 py-1.5 bg-primary/15 rounded-full text-xs font-semibold text-primary">
+                  Personalized nutrition
+                </span>
+                <span className="px-3 py-1.5 bg-accent/15 rounded-full text-xs font-semibold text-foreground">
+                  Real local prices
+                </span>
+                <span className="px-3 py-1.5 bg-amber-400/20 rounded-full text-xs font-semibold text-foreground">
+                  Weekly meal plans
+                </span>
               </div>
             </div>
           )}
@@ -1196,41 +1446,59 @@ export default function Home() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Avg. daily calories</span>
-                      <span className="font-bold text-primary text-lg">1,395 cal</span>
+                      <span className="font-bold text-primary text-lg">
+                        {weeklyNutrition.avgDailyCalories > 0 ? `${weeklyNutrition.avgDailyCalories.toLocaleString()} cal` : "No meals yet"}
+                      </span>
                     </div>
                     <div className="w-full bg-primary/10 rounded-full h-3">
-                      <div className="gradient-coral h-3 rounded-full" style={{ width: "70%" }} />
+                      <div className="gradient-coral h-3 rounded-full transition-all" style={{ width: `${weeklyNutrition.calorieProgress}%` }} />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Avg. daily protein</span>
-                      <span className="font-bold text-accent text-lg">52g</span>
+                      <span className="font-bold text-accent text-lg">
+                        {weeklyNutrition.avgDailyProtein > 0 ? `${weeklyNutrition.avgDailyProtein}g` : "-"}
+                      </span>
                     </div>
                     <div className="w-full bg-accent/10 rounded-full h-3">
-                      <div className="gradient-lime h-3 rounded-full" style={{ width: "85%" }} />
+                      <div className="gradient-lime h-3 rounded-full transition-all" style={{ width: `${weeklyNutrition.proteinProgress}%` }} />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Avg. daily fiber</span>
-                      <span className="font-bold text-amber-500 text-lg">30g</span>
+                      <span className="font-bold text-amber-500 text-lg">
+                        {weeklyNutrition.avgDailyFiber > 0 ? `${weeklyNutrition.avgDailyFiber}g` : "-"}
+                      </span>
                     </div>
                     <div className="w-full bg-amber-400/20 rounded-full h-3">
-                      <div className="gradient-sunny h-3 rounded-full" style={{ width: "100%" }} />
+                      <div className="gradient-sunny h-3 rounded-full transition-all" style={{ width: `${weeklyNutrition.fiberProgress}%` }} />
                     </div>
 
                     <div className="pt-4 border-t-2 border-border/50">
-                      <div className="flex items-center gap-2 text-sm font-medium text-accent">
-                        <span className="text-lg">✓</span>
-                        <span>On track for your weight loss goal</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-accent mt-2">
-                        <span className="text-lg">✓</span>
-                        <span>High fiber for sustained energy</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-accent mt-2">
-                        <span className="text-lg">✓</span>
-                        <span>Under budget at $73/week</span>
-                      </div>
+                      {weeklyNutrition.totalMeals > 0 ? (
+                        <>
+                          <div className="flex items-center gap-2 text-sm font-medium text-accent">
+                            <span className="text-lg">✓</span>
+                            <span>{weeklyNutrition.totalMeals} meals planned this week</span>
+                          </div>
+                          {weeklyNutrition.avgDailyCalories > 0 && weeklyNutrition.avgDailyCalories < 2000 && (
+                            <div className="flex items-center gap-2 text-sm font-medium text-accent mt-2">
+                              <span className="text-lg">✓</span>
+                              <span>On track for your calorie goals</span>
+                            </div>
+                          )}
+                          {weeklyNutrition.avgDailyFiber >= 25 && (
+                            <div className="flex items-center gap-2 text-sm font-medium text-accent mt-2">
+                              <span className="text-lg">✓</span>
+                              <span>High fiber for sustained energy</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-sm text-muted-foreground text-center py-2">
+                          Add meals to your calendar to see nutrition insights
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1311,7 +1579,30 @@ export default function Home() {
 
       {/* Log Meal Modal */}
       {showMealLog && (
-        <MealLogModal onClose={() => setShowMealLog(false)} />
+        <MealLogModal
+          onClose={() => setShowMealLog(false)}
+          plannedMeals={
+            // Get today's planned meals from the meal plan
+            (() => {
+              const today = new Date();
+              const todayDay = mealPlan.days.find(
+                (d) => d.date.toDateString() === today.toDateString()
+              );
+              if (!todayDay) return [];
+              const meals: Array<{ name: string; mealType: string }> = [];
+              if (todayDay.meals.breakfast?.recipe) {
+                meals.push({ name: todayDay.meals.breakfast.recipe.name, mealType: "breakfast" });
+              }
+              if (todayDay.meals.lunch?.recipe) {
+                meals.push({ name: todayDay.meals.lunch.recipe.name, mealType: "lunch" });
+              }
+              if (todayDay.meals.dinner?.recipe) {
+                meals.push({ name: todayDay.meals.dinner.recipe.name, mealType: "dinner" });
+              }
+              return meals;
+            })()
+          }
+        />
       )}
 
       {/* Recipe from Photo Modal */}
@@ -1448,9 +1739,25 @@ export default function Home() {
         <p className="text-sm text-muted-foreground">
           Made with <span className="text-primary">♥</span> at TreeHacks 2026 |{" "}
           <span className="font-display font-bold text-foreground">Mahm</span>{" "}
-          — Make something your Mahm would be proud of
+          — Made At Home Mmmm
         </p>
       </footer>
     </div>
+  );
+}
+
+// Wrap in Suspense for useSearchParams
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🍳</div>
+          <p className="text-muted-foreground animate-pulse">Loading...</p>
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

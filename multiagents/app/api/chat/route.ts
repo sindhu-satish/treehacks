@@ -10,7 +10,7 @@ import { detectIntent } from "@/lib/intent";
 
 export const maxDuration = 60;
 
-const ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:3002", "http://127.0.0.1:3000", "http://127.0.0.1:3002"];
+const ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://127.0.0.1:3000", "http://127.0.0.1:3002"];
 
 function corsHeaders(request: NextRequest): HeadersInit {
   const origin = request.headers.get("origin") ?? "";

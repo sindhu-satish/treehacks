@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MahmLogo } from "@/components/brand/MahmLogo";
 import { useAuth } from "@/contexts/AuthContext";
+import { generateMealPlan } from "@/lib/api";
 
 const steps = [
   { id: 1, title: "Welcome", icon: "👋" },
@@ -138,14 +139,32 @@ export default function OnboardingPage() {
             pantryItems: formData.pantryItems,
           },
         });
+
+        // Store profile locally for quick access
         localStorage.setItem("mahm_user_profile", JSON.stringify(formData));
-        localStorage.setItem("mahm_onboarded", "true");
+
+        // Generate personalized meal plan based on preferences
+        try {
+          const meals = await generateMealPlan({
+            dietary: formData.dietary,
+            allergies: formData.allergies,
+            dislikes: formData.dislikes,
+            goals: formData.goals,
+            budget: formData.budget,
+            cookingTime: formData.cookingTime,
+            householdSize: formData.householdSize,
+            skillLevel: formData.skillLevel,
+          });
+          localStorage.setItem("mahm_generated_meals", JSON.stringify(meals));
+        } catch {
+          // Meal generation failed, will use defaults
+          console.warn("Meal generation failed, using defaults");
+        }
+
         router.push("/");
       } catch (e) {
-        setSubmitError(e instanceof Error ? e.message : "Could not create account.");
-        localStorage.setItem("mahm_user_profile", JSON.stringify(formData));
-        localStorage.setItem("mahm_onboarded", "true");
-        router.push("/");
+        // Registration failed - show error but don't redirect
+        setSubmitError(e instanceof Error ? e.message : "Could not create account. Please try again.");
       } finally {
         setSubmitting(false);
       }
@@ -559,14 +578,14 @@ export default function OnboardingPage() {
           </div>
         </Card>
 
-        {/* Skip option */}
+        {/* Login option */}
         {currentStep === 1 && (
           <div className="text-center mt-4">
             <button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/?login=true")}
               className="text-muted-foreground hover:text-primary text-sm"
             >
-              Already have an account? Skip to app →
+              Already have an account? Log in →
             </button>
           </div>
         )}

@@ -58,3 +58,4 @@ websockets
 Werkzeug
 yarl
 zstandard
+openai
