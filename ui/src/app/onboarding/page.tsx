@@ -71,6 +71,8 @@ export default function OnboardingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
+    password: "",
     dietary: [] as string[],
     allergies: [] as string[],
     dislikes: "",
@@ -106,13 +108,41 @@ export default function OnboardingPage() {
     } else {
       setSubmitting(true);
       setSubmitError(null);
+      const email = formData.email?.trim();
+      const password = formData.password;
+      const name = formData.name.trim() || email?.split("@")[0] || "Guest";
+      if (!email || !password) {
+        setSubmitError("Email and password are required");
+        setSubmitting(false);
+        return;
+      }
+      if (password.length < 6) {
+        setSubmitError("Password must be at least 6 characters");
+        setSubmitting(false);
+        return;
+      }
       try {
-        await registerUser(formData.name.trim() || "Guest", formData.email?.trim() || undefined);
+        await registerUser({
+          name,
+          email,
+          password,
+          profile: {
+            dietary: formData.dietary,
+            allergies: formData.allergies,
+            dislikes: formData.dislikes,
+            goals: formData.goals,
+            budget: formData.budget,
+            cookingTime: formData.cookingTime,
+            householdSize: formData.householdSize,
+            skillLevel: formData.skillLevel,
+            pantryItems: formData.pantryItems,
+          },
+        });
         localStorage.setItem("mahm_user_profile", JSON.stringify(formData));
         localStorage.setItem("mahm_onboarded", "true");
         router.push("/");
       } catch (e) {
-        setSubmitError(e instanceof Error ? e.message : "Could not create account. Using app locally.");
+        setSubmitError(e instanceof Error ? e.message : "Could not create account.");
         localStorage.setItem("mahm_user_profile", JSON.stringify(formData));
         localStorage.setItem("mahm_onboarded", "true");
         router.push("/");
@@ -205,15 +235,38 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              <div className="mb-6">
-                <label className="font-display font-bold text-foreground mb-2 block">What should we call you?</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Your name..."
-                  className="w-full p-4 border-2 border-primary/30 rounded-2xl text-center font-display text-xl focus:outline-none focus:border-primary"
-                />
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="font-display font-bold text-foreground mb-2 block">Your name</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Your name..."
+                    className="w-full p-4 border-2 border-primary/30 rounded-2xl font-display text-lg focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="font-display font-bold text-foreground mb-2 block">Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="you@example.com"
+                    className="w-full p-4 border-2 border-primary/30 rounded-2xl font-display text-lg focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="font-display font-bold text-foreground mb-2 block">Password</label>
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="At least 6 characters"
+                    minLength={6}
+                    className="w-full p-4 border-2 border-primary/30 rounded-2xl font-display text-lg focus:outline-none focus:border-primary"
+                  />
+                </div>
               </div>
             </div>
           )}

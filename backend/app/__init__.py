@@ -23,7 +23,7 @@ def create_app():
         SUPABASE_SERVICE_ROLE_KEY=os.getenv("SUPABASE_SERVICE_ROLE_KEY"),
         CACHE_TTL_SECONDS=int(os.getenv("CACHE_TTL_SECONDS", "1800")),
         SCRAPER_SERVICE_URL=(os.getenv("SCRAPER_SERVICE_URL") or "").strip() or None,
-        MARKETPLACE_STORES=(os.getenv("MARKETPLACE_STORES") or "walmart,safeway,target").strip(),
+        MARKETPLACE_STORES=(os.getenv("MARKETPLACE_STORES") or "walmart,target").strip(),
     )
 
     if app.config["SUPABASE_URL"] and app.config["SUPABASE_SERVICE_ROLE_KEY"]:

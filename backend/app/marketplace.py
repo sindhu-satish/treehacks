@@ -15,7 +15,11 @@ def _get_supabase():
 
 
 def _get_stores():
-    return stores_from_config(current_app.config.get("MARKETPLACE_STORES", ""))
+    """Stores from config, filtered to Walmart and Target only."""
+    config = current_app.config.get("MARKETPLACE_STORES", "walmart,target")
+    all_stores = stores_from_config(config)
+    filtered = [s for s in all_stores if s["id"] in ("walmart", "target")]
+    return filtered if filtered else stores_from_config("walmart,target")
 
 
 @marketplace_bp.get("/stores")
