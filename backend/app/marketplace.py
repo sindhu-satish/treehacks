@@ -121,7 +121,11 @@ def unlocker_test():
     html = unlocker_get(url, timeout=(5.0, timeout))
     ms = int((time.time() - t0) * 1000)
 
-    print(extract_top_instore_items(html, retailer="walmart", top_n=2))
+    retailer = "walmart" if "walmart" in url.lower() else "target"
+    try:
+        items = extract_top_instore_items(html, retailer=retailer, top_n=5)
+    except Exception:
+        items = []
 
     return jsonify({
         "ok": True,
@@ -129,4 +133,5 @@ def unlocker_test():
         "ms": ms,
         "bytes": len(html),
         "snippet": html,
+        "items": items,
     }), 200
