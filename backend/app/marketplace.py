@@ -3,11 +3,12 @@ Phase 4: Marketplace and stores.
 GET /api/stores, POST /api/marketplace, POST /api/marketplace/compare-prices.
 """
 from flask import Blueprint, request, jsonify, current_app
+import time
 
-from .marketplace_utils import quote_marketplace, stores_from_config
+from .marketplace_utils import quote_marketplace, stores_from_config, unlocker_get
+from .parsing_utils import extract_top_instore_items
 
 marketplace_bp = Blueprint("marketplace", __name__)
-
 
 def _get_supabase():
     return current_app.extensions.get("supabase")
@@ -98,3 +99,34 @@ def compare_prices():
         grocery_comparison.append({"ingredient": ing, "stores": stores_list})
 
     return jsonify(grocery_comparison)
+
+@marketplace_bp.get("/unlocker/test")
+def unlocker_test():
+    """
+    Quick in-browser test:
+      /api/unlocker/test?url=https%3A%2F%2Fwww.walmart.com%2Fsearch%3Fq%3Dbananas
+
+    Optional:
+      &timeout=25
+      &truncate=800
+    """
+    url = (request.args.get("url") or "").strip()
+    if not url:
+        return jsonify({"error": "url_required"}), 400
+
+    timeout = float(request.args.get("timeout", "25"))
+    truncate = int(request.args.get("truncate", "1200"))
+
+    t0 = time.time()
+    html = unlocker_get(url, timeout=(5.0, timeout))
+    ms = int((time.time() - t0) * 1000)
+
+    print(extract_top_instore_items(html, retailer="walmart", top_n=2))
+
+    return jsonify({
+        "ok": True,
+        "url": url,
+        "ms": ms,
+        "bytes": len(html),
+        "snippet": html,
+    }), 200

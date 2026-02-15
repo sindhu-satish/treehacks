@@ -5,6 +5,9 @@ scrape_one_item calls the scraper service (SCRAPER_SERVICE_URL). No caching - ev
 import os
 import re
 from typing import Any, Dict, List, Optional
+import requests
+
+from .parsing_utils import extract_top_instore_items
 
 DEFAULT_STORE = "walmart"
 DEFAULT_STORE_NAME = "Walmart"
@@ -26,33 +29,85 @@ def normalize_ingredient_to_query(ing: Any) -> tuple:
     q = re.sub(r"\s+", " ", q).strip()
     return ingredient_display, q
 
+def unlocker_get(url: str, timeout=(5.0, 25.0)) -> str:
+    host = os.getenv("BRIGHTDATA_HOST", "brd.superproxy.io")
+    port = os.getenv("BRIGHTDATA_PORT", "22225")
+
+    customer = os.getenv("BRIGHTDATA_CUSTOMER")
+    zone = os.getenv("BRIGHTDATA_ZONE")
+    password = os.getenv("BRIGHTDATA_PASSWORD")
+
+    if not customer or not zone or not password:
+        raise RuntimeError("Missing BRIGHTDATA_CUSTOMER / BRIGHTDATA_ZONE")
+
+    username = f"brd-customer-{customer}-zone-{zone}"
+    proxy = f"http://{username}:{password}@{host}:{port}"
+
+    proxies = {"http": proxy}
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+
+    r = requests.get(url, headers=headers, proxies=proxies, timeout=timeout)
+    r.raise_for_status()
+    return r.text
 
 def scrape_one_item(
-    store: str, zip_code: str, query: str, sb, ttl_seconds: int = 1800,
-    scraper_url: Optional[str] = None,
+    store: str,
+    zip_code: str,
+    query: str,
+    sb,
+    ttl_seconds: int = 1800,
+    scraper_url: Optional[str] = None,   # kept for signature compatibility; unused
 ) -> Optional[Dict[str, Any]]:
-    scraper_url = (scraper_url or os.getenv("SCRAPER_SERVICE_URL") or "").strip() or None
-    if not scraper_url:
-        return None
-
     try:
-        import urllib.request
-        import json
+        import urllib.parse
 
-        req = urllib.request.Request(
-            f"{scraper_url.rstrip('/')}/api/scrape-ingredient",
-            data=json.dumps({"store": store, "zip": zip_code, "query": query}).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=25) as resp:
-            data = json.loads(resp.read().decode())
-            if isinstance(data, dict) and data.get("name"):
-                return data
+        store_id = (store or "").strip().lower()
+
+        # Build retailer search URL (only Walmart implemented right now)
+        if store_id in ("walmart", "wm"):
+            url = f"https://www.walmart.com/search?q={urllib.parse.quote(query)}"
+        elif store_id in ("target", "tgt"):
+            url = f"https://www.target.com/s?searchTerm={urllib.parse.quote(query)}"
+        else:
             return None
+
+        html = unlocker_get(url, timeout=(5.0, 25.0))
+
+        # Parse top in-store item from returned HTML
+        items = extract_top_instore_items(html, retailer=store_id, top_n=1)
+        return items[0] if items else None
+
     except Exception:
         return None
 
+# def scrape_one_item(
+#     store: str, zip_code: str, query: str, sb, ttl_seconds: int = 1800,
+#     scraper_url: Optional[str] = None,
+# ) -> Optional[Dict[str, Any]]:
+#     scraper_url = (scraper_url or os.getenv("SCRAPER_SERVICE_URL") or "").strip() or None
+#     if not scraper_url:
+#         return None
+
+#     try:
+#         import urllib.request
+#         import json
+
+#         req = urllib.request.Request(
+#             f"{scraper_url.rstrip('/')}/api/scrape-ingredient",
+#             data=json.dumps({"store": store, "zip": zip_code, "query": query}).encode("utf-8"),
+#             headers={"Content-Type": "application/json"},
+#             method="POST",
+#         )
+#         with urllib.request.urlopen(req, timeout=25) as resp:
+#             data = json.loads(resp.read().decode())
+#             if isinstance(data, dict) and data.get("name"):
+#                 return data
+#             return None
+#     except Exception:
+#         return None
 
 def quote_marketplace(
     payload: Dict[str, Any], sb, ttl_seconds: int = 1800,
