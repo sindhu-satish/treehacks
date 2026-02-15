@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NutritionBadge } from "@/components/recipe/NutritionBadge";
 import { dummyRecipes, dummyJournalEntries } from "@/lib/dummy-data";
-import { CartItem, Ingredient } from "@/types";
+import { CartItem, Ingredient, Recipe } from "@/types";
 
 interface SelectedStore {
   ingredientName: string;
@@ -20,10 +20,48 @@ interface SelectedStore {
 export default function RecipeDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const recipe = dummyRecipes.find((r) => r.id === params.id);
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const journalEntries = dummyJournalEntries.filter((j) => j.recipeId === params.id);
 
-  const [isSaved, setIsSaved] = useState(recipe?.isSaved || false);
+  useEffect(() => {
+    // First check dummy recipes
+    const dummyRecipe = dummyRecipes.find((r) => r.id === params.id);
+    if (dummyRecipe) {
+      setRecipe(dummyRecipe);
+      setIsLoading(false);
+      return;
+    }
+
+    // Then check localStorage for extracted recipes
+    const extractedRecipes = JSON.parse(localStorage.getItem("mahm_extracted_recipes") || "[]");
+    const extractedRecipe = extractedRecipes.find((r: Recipe) => r.id === params.id);
+    if (extractedRecipe) {
+      setRecipe(extractedRecipe);
+      setIsLoading(false);
+      return;
+    }
+
+    // Also check generated meals from meal planning
+    const generatedMeals = JSON.parse(localStorage.getItem("mahm_generated_meals") || "[]");
+    const generatedMeal = generatedMeals.find((r: Recipe) => r.id === params.id);
+    if (generatedMeal) {
+      setRecipe(generatedMeal);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(false);
+  }, [params.id]);
+
+  const [isSaved, setIsSaved] = useState(false);
+
+  // Update isSaved when recipe loads
+  useEffect(() => {
+    if (recipe) {
+      setIsSaved(recipe.isSaved || false);
+    }
+  }, [recipe]);
   const [showMadeModal, setShowMadeModal] = useState(false);
   const [rating, setRating] = useState(0);
   const [notes, setNotes] = useState("");
@@ -135,6 +173,17 @@ export default function RecipeDetailPage() {
     acc[item.storeId].subtotal += item.price * item.quantity;
     return acc;
   }, {} as Record<string, { name: string; items: CartItem[]; subtotal: number }>);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="text-4xl mb-4 animate-bounce">🍳</div>
+          <p className="text-muted-foreground">Loading recipe...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!recipe) {
     return (
