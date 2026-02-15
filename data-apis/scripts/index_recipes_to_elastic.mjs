@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Client as ElasticClient } from "@elastic/elasticsearch";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
 
 const ELASTIC_URL = process.env.ELASTIC_URL;
 const ELASTIC_API_KEY = process.env.ELASTIC_API_KEY;
@@ -42,6 +42,7 @@ async function ensureIndex() {
             carbs: { type: "float" },
             fats: { type: "float" },
             event_type: { type: "keyword" },
+            image_link: { type: "keyword", index: false },
         },
     },
 
@@ -113,6 +114,7 @@ async function bulkIndex(recipes) {
         carbs: r.carbs ?? null,
         fats: r.fats ?? null,
         event_type: r.event_type ?? null,
+        image_link: r.image_link ?? null,
     });
   }
 

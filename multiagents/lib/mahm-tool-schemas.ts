@@ -8,7 +8,7 @@ export const MAHM_TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
     name: "search_recipes",
     description:
-      "Search for recipes by query and optional dietary filters. Returns ranked recipes with ingredients, cook time, and dietary tags. Use when the user wants meal ideas, dinner recommendations, or snacks.",
+      "Search for recipes by query and optional dietary filters. Returns ranked recipes with name, ingredients, cook time, and dietary tags. Use when the user wants meal ideas, dinner recommendations, or snacks. The results are shown as cards below your message—do not list recipe names in your reply; write only a brief intro.",
     input_schema: {
       type: "object",
       properties: {

@@ -80,7 +80,7 @@ def brightdata_scrape_one_item(store: str, zip_code: str, query: str) -> Optiona
             "include_errors": "true",
             "type": "discover_new",
             "discover_by": "keywords",
-            "limit_per_input": "1",
+            "limit_per_input": 1,
         }
         data = [{"keywords": query, "zipcode": zip_code or ""}]
     else:
@@ -89,7 +89,7 @@ def brightdata_scrape_one_item(store: str, zip_code: str, query: str) -> Optiona
             "include_errors": "true",
             "type": "discover_new",
             "discover_by": "keyword",
-            "limit_per_input": "1",
+            "limit_per_input": 1,
         }
         data = [{"keyword": query, "domain": "https://www.walmart.com/", "all_variations": False}]
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito, Baloo_2, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { MahmProvider } from "@/contexts/MahmContext";
 import "./globals.css";
 
@@ -36,9 +37,11 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} ${baloo2.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        <MahmProvider>
-          {children}
-        </MahmProvider>
+        <AuthProvider>
+          <MahmProvider>
+            {children}
+          </MahmProvider>
+        </AuthProvider>
       </body>
     </html>
   );
