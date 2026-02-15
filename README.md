@@ -67,6 +67,14 @@ In `multiagents/.env.local`, set:
 
 (Defaults in `.env.example`.) If data-apis or backend are down, tools fall back to mocks.
 
+### Live ingredient scraping (Bright Data MCP)
+
+For real grocery prices instead of the dev catalog:
+1. Get an API key from [brightdata.com/cp/setting/users](https://brightdata.com/cp/setting/users)
+2. In `multiagents/.env.local`: `BRIGHTDATA_API_KEY=your_key`
+3. In `backend/.env`: `MARKETPLACE_PROVIDER=brightdata` and `SCRAPER_SERVICE_URL=http://localhost:3000`
+4. Run multiagents and backend. The backend calls multiagents `POST /api/scrape-ingredient`, which uses Bright Data MCP (`search_engine` + `scrape_as_markdown`) to fetch prices.
+
 ## Test tool calls
 
 | Method        | Command                                            | Notes                                                            |
@@ -81,8 +89,9 @@ In `multiagents/.env.local`, set:
 | `/api/chat`         | POST   | `{ "messages": [...] }` → `{ "text", "toolCalls?", "error?" }` |
 | `/api/demo`         | GET    | Cached demo messages                                           |
 | `/api/test-tools`   | GET    | Run all tools with sample inputs                               |
-| `/api/recipes`      | GET    | Proxy to data-apis (query, max_results, dietary_filters)       |
-| `/api/marketplace`  | GET    | Proxy to backend (ingredients, zip)                            |
+| `/api/recipes`         | GET    | Proxy to data-apis (query, max_results, dietary_filters)       |
+| `/api/marketplace`     | GET    | Proxy to backend (ingredients, zip)                            |
+| `/api/scrape-ingredient` | POST | Bright Data MCP scraper (store, zip, query → price info)       |
 
 ## Tech
 

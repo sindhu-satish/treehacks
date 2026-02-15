@@ -1,56 +1,100 @@
+"""
+Phase 4: Marketplace and stores.
+GET /api/stores, POST /api/marketplace, POST /api/marketplace/compare-prices.
+"""
 from flask import Blueprint, request, jsonify, current_app
 
-from .marketplace_utils import quote_marketplace
+from .marketplace_utils import quote_marketplace, stores_from_config
 
-mktplace = Blueprint("marketplace", __name__)
+marketplace_bp = Blueprint("marketplace", __name__)
 
-@mktplace.post("/marketplace")
+
+def _get_supabase():
+    return current_app.extensions.get("supabase")
+
+
+def _get_stores():
+    return stores_from_config(current_app.config.get("MARKETPLACE_STORES", ""))
+
+
+@marketplace_bp.get("/stores")
+def get_stores():
+    """Return stores from MARKETPLACE_STORES env (comma-separated). Used for Bright Data scraping."""
+    return jsonify(_get_stores())
+
+
+@marketplace_bp.post("/marketplace")
 def marketplace_quote():
-    sb = current_app.extensions.get("supabase")
+    """Quote ingredient prices (agent proxy shape: zip + ingredients)."""
+    sb = _get_supabase()
     ttl = current_app.config.get("CACHE_TTL_SECONDS", 1800)
+    scraper_url = current_app.config.get("SCRAPER_SERVICE_URL")
 
     payload = request.get_json(force=True) or {}
-    result = quote_marketplace(payload, sb, ttl_seconds=ttl)
+    result = quote_marketplace(payload, sb, ttl_seconds=ttl, scraper_url=scraper_url)
 
     if "error" in result:
         return jsonify(result), 400
-
     return jsonify(result), 200
 
-@mktplace.get("/marketplace")
-def marketplace_get():
-    # agent-friendly adapter
-    sb = current_app.extensions.get("supabase")
+
+@marketplace_bp.post("/marketplace/compare-prices")
+def compare_prices():
+    """Compare ingredient prices across stores for UI GroceryComparison."""
+    sb = _get_supabase()
     ttl = current_app.config.get("CACHE_TTL_SECONDS", 1800)
 
-    zip_code = (request.args.get("zip") or request.args.get("zip_code") or "").strip()
-    store = (request.args.get("store") or "walmart").strip().lower()
+    payload = request.get_json(force=True) or {}
+    zip_code = (payload.get("zip") or "").strip()
+    ingredients = payload.get("ingredients") or []
 
-    # support repeated params: ?ingredients=a&ingredients=b
-    ings = request.args.getlist("ingredients")
-    if len(ings) == 1 and "," in ings[0]:
-        # also support comma-separated: ?ingredients=a,b,c
-        ings = [x.strip() for x in ings[0].split(",") if x.strip()]
+    if not zip_code:
+        return jsonify({"error": "zip_required", "message": "zip is required"}), 400
+    if not isinstance(ingredients, list) or len(ingredients) == 0:
+        return jsonify({"error": "ingredients_required", "message": "ingredients must be a non-empty list"}), 400
 
-    payload = {
-        "zip": zip_code,
-        "ingredients": [{"name": x} for x in ings],
-        "store": store,
-    }
+    scraper_url = current_app.config.get("SCRAPER_SERVICE_URL")
+    stores = _get_stores()
+    if not stores:
+        return jsonify({"error": "no_stores", "message": "MARKETPLACE_STORES not configured"}), 400
 
-    result = quote_marketplace(payload, sb, ttl_seconds=ttl)
-    return jsonify(result), (400 if "error" in result else 200)
+    store_results = []
+    for store in stores:
+        payload_one = {"zip": zip_code, "ingredients": ingredients, "store": store["id"]}
+        result = quote_marketplace(payload_one, sb, ttl_seconds=ttl, scraper_url=scraper_url)
+        if "error" in result:
+            continue
+        store_results.append({"store": store, "items": result.get("items") or []})
 
-@mktplace.get("/marketplace/test")
-def marketplace_debug():
-    zip_code = request.args.get("zip", "94107")
-    ingredients = request.args.get("ingredients", "bananas,rice,olive oil,yellow onion,canned chickpeas")
-    ingredients_list = [x.strip() for x in ingredients.split(",") if x.strip()]
+    ingredient_names = []
+    for it in (store_results[0]["items"] if store_results else []):
+        ing = it.get("ingredient", "")
+        if ing and ing not in ingredient_names:
+            ingredient_names.append(ing)
+    if not ingredient_names:
+        ingredient_names = [str(i) if isinstance(i, str) else (i.get("name") or str(i)) for i in ingredients]
 
-    payload = {"zip": zip_code, "ingredients": ingredients_list}
-    sb = current_app.extensions.get("supabase")
-    ttl = current_app.config.get("CACHE_TTL_SECONDS", 1800)
+    grocery_comparison = []
+    for ing in ingredient_names:
+        stores_list = []
+        min_price = None
+        for entry in store_results:
+            s = entry["store"]
+            matched = None
+            for it in entry.get("items", []):
+                if it.get("ingredient") == ing:
+                    matched = it.get("matched_item")
+                    break
+            price = float(matched["price"]) if matched and matched.get("price") is not None else None
+            avail = matched.get("availability", "in_stock") if matched else "out_of_stock"
+            in_stock = avail == "in_stock" if isinstance(avail, str) else bool(avail)
+            stores_list.append({"store": s, "price": price, "inStock": in_stock})
+            if price is not None and (min_price is None or price < min_price):
+                min_price = price
 
-    result = quote_marketplace(payload, sb, ttl_seconds=ttl)
-    status = 400 if "error" in result else 200
-    return result, status
+        for s in stores_list:
+            s["isCheapest"] = min_price is not None and s.get("price") is not None and s["price"] == min_price
+
+        grocery_comparison.append({"ingredient": ing, "stores": stores_list})
+
+    return jsonify(grocery_comparison)
