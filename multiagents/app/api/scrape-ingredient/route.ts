@@ -1,8 +1,9 @@
 /**
- * Scrape ingredient/grocery info using Bright Data Datasets API (direct HTTP).
+ * Scrape ingredient/grocery info using Bright Data Datasets API (trigger + poll + download).
  * Called by backend when MARKETPLACE_PROVIDER=brightdata and SCRAPER_SERVICE_URL points here.
  *
- * Supports Walmart and Target only; each store uses its own dataset and input shape.
+ * Uses POST /datasets/v3/trigger with type=discover_new. Auth: Bearer BRIGHTDATA_API_KEY.
+ * Supports Walmart and Target only.
  */
 import { NextResponse } from "next/server";
 
@@ -11,10 +12,19 @@ const API_KEY = process.env.BRIGHTDATA_API_KEY;
 const WALMART_DATASET_ID = "gd_l95fol7l1ru6rlo116";
 const TARGET_DATASET_ID = "gd_ltppk5mx2lp0v1k0vo";
 
+const TRIGGER_URL = "https://api.brightdata.com/datasets/v3/trigger";
+const POLL_INTERVAL_MS = 5000;
+const POLL_TIMEOUT_MS = 90_000;
+
+const LOG = (msg: string, data?: unknown) => {
+  const suffix = data === undefined ? "" : ` ${JSON.stringify(data)}`;
+  console.log(`[scrape-ingredient] ${msg}${suffix}`);
+};
+
 type StoreConfig = {
   datasetId: string;
   discoverBy: string;
-  buildInput: (query: string, zipCode: string) => Record<string, string>;
+  buildInput: (query: string, zipCode: string) => Record<string, string | boolean>;
   extraParams?: Record<string, string>;
 };
 
@@ -25,8 +35,8 @@ const STORE_CONFIGS: Record<string, StoreConfig> = {
     buildInput: (query) => ({
       keyword: query,
       domain: "https://www.walmart.com/",
+      all_variations: false,
     }),
-    extraParams: { limit_per_input: "5" },
   },
   target: {
     datasetId: TARGET_DATASET_ID,
@@ -89,6 +99,47 @@ function pickFirstResult(data: unknown): {
   return null;
 }
 
+async function pollUntilReady(snapshotId: string): Promise<"ready" | "failed"> {
+  const progressUrl = `https://api.brightdata.com/datasets/v3/progress/${snapshotId}`;
+  const started = Date.now();
+  let pollCount = 0;
+  while (Date.now() - started < POLL_TIMEOUT_MS) {
+    pollCount += 1;
+    const res = await fetch(progressUrl, {
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+    const body = (await res.json()) as { status?: string };
+    const status = body.status ?? "";
+    console.log(`[scrape-ingredient] progress poll #${pollCount} GET ${progressUrl} -> ${res.status}`, JSON.stringify(body));
+    if (!res.ok) {
+      throw new Error(`Progress check failed: ${res.status}`);
+    }
+    if (status === "ready") return "ready";
+    if (status === "failed") return "failed";
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+  }
+  throw new Error("Snapshot polling timeout");
+}
+
+async function downloadSnapshot(snapshotId: string): Promise<unknown> {
+  const url = `https://api.brightdata.com/datasets/v3/snapshot/${snapshotId}?format=json`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${API_KEY}` },
+  });
+  const data = await res.json();
+  const summary = Array.isArray(data)
+    ? { type: "array", length: data.length, firstKeys: data[0] ? Object.keys(data[0] as object) : [] }
+    : { type: "object", keys: Object.keys(data as object) };
+  console.log(`[scrape-ingredient] snapshot download GET ${url} -> ${res.status}`, JSON.stringify(summary));
+  if (res.status === 409) {
+    throw new Error("Snapshot not ready for download");
+  }
+  if (!res.ok) {
+    throw new Error(`Snapshot download failed: ${res.status}`);
+  }
+  return data;
+}
+
 export async function POST(req: Request) {
   if (!API_KEY) {
     return NextResponse.json(
@@ -113,69 +164,80 @@ export async function POST(req: Request) {
   }
 
   const config = STORE_CONFIGS[store];
-  const url = new URL("https://api.brightdata.com/datasets/v3/scrape");
-  url.searchParams.set("dataset_id", config.datasetId);
-  url.searchParams.set("notify", "false");
-  url.searchParams.set("include_errors", "true");
-  url.searchParams.set("type", "discover_new");
-  url.searchParams.set("discover_by", config.discoverBy);
+  const params = new URLSearchParams({
+    dataset_id: config.datasetId,
+    include_errors: "true",
+    type: "discover_new",
+    discover_by: config.discoverBy,
+    limit_multiple_results: "1",
+  });
   if (config.extraParams) {
     for (const [k, v] of Object.entries(config.extraParams)) {
-      url.searchParams.set(k, v);
+      params.set(k, v);
     }
   }
-
+  const triggerTarget = `${TRIGGER_URL}?${params.toString()}`;
   const inputItem = config.buildInput(query, zipCode);
+  const requestBody = [inputItem];
+
+  LOG("request", { store, query, zipCode, url: triggerTarget, body: requestBody });
 
   try {
-    const res = await fetch(url.toString(), {
+    const triggerRes = await fetch(triggerTarget, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        input: [inputItem],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
-    const raw = await res.text();
-    let data: unknown;
+    const raw = await triggerRes.text();
+    let triggerData: unknown;
     try {
-      data = raw ? JSON.parse(raw) : null;
+      triggerData = raw ? JSON.parse(raw) : null;
     } catch {
       return NextResponse.json(
-        { error: "Scrape failed", details: raw.slice(0, 200) },
+        { error: "Trigger failed", details: raw.slice(0, 200) },
         { status: 500 }
       );
     }
 
-    if (!res.ok) {
+    LOG("trigger response", { status: triggerRes.status, body: triggerData });
+
+    if (!triggerRes.ok) {
       const errMsg =
-        (data as { error?: string })?.error ?? res.statusText ?? "Scrape failed";
+        (triggerData as { error?: string })?.error ?? triggerRes.statusText ?? "Trigger failed";
       return NextResponse.json(
-        { error: errMsg, details: data },
-        { status: res.status >= 500 ? 502 : res.status }
+        { error: errMsg, details: triggerData },
+        { status: triggerRes.status >= 500 ? 502 : triggerRes.status }
       );
     }
 
-    // 202 = async job; we don't poll here
-    if (res.status === 202) {
-      const snapshotId = (data as { snapshot_id?: string })?.snapshot_id;
+    const snapshotId = (triggerData as { snapshot_id?: string })?.snapshot_id;
+    if (!snapshotId) {
+      return NextResponse.json(
+        { error: "No snapshot_id in trigger response", details: triggerData },
+        { status: 502 }
+      );
+    }
+
+    const status = await pollUntilReady(snapshotId);
+    LOG("poll finished", { snapshotId, status });
+    if (status === "failed") {
       return NextResponse.json({
-        name: `${query} (${store})`,
+        name: query,
         price: undefined,
         currency: "USD",
         availability: "unknown",
         url: null,
         image: null,
-        error: snapshotId
-          ? "Scrape queued (async); use snapshot_id to poll for results"
-          : "Scrape queued (async)",
       });
     }
 
-    const first = pickFirstResult(data);
+    const snapshotData = await downloadSnapshot(snapshotId);
+    const first = pickFirstResult(snapshotData);
+    LOG("parsed first result", first ?? "none");
     if (!first) {
       return NextResponse.json({
         name: query,
